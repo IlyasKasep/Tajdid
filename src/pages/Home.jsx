@@ -23,7 +23,7 @@ function Home({ berita = [], pengurus = [], galeri = [] }) {
               <span className="text-emerald-500">untuk Si Kecil!</span>
             </h1>
             <p className="text-lg text-slate-600 font-medium max-w-md mx-auto lg:mx-0">
-              AT-TAJDIED Islamic School adalah lingkungan bermain dan belajar yang penuh cinta, kreativitas, dan nilai-nilai Islami.
+            Melalui kegiatan yang kreatif, islami, dan menyenangkan, kami percaya bahwa pendidikan usia dini adalah fondasi penting untuk membentuk generasi yang beriman, berilmu, dan berakhlak baik. RA At-Tajdied bukan sekadar tempat belajar, tetapi rumah kedua bagi anak-anak untuk tumbuh dengan bahagia dan penuh kasih sayang.
             </p>
             <div className="pt-4">
               <button className="bg-amber-400 text-amber-900 font-black text-xl px-8 py-4 rounded-full hover:bg-amber-500 hover:-translate-y-2 transform transition-all shadow-[0_6px_0_rgb(180,83,9,1)] active:translate-y-2 active:shadow-none">
