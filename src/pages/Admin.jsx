@@ -1,222 +1,420 @@
 import { useState, useEffect } from 'react';
-import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
+const IMGBB_API_KEY = 'cb9b2aec11b80af3765d32f4d6f572da';
+
 function Admin(props) {
-  const { user, email, setEmail, password, setPassword, tanganiLogin, tanganiLogout } = props;
+  const {
+    user, email, setEmail, password, setPassword, errorLogin, tanganiLogin, tanganiLogout,
+    berita, judulBaru, setJudulBaru, kategoriBaru, setKategoriBaru,
+    fileGambar, setFileGambar, urlGambarLama, isiBaru, setIsiBaru,
+    idEdit, batalEdit, mulaiEdit, hapusBerita
+  } = props;
 
-  // --- 1. STATE MANAGEMENT ---
   const [activeTab, setActiveTab] = useState('pengurus');
-  const [loading, setLoading] = useState(false);
 
-  // State Data (Read)
-  const [dataPengurus, setDataPengurus] = useState([]);
+  // === STATE KHUSUS ===
+  const [prosesLoading, setProsesLoading] = useState(false);
+  const [keteranganBaru, setKeteranganBaru] = useState(''); // Keterangan Berita
+
+  // Pengurus
+  const [pengurus, setPengurus] = useState([]);
+  const [namaP, setNamaP] = useState('');
+  const [jabatanP, setJabatanP] = useState('');
+  const [fotoP, setFotoP] = useState(null);
+  const [urlFotoLamaP, setUrlFotoLamaP] = useState('');
+  const [ketP, setKetP] = useState('');
+  const [idEditP, setIdEditP] = useState(null);
+
+  // Download
   const [dataDownload, setDataDownload] = useState([]);
-  const [dataBerita, setDataBerita] = useState([]);
+  const [namaFileD, setNamaFileD] = useState('');
+  const [linkD, setLinkD] = useState('');
+  const [ketD, setKetD] = useState('');
+  const [idEditD, setIdEditD] = useState(null);
+
+  // Polling
   const [dataPolling, setDataPolling] = useState([]);
-  const [dataFoto, setDataFoto] = useState([]);
+  const [pertanyaanPol, setPertanyaanPol] = useState('');
+  const [opsiPol, setOpsiPol] = useState('');
+  const [idEditPol, setIdEditPol] = useState(null);
+
+  // Galeri
+  const [dataGaleri, setDataGaleri] = useState([]);
+  const [judulG, setJudulG] = useState('');
+  const [fotoG, setFotoG] = useState(null);
+  const [ketG, setKetG] = useState('');
+
+  // Buku Tamu
   const [dataBukuTamu, setDataBukuTamu] = useState([]);
 
-  // State Input Form
-  const [idEdit, setIdEdit] = useState(null);
-  const [form, setForm] = useState({
-    nama: '', jabatan: '', link: '', keterangan: '', 
-    judul: '', isi: '', kategori: '', pertanyaan: '', opsi: ''
-  });
-
-  // --- 2. FUNGSI AMBIL DATA (READ) ---
+  // === AMBIL DATA (READ) ===
   const ambilSemuaData = async () => {
-    setLoading(true);
     try {
-      const qPengurus = await getDocs(collection(db, "pengurus"));
-      setDataPengurus(qPengurus.docs.map(d => ({ id: d.id, ...d.data() })));
+      const snapP = await getDocs(collection(db, "pengurus"));
+      setPengurus(snapP.docs.map(d => ({id: d.id, ...d.data()})));
+      
+      const snapD = await getDocs(collection(db, "download"));
+      setDataDownload(snapD.docs.map(d => ({id: d.id, ...d.data()})));
 
-      const qDownload = await getDocs(collection(db, "download"));
-      setDataDownload(qDownload.docs.map(d => ({ id: d.id, ...d.data() })));
+      const snapPol = await getDocs(collection(db, "polling"));
+      setDataPolling(snapPol.docs.map(d => ({id: d.id, ...d.data()})));
 
-      const qBerita = await getDocs(collection(db, "berita"));
-      setDataBerita(qBerita.docs.map(d => ({ id: d.id, ...d.data() })));
+      const snapG = await getDocs(collection(db, "galeri"));
+      setDataGaleri(snapG.docs.map(d => ({id: d.id, ...d.data()})).reverse());
 
-      const qPolling = await getDocs(collection(db, "polling"));
-      setDataPolling(qPolling.docs.map(d => ({ id: d.id, ...d.data() })));
-
-      const qFoto = await getDocs(collection(db, "galeri"));
-      setDataFoto(qFoto.docs.map(d => ({ id: d.id, ...d.data() })));
-
-      const qBukuTamu = await getDocs(collection(db, "bukutamu"));
-      setDataBukuTamu(qBukuTamu.docs.map(d => ({ id: d.id, ...d.data() })));
-    } catch (e) { console.error(e); }
-    setLoading(false);
+      const snapBT = await getDocs(collection(db, "bukutamu"));
+      setDataBukuTamu(snapBT.docs.map(d => ({id: d.id, ...d.data()})).reverse());
+    } catch (error) { console.error(error); }
   };
 
   useEffect(() => { if (user) ambilSemuaData(); }, [user]);
 
-  // --- 3. FUNGSI CRUD GLOBAL ---
-  const resetForm = () => {
-    setForm({ nama: '', jabatan: '', link: '', keterangan: '', judul: '', isi: '', kategori: '', pertanyaan: '', opsi: '' });
-    setIdEdit(null);
-  };
-
-  const simpanData = async (e, koleksi, dataObj) => {
-    e.preventDefault();
+  // === FUNGSI UPLOAD OTOMATIS KE IMGBB ===
+  const uploadFotoImgBB = async (file) => {
+    const formData = new FormData();
+    formData.append('image', file);
     try {
-      if (idEdit) {
-        await updateDoc(doc(db, koleksi, idEdit), dataObj);
-        alert("Data berhasil diupdate!");
-      } else {
-        await addDoc(collection(db, koleksi), { ...dataObj, tanggal: new Date().toLocaleDateString('id-ID') });
-        alert("Data berhasil ditambah!");
-      }
-      resetForm();
-      ambilSemuaData();
-    } catch (e) { alert("Gagal menyimpan data"); }
-  };
-
-  const hapusData = async (id, koleksi) => {
-    if (window.confirm("Hapus data ini?")) {
-      await deleteDoc(doc(db, koleksi, id));
-      ambilSemuaData();
+      const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: formData });
+      const data = await res.json();
+      return data.data.url;
+    } catch (err) {
+      alert("Gagal mengunggah foto. Pastikan internet stabil.");
+      return null;
     }
   };
 
-  const mulaiEdit = (item) => {
-    setIdEdit(item.id);
-    setForm({ ...item });
-    window.scrollTo(0, 0);
+  // ==================== FUNGSI CRUD ====================
+
+  // 1. BERITA
+  const simpanBeritaDenganImgBB = async (e) => {
+    e.preventDefault();
+    if (!judulBaru || !isiBaru) return alert("Judul dan Isi wajib diisi!");
+    setProsesLoading(true);
+    try {
+      let urlFinal = urlGambarLama || '';
+      if (fileGambar) {
+        const urlBaru = await uploadFotoImgBB(fileGambar);
+        if (urlBaru) urlFinal = urlBaru;
+      }
+      const dataObj = {
+        judul: judulBaru, kategori: kategoriBaru, isi: isiBaru, keterangan: keteranganBaru, gambar: urlFinal,
+        tanggal: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+      };
+
+      if (idEdit) {
+        await updateDoc(doc(db, "berita", idEdit), dataObj);
+        alert("Berita diperbarui!");
+      } else {
+        await addDoc(collection(db, "berita"), dataObj);
+        alert("Berita baru ditambahkan!");
+      }
+      batalEdit();
+      window.location.reload(); 
+    } catch (error) { alert("Gagal menyimpan berita!"); }
+    setProsesLoading(false);
   };
 
-  if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-        <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full border-t-8 border-blue-900">
-          <h2 className="text-2xl font-bold text-center mb-6">Admin Panel Login</h2>
-          <form onSubmit={tanganiLogin} className="space-y-4">
-            <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required />
-            <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required />
-            <button className="w-full bg-blue-900 text-white font-bold py-3 rounded-lg hover:bg-blue-800 transition">MASUK</button>
+  // 2. PENGURUS
+  const simpanPengurus = async (e) => {
+    e.preventDefault();
+    setProsesLoading(true);
+    try {
+      let urlFinal = urlFotoLamaP;
+      if (fotoP) {
+        const urlBaru = await uploadFotoImgBB(fotoP);
+        if (urlBaru) urlFinal = urlBaru;
+      }
+      const dataObj = { nama: namaP, jabatan: jabatanP, keterangan: ketP, foto: urlFinal };
+
+      if (idEditP) {
+        await updateDoc(doc(db, "pengurus", idEditP), dataObj);
+        alert("Data pengurus diperbarui!");
+      } else {
+        await addDoc(collection(db, "pengurus"), dataObj);
+        alert("Pengurus ditambahkan!");
+      }
+      batalEditPengurus();
+      ambilSemuaData();
+    } catch (error) { alert("Gagal menyimpan data!"); }
+    setProsesLoading(false);
+  };
+  const batalEditPengurus = () => { setIdEditP(null); setNamaP(''); setJabatanP(''); setUrlFotoLamaP(''); setKetP(''); setFotoP(null); };
+  const hapusPengurus = async (id) => { if (window.confirm("Hapus data?")) { await deleteDoc(doc(db, "pengurus", id)); ambilSemuaData(); } };
+
+  // 3. DOWNLOAD
+  const simpanDownload = async (e) => {
+    e.preventDefault();
+    const dataObj = { judul: namaFileD, link: linkD, keterangan: ketD };
+    if (idEditD) {
+      await updateDoc(doc(db, "download", idEditD), dataObj);
+    } else {
+      await addDoc(collection(db, "download"), dataObj);
+    }
+    alert("Data tersimpan!");
+    setIdEditD(null); setNamaFileD(''); setLinkD(''); setKetD('');
+    ambilSemuaData();
+  };
+  const hapusDownload = async (id) => { if (window.confirm("Hapus file?")) { await deleteDoc(doc(db, "download", id)); ambilSemuaData(); } };
+
+  // 4. POLLING
+  const simpanPolling = async (e) => {
+    e.preventDefault();
+    const dataObj = { pertanyaan: pertanyaanPol, opsi: opsiPol };
+    if (idEditPol) {
+      await updateDoc(doc(db, "polling", idEditPol), dataObj);
+    } else {
+      await addDoc(collection(db, "polling"), dataObj);
+    }
+    alert("Polling tersimpan!");
+    setIdEditPol(null); setPertanyaanPol(''); setOpsiPol('');
+    ambilSemuaData();
+  };
+  const hapusPolling = async (id) => { if (window.confirm("Hapus polling?")) { await deleteDoc(doc(db, "polling", id)); ambilSemuaData(); } };
+
+  // 5. GALERI
+  const simpanGaleri = async (e) => {
+    e.preventDefault();
+    if (!fotoG) return alert("Pilih foto terlebih dahulu!");
+    setProsesLoading(true);
+    try {
+      const urlBaru = await uploadFotoImgBB(fotoG);
+      if (urlBaru) {
+        await addDoc(collection(db, "galeri"), { judul: judulG, keterangan: ketG, urlFoto: urlBaru });
+        alert("Foto berhasil diunggah!");
+        setJudulG(''); setKetG(''); setFotoG(null);
+        ambilSemuaData();
+      }
+    } catch (error) { alert("Gagal mengunggah foto."); }
+    setProsesLoading(false);
+  };
+  const hapusGaleri = async (id) => { if (window.confirm("Hapus foto?")) { await deleteDoc(doc(db, "galeri", id)); ambilSemuaData(); } };
+
+  // 6. BUKU TAMU
+  const hapusBukuTamu = async (id) => { if (window.confirm("Hapus pesan?")) { await deleteDoc(doc(db, "bukutamu", id)); ambilSemuaData(); } };
+
+
+  // ==================== TAMPILAN ANTARMUKA ====================
+  return (
+    <section className="py-12 max-w-6xl mx-auto px-4 min-h-screen">
+      {!user ? (
+        // FORM LOGIN ASLI
+        <div className="bg-white p-8 rounded-xl shadow-2xl border-t-8 border-blue-800 max-w-md mx-auto mt-10">
+          <div className="text-center mb-8">
+            <h3 className="text-3xl font-extrabold text-blue-900 tracking-tight">Admin Portal</h3>
+            <p className="text-blue-600 font-medium mt-2">Silakan login untuk mengelola sistem</p>
+          </div>
+          {errorLogin && <p className="text-red-500 text-sm mb-4 text-center bg-red-50 p-3 rounded font-semibold border border-red-200">{errorLogin}</p>}
+          <form onSubmit={tanganiLogin} className="space-y-6">
+            <div>
+              <label className="block text-gray-700 text-sm font-bold mb-2">Email Akses</label>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-3 border border-gray-300 rounded focus:ring-2 focus:ring-blue-600 outline-none bg-gray-50 transition" required />
+            </div>
+            <div>
+              <label className="block text-gray-700 text-sm font-bold mb-2">Kata Sandi</label>
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-3 border border-gray-300 rounded focus:ring-2 focus:ring-blue-600 outline-none bg-gray-50 transition" required />
+            </div>
+            <button type="submit" className="w-full bg-blue-800 text-white font-bold py-3.5 rounded hover:bg-blue-900 transition duration-300 shadow-lg">Masuk ke Dasbor</button>
           </form>
         </div>
-      </div>
-    );
-  }
-
-  return (
-    <section className="py-10 max-w-7xl mx-auto px-4 min-h-screen bg-gray-50">
-      <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-        <h1 className="text-3xl font-black text-blue-900 uppercase tracking-tighter">Sistem Manajemen Admin</h1>
-        <button onClick={tanganiLogout} className="bg-red-600 text-white px-6 py-2 rounded-full font-bold hover:bg-red-700 shadow-md">Logout</button>
-      </div>
-
-      {/* --- NAVIGASI TAB --- */}
-      <div className="flex flex-wrap gap-2 mb-8 bg-white p-2 rounded-xl shadow-sm border border-gray-200">
-        {[
-          { id: 'pengurus', label: '7. Biodata Pengurus' },
-          { id: 'download', label: '8. Download File' },
-          { id: 'berita', label: '9. Berita & Artikel' },
-          { id: 'polling', label: '10. Polling' },
-          { id: 'galeri', label: '11. Manajemen Foto' },
-          { id: 'bukutamu', label: '12. Buku Tamu' }
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => { setActiveTab(tab.id); resetForm(); }}
-            className={`px-4 py-2 rounded-lg font-bold text-sm transition ${activeTab === tab.id ? 'bg-blue-900 text-white shadow-md' : 'text-gray-600 hover:bg-gray-100'}`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* --- KOLOM KIRI: FORM INPUT --- */}
-        <div className="lg:col-span-1">
-          <div className="bg-white p-6 rounded-2xl shadow-xl border-t-4 border-blue-900 sticky top-10">
-            <h2 className="font-black text-xl mb-6 text-gray-800 uppercase italic">
-              {idEdit ? `Update ${activeTab}` : `Input ${activeTab}`}
-            </h2>
-            
-            <form className="space-y-4" onSubmit={(e) => {
-              let data = {};
-              if (activeTab === 'pengurus') data = { nama: form.nama, jabatan: form.jabatan, link: form.link, keterangan: form.keterangan };
-              if (activeTab === 'download') data = { judul: form.judul, link: form.link, keterangan: form.keterangan };
-              if (activeTab === 'berita') data = { judul: form.judul, isi: form.isi, link: form.link, keterangan: form.keterangan };
-              if (activeTab === 'polling') data = { pertanyaan: form.pertanyaan, opsi: form.opsi, keterangan: form.keterangan };
-              if (activeTab === 'galeri') data = { judul: form.judul, link: form.link, keterangan: form.keterangan };
-              if (activeTab === 'bukutamu') data = { nama: form.nama, isi: form.isi, keterangan: form.keterangan };
-              simpanData(e, activeTab === 'galeri' ? 'galeri' : activeTab, data);
-            }}>
-
-              {/* INPUT DINAMIS BERDASARKAN TAB */}
-              {(activeTab === 'pengurus' || activeTab === 'bukutamu') && (
-                <input type="text" placeholder="Nama Lengkap" value={form.nama} onChange={(e) => setForm({ ...form, nama: e.target.value })} className="w-full p-3 border rounded-lg" required />
-              )}
-              {activeTab === 'pengurus' && (
-                <input type="text" placeholder="Jabatan" value={form.jabatan} onChange={(e) => setForm({ ...form, jabatan: e.target.value })} className="w-full p-3 border rounded-lg" required />
-              )}
-              {(activeTab === 'download' || activeTab === 'berita' || activeTab === 'galeri') && (
-                <input type="text" placeholder="Judul / Nama File" value={form.judul} onChange={(e) => setForm({ ...form, judul: e.target.value })} className="w-full p-3 border rounded-lg" required />
-              )}
-              {activeTab === 'polling' && (
-                <input type="text" placeholder="Pertanyaan Polling" value={form.pertanyaan} onChange={(e) => setForm({ ...form, pertanyaan: e.target.value })} className="w-full p-3 border rounded-lg" required />
-              )}
-              {activeTab === 'polling' && (
-                <input type="text" placeholder="Opsi Jawaban (Pisah dengan koma)" value={form.opsi} onChange={(e) => setForm({ ...form, opsi: e.target.value })} className="w-full p-3 border rounded-lg" />
-              )}
-              {(activeTab === 'berita' || activeTab === 'bukutamu') && (
-                <textarea placeholder="Isi Pesan / Artikel" value={form.isi} onChange={(e) => setForm({ ...form, isi: e.target.value })} className="w-full p-3 border rounded-lg h-32" required></textarea>
-              )}
-              {activeTab !== 'bukutamu' && activeTab !== 'polling' && (
-                <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
-                  <label className="text-xs font-bold text-yellow-700 uppercase">Link Manual (ImgBB/Drive/Lainnya)</label>
-                  <input type="text" placeholder="https://..." value={form.link} onChange={(e) => setForm({ ...form, link: e.target.value })} className="w-full p-2 border-b border-yellow-300 bg-transparent outline-none" required />
-                </div>
-              )}
-              
-              <input type="text" placeholder="Keterangan Tambahan" value={form.keterangan} onChange={(e) => setForm({ ...form, keterangan: e.target.value })} className="w-full p-3 border rounded-lg" />
-
-              <div className="flex gap-2 pt-4">
-                <button type="submit" className="flex-1 bg-blue-900 text-white font-black py-3 rounded-xl shadow-lg hover:scale-105 transition uppercase italic">Simpan Data</button>
-                {idEdit && <button type="button" onClick={resetForm} className="bg-gray-400 text-white px-4 rounded-xl">Batal</button>}
-              </div>
-            </form>
+      ) : (
+        // DASBOR UTAMA ADMIN
+        <div>
+          {/* TABS MENU ASLI (DENGAN TAMBAHAN) */}
+          <div className="flex flex-wrap gap-2 mb-10 border-b-2 border-gray-200 pb-4">
+            <button onClick={() => setActiveTab('pengurus')} className={`px-4 py-2 font-bold rounded-md transition duration-300 ${activeTab === 'pengurus' ? 'bg-blue-800 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-300 hover:bg-blue-50'}`}>👥 Pengurus</button>
+            <button onClick={() => setActiveTab('download')} className={`px-4 py-2 font-bold rounded-md transition duration-300 ${activeTab === 'download' ? 'bg-blue-800 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-300 hover:bg-blue-50'}`}>📁 Download</button>
+            <button onClick={() => setActiveTab('berita')} className={`px-4 py-2 font-bold rounded-md transition duration-300 ${activeTab === 'berita' ? 'bg-blue-800 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-300 hover:bg-blue-50'}`}>📰 Berita</button>
+            <button onClick={() => setActiveTab('polling')} className={`px-4 py-2 font-bold rounded-md transition duration-300 ${activeTab === 'polling' ? 'bg-blue-800 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-300 hover:bg-blue-50'}`}>📊 Polling</button>
+            <button onClick={() => setActiveTab('galeri')} className={`px-4 py-2 font-bold rounded-md transition duration-300 ${activeTab === 'galeri' ? 'bg-blue-800 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-300 hover:bg-blue-50'}`}>📸 Galeri</button>
+            <button onClick={() => setActiveTab('bukutamu')} className={`px-4 py-2 font-bold rounded-md transition duration-300 ${activeTab === 'bukutamu' ? 'bg-blue-800 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-300 hover:bg-blue-50'}`}>📖 Buku Tamu</button>
+            <button onClick={tanganiLogout} className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-md shadow-md ml-auto">🚪 Keluar</button>
           </div>
-        </div>
 
-        {/* --- KOLOM KANAN: DAFTAR DATA (READ/DELETE) --- */}
-        <div className="lg:col-span-2 space-y-4">
-          <h2 className="font-bold text-gray-500 uppercase tracking-widest text-sm mb-4">Database: {activeTab}</h2>
-          
-          {loading ? <p>Memuat data...</p> : (
-            <div className="grid grid-cols-1 gap-4">
-              {/* RENDER LIST BERDASARKAN TAB */}
-              {(activeTab === 'pengurus' ? dataPengurus : 
-                activeTab === 'download' ? dataDownload : 
-                activeTab === 'berita' ? dataBerita : 
-                activeTab === 'polling' ? dataPolling : 
-                activeTab === 'galeri' ? dataFoto : dataBukuTamu).map((item) => (
-                <div key={item.id} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:shadow-md transition">
-                  <div className="flex gap-4 items-center">
-                    {item.link && (item.link.includes('ibb') || item.link.includes('jpg')) ? (
-                       <img src={item.link} className="w-16 h-16 rounded-lg object-cover bg-gray-200" alt="" />
-                    ) : (
-                      <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center text-blue-900 font-bold uppercase">{activeTab.charAt(0)}</div>
-                    )}
-                    <div>
-                      <h4 className="font-black text-gray-800 leading-tight">{item.nama || item.judul || item.pertanyaan}</h4>
-                      <p className="text-xs text-blue-600 font-bold uppercase">{item.jabatan || item.tanggal}</p>
-                      <p className="text-sm text-gray-500 line-clamp-1 italic">{item.keterangan || item.isi || 'Tidak ada keterangan'}</p>
+          {/* === TAB 1: PENGURUS === */}
+          {activeTab === 'pengurus' && (
+            <div className="space-y-8">
+              <div className="bg-white p-8 rounded-xl shadow-md border-t-8 border-blue-700">
+                <h3 className="text-2xl font-extrabold text-blue-800 mb-6">👤 {idEditP ? 'Edit' : 'Tambah'} Biodata Pengurus</h3>
+                <form onSubmit={simpanPengurus} className="space-y-4">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <input type="text" placeholder="Nama Lengkap" value={namaP} onChange={(e)=>setNamaP(e.target.value)} className="w-full px-4 py-3 border rounded bg-gray-50 outline-none" required />
+                    <input type="text" placeholder="Jabatan" value={jabatanP} onChange={(e)=>setJabatanP(e.target.value)} className="w-full px-4 py-3 border rounded bg-gray-50 outline-none" required />
+                  </div>
+                  <input type="text" placeholder="Keterangan (Opsional)" value={ketP} onChange={(e)=>setKetP(e.target.value)} className="w-full px-4 py-3 border rounded bg-gray-50 outline-none" />
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-2">Upload Foto (Pilih dari HP/Laptop)</label>
+                    <input type="file" accept="image/*" onChange={(e)=>setFotoP(e.target.files[0])} className="w-full px-4 py-2 border rounded bg-gray-50" />
+                  </div>
+                  <div className="flex gap-4">
+                    <button type="submit" disabled={prosesLoading} className="flex-1 bg-blue-700 text-white font-bold py-3 rounded">{prosesLoading ? 'Mengupload...' : 'Simpan Data'}</button>
+                    {idEditP && <button type="button" onClick={batalEditPengurus} className="bg-gray-400 text-white px-6 rounded">Batal</button>}
+                  </div>
+                </form>
+              </div>
+              <div className="bg-white p-8 rounded-xl shadow-md">
+                <h3 className="text-xl font-bold mb-4">Database Pengurus</h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {pengurus.map(item => (
+                    <div key={item.id} className="border p-4 rounded-lg flex gap-4 items-center bg-gray-50">
+                      {item.foto ? <img src={item.foto} className="w-16 h-16 rounded-full object-cover" alt="foto" /> : <div className="w-16 h-16 bg-blue-100 rounded-full"></div>}
+                      <div className="flex-1">
+                        <h4 className="font-bold">{item.nama}</h4>
+                        <p className="text-sm text-blue-600">{item.jabatan}</p>
+                        <p className="text-xs text-gray-500">{item.keterangan}</p>
+                        <div className="flex gap-2 mt-2">
+                          <button onClick={()=>{setIdEditP(item.id); setNamaP(item.nama); setJabatanP(item.jabatan); setKetP(item.keterangan || ''); setUrlFotoLamaP(item.foto)}} className="text-xs px-3 py-1 bg-amber-500 text-white rounded">Edit</button>
+                          <button onClick={()=>hapusPengurus(item.id)} className="text-xs px-3 py-1 bg-red-500 text-white rounded">Hapus</button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex gap-2 w-full md:w-auto">
-                    <button onClick={() => mulaiEdit(item)} className="flex-1 md:flex-none px-4 py-2 bg-amber-100 text-amber-700 rounded-lg font-bold text-xs hover:bg-amber-200">EDIT</button>
-                    <button onClick={() => hapusData(item.id, activeTab === 'galeri' ? 'galeri' : activeTab)} className="flex-1 md:flex-none px-4 py-2 bg-red-100 text-red-700 rounded-lg font-bold text-xs hover:bg-red-200">HAPUS</button>
-                  </div>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
           )}
+
+          {/* === TAB 2: DOWNLOAD === */}
+          {activeTab === 'download' && (
+            <div className="space-y-8">
+              <div className="bg-white p-8 rounded-xl shadow-md border-t-8 border-blue-700">
+                <h3 className="text-2xl font-extrabold text-blue-800 mb-6">📁 Tambah File Download</h3>
+                <form onSubmit={simpanDownload} className="space-y-4">
+                  <input type="text" placeholder="Nama Dokumen" value={namaFileD} onChange={(e)=>setNamaFileD(e.target.value)} className="w-full px-4 py-3 border rounded bg-gray-50" required />
+                  <input type="text" placeholder="Link Google Drive / Tautan File" value={linkD} onChange={(e)=>setLinkD(e.target.value)} className="w-full px-4 py-3 border rounded bg-gray-50" required />
+                  <input type="text" placeholder="Keterangan" value={ketD} onChange={(e)=>setKetD(e.target.value)} className="w-full px-4 py-3 border rounded bg-gray-50" />
+                  <button type="submit" className="w-full bg-blue-700 text-white font-bold py-3 rounded">Simpan Dokumen</button>
+                </form>
+              </div>
+              <div className="bg-white p-8 rounded-xl shadow-md">
+                {dataDownload.map(item => (
+                  <div key={item.id} className="border p-4 rounded mb-2 flex justify-between items-center">
+                    <div>
+                      <p className="font-bold">{item.judul}</p>
+                      <a href={item.link} className="text-sm text-blue-500 underline" target="_blank" rel="noreferrer">Lihat Link</a>
+                    </div>
+                    <button onClick={()=>hapusDownload(item.id)} className="px-4 py-2 bg-red-500 text-white rounded font-bold text-sm">Hapus</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* === TAB 3: BERITA === */}
+          {activeTab === 'berita' && (
+            <div className="space-y-8">
+              <div className="bg-white p-8 rounded-xl shadow-md border-t-8 border-blue-700">
+                <h3 className="text-2xl font-extrabold text-blue-800 mb-6">📝 Tulis Berita / Artikel</h3>
+                <form onSubmit={simpanBeritaDenganImgBB} className="space-y-4">
+                  <input type="text" placeholder="Judul Berita" value={judulBaru} onChange={(e)=>setJudulBaru(e.target.value)} className="w-full px-4 py-3 border rounded bg-gray-50" required />
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <select value={kategoriBaru} onChange={(e)=>setKategoriBaru(e.target.value)} className="w-full px-4 py-3 border rounded bg-gray-50">
+                      <option value="Pengumuman">Pengumuman</option>
+                      <option value="Prestasi">Prestasi</option>
+                      <option value="Kegiatan">Kegiatan</option>
+                    </select>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 mb-1">Upload Gambar Cover</label>
+                      <input type="file" accept="image/*" onChange={(e)=>setFileGambar(e.target.files[0])} className="w-full px-4 py-2 border rounded bg-gray-50" />
+                    </div>
+                  </div>
+                  <input type="text" placeholder="Keterangan / Ringkasan Pendek" value={keteranganBaru} onChange={(e)=>setKeteranganBaru(e.target.value)} className="w-full px-4 py-3 border rounded bg-gray-50" />
+                  <textarea placeholder="Isi Konten Berita" value={isiBaru} onChange={(e)=>setIsiBaru(e.target.value)} className="w-full px-4 py-3 border rounded h-32 bg-gray-50" required></textarea>
+                  <div className="flex gap-4">
+                    <button type="submit" disabled={prosesLoading} className="flex-1 bg-blue-700 text-white font-bold py-3 rounded">{prosesLoading ? 'Mengupload...' : 'Simpan Berita'}</button>
+                    {idEdit && <button type="button" onClick={batalEdit} className="bg-gray-400 text-white px-6 rounded">Batal</button>}
+                  </div>
+                </form>
+              </div>
+              <div className="bg-white p-8 rounded-xl shadow-md">
+                {berita.map(item => (
+                  <div key={item.id} className="border-b p-4 flex justify-between items-center">
+                    <div>
+                      <h4 className="font-bold">{item.judul}</h4>
+                      <p className="text-sm text-gray-500">{item.tanggal} - {item.kategori}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={()=>mulaiEdit(item)} className="px-4 py-2 bg-amber-500 text-white rounded text-sm font-bold">Edit</button>
+                      <button onClick={()=>hapusBerita(item.id)} className="px-4 py-2 bg-red-500 text-white rounded text-sm font-bold">Hapus</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* === TAB 4: POLLING === */}
+          {activeTab === 'polling' && (
+            <div className="space-y-8">
+              <div className="bg-white p-8 rounded-xl shadow-md border-t-8 border-blue-700">
+                <h3 className="text-2xl font-extrabold text-blue-800 mb-6">📊 Buat Polling</h3>
+                <form onSubmit={simpanPolling} className="space-y-4">
+                  <input type="text" placeholder="Pertanyaan Polling (Contoh: Apa kegiatan favoritmu?)" value={pertanyaanPol} onChange={(e)=>setPertanyaanPol(e.target.value)} className="w-full px-4 py-3 border rounded bg-gray-50" required />
+                  <input type="text" placeholder="Pilihan Jawaban (Pisahkan dengan Koma. Contoh: Olahraga,Seni,Pramuka)" value={opsiPol} onChange={(e)=>setOpsiPol(e.target.value)} className="w-full px-4 py-3 border rounded bg-gray-50" required />
+                  <button type="submit" className="w-full bg-blue-700 text-white font-bold py-3 rounded">Simpan Polling</button>
+                </form>
+              </div>
+              <div className="bg-white p-8 rounded-xl shadow-md">
+                {dataPolling.map(item => (
+                  <div key={item.id} className="border p-4 rounded mb-2 flex justify-between items-center">
+                    <div><p className="font-bold">{item.pertanyaan}</p><p className="text-sm text-gray-500">Opsi: {item.opsi}</p></div>
+                    <button onClick={()=>hapusPolling(item.id)} className="px-4 py-2 bg-red-500 text-white rounded font-bold text-sm">Hapus</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* === TAB 5: GALERI === */}
+          {activeTab === 'galeri' && (
+            <div className="space-y-8">
+              <div className="bg-white p-8 rounded-xl shadow-md border-t-8 border-blue-700">
+                <h3 className="text-2xl font-extrabold text-blue-800 mb-6">📸 Upload Foto Galeri</h3>
+                <form onSubmit={simpanGaleri} className="space-y-4">
+                  <input type="text" placeholder="Judul Foto" value={judulG} onChange={(e)=>setJudulG(e.target.value)} className="w-full px-4 py-3 border rounded bg-gray-50" required />
+                  <input type="text" placeholder="Keterangan Tambahan" value={ketG} onChange={(e)=>setKetG(e.target.value)} className="w-full px-4 py-3 border rounded bg-gray-50" />
+                  <div>
+                    <label className="block text-gray-700 font-bold mb-2">Pilih Foto dari HP/Laptop</label>
+                    <input type="file" accept="image/*" onChange={(e)=>setFotoG(e.target.files[0])} className="w-full px-4 py-2 border rounded bg-gray-50" required />
+                  </div>
+                  <button type="submit" disabled={prosesLoading} className="w-full bg-blue-700 text-white font-bold py-3 rounded">{prosesLoading ? 'Mengunggah Foto...' : 'Upload ke Galeri'}</button>
+                </form>
+              </div>
+              <div className="bg-white p-8 rounded-xl shadow-md">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {dataGaleri.map(item => (
+                    <div key={item.id} className="border p-2 rounded-lg bg-gray-50">
+                      <img src={item.urlFoto} className="h-32 w-full object-cover rounded mb-2" alt={item.judul} />
+                      <p className="text-sm font-bold text-center truncate">{item.judul}</p>
+                      <button onClick={()=>hapusGaleri(item.id)} className="w-full mt-2 py-1 bg-red-600 text-white text-xs font-bold rounded">Hapus</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* === TAB 6: BUKU TAMU === */}
+          {activeTab === 'bukutamu' && (
+            <div className="bg-white p-8 rounded-xl shadow-md border border-gray-200">
+              <h3 className="text-2xl font-extrabold text-blue-900 mb-6">📖 Daftar Buku Tamu</h3>
+              <div className="space-y-4">
+                {dataBukuTamu.map((item) => (
+                  <div key={item.id} className="border p-5 rounded-lg flex justify-between bg-gray-50">
+                    <div>
+                      <h4 className="font-bold">{item.nama} <span className="text-xs bg-blue-100 text-blue-800 px-2 rounded">{item.asal}</span></h4>
+                      <p className="text-gray-700 text-sm mt-1">"{item.pesan}"</p>
+                    </div>
+                    <button onClick={() => hapusBukuTamu(item.id)} className="px-4 py-2 bg-red-500 text-white font-bold rounded text-sm">Hapus</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
         </div>
-      </div>
+      )}
     </section>
   );
 }
