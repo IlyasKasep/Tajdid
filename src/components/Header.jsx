@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
+import logoSekolah from 'src/assets/Logo_Persis.png';
 function Header() {
   // State untuk mengontrol apakah menu mobile sedang terbuka atau tertutup
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -20,10 +21,10 @@ function Header() {
             
             {/* BAGIAN INI YANG DIUBAH: Hapus div bg-white, langsung gunakan tag img */}
             <img 
-              src="public/Logo_Persis.png" 
-              alt="Logo At-Tajdied" 
-              className="h-14 w-14 object-contain hover:scale-105 transition" 
-            />
+  src={logoSekolah} 
+  alt="Logo At-Tajdied" 
+  className="h-14 w-14 object-contain hover:scale-105 transition" 
+/>
 
             <div>
               <h1 className="text-xl font-extrabold tracking-wide">AT-TAJDIED</h1>
