@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import logoSekolah from 'src/assets/Logo_Persis.png';
+import logoSekolah from '../assets/Logo_Persis.png';
 function Header() {
   // State untuk mengontrol apakah menu mobile sedang terbuka atau tertutup
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
