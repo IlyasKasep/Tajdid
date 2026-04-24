@@ -11,11 +11,15 @@ function Admin(props) {
     user, email, setEmail, password, setPassword, errorLogin, tanganiLogin,tanganiLogout,
     berita, judulBaru, setJudulBaru, kategoriBaru, setKategoriBaru,
     fileGambar, setFileGambar, urlGambarLama, isiBaru, setIsiBaru,
-    simpanAtauUpdateBerita, prosesSimpan, idEdit, batalEdit, mulaiEdit, hapusBerita
+    idEdit, batalEdit, mulaiEdit, hapusBerita
+    // simpanAtauUpdateBerita & prosesSimpan tidak kita pakai lagi karena kita buat khusus di bawah
   } = props;
 
   // === STATE UNTUK MENU TABS ===
-  const [activeTab, setActiveTab] = useState('berita'); // 'berita', 'pengurus', 'bukutamu', 'galeri'
+  const [activeTab, setActiveTab] = useState('berita'); 
+
+  // === STATE LOKAL UNTUK LOADING BERITA ===
+  const [prosesSimpanBeritaLokal, setProsesSimpanBeritaLokal] = useState(false);
 
   // === STATE KHUSUS PENGURUS ===
   const [pengurus, setPengurus] = useState([]);
@@ -61,6 +65,7 @@ function Admin(props) {
       setDataGaleri(snap.docs.map(d => ({id: d.id, ...d.data()})).reverse());
     } catch (error) { console.error(error); }
   };
+  
   const ambilDataDownload = async () => {
     try {
       const snap = await getDocs(collection(db, "download"));
@@ -85,11 +90,63 @@ function Admin(props) {
     try {
       const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: formData });
       const data = await res.json();
-      return data.data.url;
+      return data.data.url; // Ini akan menghasilkan URL online foto Anda
     } catch (err) {
       alert("Gagal mengunggah foto. Pastikan koneksi internet stabil.");
       return null;
     }
+  };
+
+  // === FUNGSI BARU: SIMPAN BERITA DENGAN IMGBB ===
+  const simpanBeritaDenganImgBB = async (e) => {
+    e.preventDefault();
+    if (!judulBaru || !isiBaru) return alert("Judul dan Isi wajib diisi!");
+    setProsesSimpanBeritaLokal(true);
+
+    try {
+      let urlFinal = urlGambarLama || '';
+
+      // 1. Upload ke ImgBB dulu (jika ada file yang dipilih)
+      if (fileGambar) {
+        const urlBaru = await uploadFotoImgBB(fileGambar);
+        if (urlBaru) {
+            urlFinal = urlBaru;
+        } else {
+            setProsesSimpanBeritaLokal(false); 
+            return; 
+        }
+      }
+
+      // 2. Simpan URL foto tersebut ke Firebase
+      if (idEdit) {
+        await updateDoc(doc(db, "berita", idEdit), {
+          judul: judulBaru,
+          kategori: kategoriBaru,
+          isi: isiBaru,
+          gambar: urlFinal,
+          tanggal: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+        });
+        alert("Berita diperbarui!");
+      } else {
+        await addDoc(collection(db, "berita"), {
+          judul: judulBaru,
+          kategori: kategoriBaru,
+          isi: isiBaru,
+          gambar: urlFinal,
+          tanggal: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+        });
+        alert("Berita baru ditambahkan!");
+      }
+
+      // 3. Reset form
+      batalEdit(); 
+      // 4. Reload paksa agar data terbaru muncul di tampilan Dashboard (App.jsx)
+      window.location.reload();
+
+    } catch (error) { 
+        alert("Gagal menyimpan berita!"); 
+    }
+    setProsesSimpanBeritaLokal(false);
   };
 
   // === CRUD PENGURUS ===
@@ -164,7 +221,7 @@ function Admin(props) {
       await deleteDoc(doc(db, "galeri", id));
       ambilDataGaleri();
     }
-  }; // <--- INI KURUNG KURAWAL YANG SEBELUMNYA HILANG
+  }; 
 
   // === CRUD DOWNLOAD ===
   const simpanDownload = async (e) => {
@@ -236,7 +293,8 @@ function Admin(props) {
                 <h3 className={`text-2xl font-extrabold mb-6 pb-4 border-b border-gray-100 ${idEdit ? 'text-amber-600' : 'text-blue-800'}`}>
                   {idEdit ? '✏️ Edit Berita/Pengumuman' : '📝 Tulis Berita Baru'}
                 </h3>
-                <form onSubmit={simpanAtauUpdateBerita} className="space-y-6">
+                {/* PERHATIAN: Di bawah ini kita menggunakan simpanBeritaDenganImgBB */}
+                <form onSubmit={simpanBeritaDenganImgBB} className="space-y-6">
                   <div>
                     <label className="block text-gray-700 font-bold mb-2">Judul</label>
                     <input type="text" value={judulBaru} onChange={(e) => setJudulBaru(e.target.value)} className="w-full px-4 py-3 border rounded bg-gray-50 focus:ring-2 focus:ring-blue-600 outline-none" required />
@@ -261,8 +319,8 @@ function Admin(props) {
                     <textarea value={isiBaru} onChange={(e) => setIsiBaru(e.target.value)} rows="5" className="w-full px-4 py-3 border rounded bg-gray-50 focus:ring-2 focus:ring-blue-600 outline-none" required></textarea>
                   </div>
                   <div className="flex gap-4">
-                    <button type="submit" disabled={prosesSimpan} className="flex-1 bg-blue-700 hover:bg-blue-800 transition text-white font-bold py-3 rounded disabled:opacity-50 shadow-md">
-                      {prosesSimpan ? 'Memproses...' : 'Simpan Berita'}
+                    <button type="submit" disabled={prosesSimpanBeritaLokal} className="flex-1 bg-blue-700 hover:bg-blue-800 transition text-white font-bold py-3 rounded disabled:opacity-50 shadow-md">
+                      {prosesSimpanBeritaLokal ? 'Memproses dan Mengunggah Foto...' : 'Simpan Berita'}
                     </button>
                     {idEdit && <button type="button" onClick={batalEdit} className="w-1/3 bg-gray-400 hover:bg-gray-500 transition text-white font-bold py-3 rounded">Batal</button>}
                   </div>
