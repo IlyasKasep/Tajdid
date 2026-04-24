@@ -1,117 +1,117 @@
-import { Link } from 'react-router-dom';
+import React from 'react';
 
-function Home({ berita }) {
+function Home({ berita = [], pengurus = [], galeri = [], bukutamu = [] }) {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="bg-sky-50 min-h-screen font-sans overflow-x-hidden">
       
-      {/* 1. HERO SECTION */}
-      <section className="relative h-[600px] flex items-center overflow-hidden">
-        {/* Background Image with Green Overlay */}
-        <div className="absolute inset-0 z-0">
-          <img 
-            src="public/Logo_Persis.png" 
-            className="w-full h-full object-cover"
-            alt="School Building"
-          />
-          <div className="absolute inset-0 bg-emerald-900/80"></div>
-        </div>
+      {/* ================= HERO SECTION (SELAMAT DATANG) ================= */}
+      <section className="relative pt-20 pb-32 bg-gradient-to-b from-sky-300 to-sky-50 px-4">
+        {/* Dekorasi Awan (Menggunakan emoji atau SVG sederhana) */}
+        <div className="absolute top-10 left-10 text-6xl animate-bounce">☁️</div>
+        <div className="absolute top-20 right-20 text-6xl animate-pulse">☀️</div>
+        <div className="absolute bottom-10 right-10 text-6xl">🎈</div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 w-full">
-          <div className="max-w-2xl text-white">
-            <h5 className="text-emerald-300 font-bold tracking-[0.3em] uppercase mb-4 text-sm animate-pulse">Welcome to At-Tajdied</h5>
-            <h1 className="text-5xl md:text-7xl font-black mb-6 leading-tight">
-              Membangun <br /> <span className="text-emerald-300">Generasi Qur'ani</span>
-            </h1>
-            <p className="text-lg opacity-90 mb-8 font-light leading-relaxed border-l-4 border-emerald-400 pl-4">
-              Mewujudkan pendidikan Islam yang unggul, beradab, dan modern untuk masa depan buah hati Anda yang lebih gemilang.
-            </p>
-            <div className="flex gap-4">
-              <button className="bg-white text-emerald-800 px-8 py-4 rounded-md font-bold hover:bg-emerald-50 transition shadow-xl">LIHAT PROGRAM</button>
-              <button className="border-2 border-white text-white px-8 py-4 rounded-md font-bold hover:bg-white hover:text-emerald-800 transition">HUBUNGI KAMI</button>
-            </div>
-          </div>
+        <div className="max-w-5xl mx-auto text-center relative z-10">
+          <h1 className="text-5xl md:text-7xl font-black text-white drop-shadow-[0_6px_0_rgba(2,132,199,1)] mb-6 tracking-wide">
+            Selamat Datang di <br className="hidden md:block"/> <span className="text-amber-300">TK Ceria Kita!</span> 🌟
+          </h1>
+          <p className="text-xl md:text-2xl text-sky-800 font-bold max-w-2xl mx-auto mb-10 bg-white/50 backdrop-blur-sm p-4 rounded-3xl border-4 border-white border-dashed">
+            Tempat bermain, belajar, dan tumbuh bersama dengan penuh kegembiraan! 🎨🧸🚌
+          </p>
+          <a href="#kegiatan" className="inline-block bg-rose-400 text-white font-extrabold text-2xl px-10 py-5 rounded-full hover:bg-rose-500 hover:-translate-y-2 transform transition-all duration-300 shadow-[0_8px_0_rgb(225,29,72,1)] active:translate-y-2 active:shadow-none">
+            Yuk, Jalan-jalan! 🚀
+          </a>
         </div>
       </section>
 
-      {/* 2. THREE FEATURE CARDS (Overlaying) */}
-      <section className="relative z-20 -mt-20 max-w-7xl mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-0 shadow-2xl rounded-xl overflow-hidden">
+      <div className="max-w-6xl mx-auto px-4 space-y-32 pb-20 -mt-10 relative z-20">
+
+        {/* ================= SECTION BERITA & KEGIATAN ================= */}
+        <section id="kegiatan" className="relative">
+          <div className="text-center mb-12">
+             <h2 className="text-4xl font-black text-indigo-500 mb-4 inline-block bg-indigo-100 px-8 py-3 rounded-[3rem] border-4 border-indigo-300 shadow-sm">
+                🎪 Papan Cerita & Kegiatan
+             </h2>
+          </div>
           
-          {/* Card 1: Tahfidz */}
-          <Link to="/tahfidz" className="bg-emerald-600 p-10 text-white flex flex-col items-center text-center group hover:bg-emerald-500 transition cursor-pointer">
-            <div className="text-5xl mb-4 group-hover:scale-110 transition">📖</div>
-            <h3 className="text-xl font-bold mb-3 uppercase tracking-wider">Tahfidz Al-Qur'an</h3>
-            <p className="text-sm opacity-90 leading-relaxed mb-4">Program unggulan menghafal Al-Qur'an dengan metode yang menyenangkan bagi siswa.</p>
-            <span className="text-xs font-black border-b-2 border-emerald-300 pb-1 group-hover:text-emerald-200">BACA LEBIH LANJUT →</span>
-          </Link>
-
-          {/* Card 2: Sains */}
-          <Link to="/sains" className="bg-emerald-700 p-10 text-white flex flex-col items-center text-center group hover:bg-emerald-600 transition cursor-pointer border-x border-white/10">
-            <div className="text-5xl mb-4 group-hover:scale-110 transition">🧪</div>
-            <h3 className="text-xl font-bold mb-3 uppercase tracking-wider">Sains & Akademik</h3>
-            <p className="text-sm opacity-90 leading-relaxed mb-4">Membiasakan nalar kritis siswa melalui kurikulum yang terintegrasi nilai Islam.</p>
-            <span className="text-xs font-black border-b-2 border-emerald-300 pb-1 group-hover:text-emerald-200">BACA LEBIH LANJUT →</span>
-          </Link>
-
-          {/* Card 3: Ekskul */}
-          <Link to="/ekskul" className="bg-emerald-800 p-10 text-white flex flex-col items-center text-center group hover:bg-emerald-700 transition cursor-pointer">
-            <div className="text-5xl mb-4 group-hover:scale-110 transition">🥋</div>
-            <h3 className="text-xl font-bold mb-3 uppercase tracking-wider">Ekstrakurikuler</h3>
-            <p className="text-sm opacity-90 leading-relaxed mb-4">Beragam kegiatan minat bakat mulai dari olahraga, seni, hingga kepanduan.</p>
-            <span className="text-xs font-black border-b-2 border-emerald-300 pb-1 group-hover:text-emerald-200">BACA LEBIH LANJUT →</span>
-          </Link>
-
-        </div>
-      </section>
-
-      {/* 3. LATEST NEWS SECTION */}
-      <section className="py-24 max-w-7xl mx-auto px-4">
-        <div className="flex justify-between items-end mb-12">
-          <div>
-            <h2 className="text-4xl font-black text-gray-800">Berita Terkini</h2>
-            <div className="w-20 h-2 bg-emerald-600 mt-2"></div>
-          </div>
-          <button className="text-emerald-700 font-bold hover:underline text-sm uppercase tracking-widest">Lihat Semua Berita</button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-          {berita.slice(0, 3).map((item) => (
-            <div key={item.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden group hover:shadow-2xl transition duration-500 flex flex-col">
-              <div className="h-56 overflow-hidden relative bg-gray-100">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {berita.map((item, index) => (
+              <div key={item.id || index} className="bg-white rounded-[3rem] p-6 border-4 border-indigo-200 shadow-[0_8px_0_rgb(199,210,254,1)] hover:-translate-y-2 transition-all group">
                 {item.gambar ? (
-                  <img src={item.gambar} alt={item.judul} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+                  <img src={item.gambar} alt={item.judul} className="w-full h-48 object-cover rounded-3xl border-4 border-indigo-50 mb-4 group-hover:scale-105 transition-transform" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-4xl">📰</div>
+                  <div className="w-full h-48 bg-indigo-50 rounded-3xl border-4 border-indigo-100 mb-4 flex items-center justify-center text-5xl">🎨</div>
                 )}
-                <div className="absolute top-4 left-4 bg-emerald-600 text-white text-[10px] font-black px-3 py-1 rounded uppercase shadow">
+                <span className="inline-block bg-amber-300 text-amber-900 text-sm font-extrabold px-4 py-1.5 rounded-full mb-3 uppercase">
                   {item.kategori}
+                </span>
+                <h3 className="text-2xl font-black text-slate-700 mb-2 leading-tight">{item.judul}</h3>
+                <p className="text-slate-500 font-medium line-clamp-3 mb-4">{item.isi}</p>
+                <div className="text-indigo-400 font-bold text-sm flex items-center gap-2">
+                  🗓️ {item.tanggal}
                 </div>
               </div>
-              <div className="p-8 flex-1 flex flex-col">
-                <p className="text-emerald-600 text-xs font-bold mb-3 uppercase tracking-widest">{item.tanggal || 'Baru Saja'}</p>
-                <h3 className="text-xl font-bold text-gray-800 mb-4 leading-snug group-hover:text-emerald-700 transition line-clamp-2">{item.judul}</h3>
-                <p className="text-gray-500 text-sm mb-6 line-clamp-3 leading-relaxed flex-1">{item.isi}</p>
-                <button className="mt-auto w-fit bg-emerald-50 text-emerald-800 border border-emerald-100 px-6 py-2 rounded font-bold text-xs group-hover:bg-emerald-700 group-hover:text-white transition">BACA SELENGKAPNYA</button>
+            ))}
+          </div>
+        </section>
+
+        {/* ================= SECTION PENGURUS (GURU) ================= */}
+        <section className="bg-amber-100 rounded-[4rem] p-10 md:p-16 border-8 border-amber-300 relative">
+          <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 text-7xl">👩‍🏫</div>
+          <div className="text-center mb-12 mt-4">
+             <h2 className="text-4xl font-black text-amber-700">Kenalan dengan Bunda Guru! 💖</h2>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {pengurus.map((item, index) => (
+              <div key={item.id || index} className="bg-white rounded-[3rem] p-6 border-4 border-amber-200 text-center shadow-lg hover:shadow-xl hover:-translate-y-2 transition-all">
+                <div className="w-32 h-32 mx-auto bg-amber-50 rounded-full border-8 border-amber-100 mb-4 overflow-hidden shadow-inner">
+                  {item.foto ? (
+                    <img src={item.foto} alt={item.nama} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-6xl flex items-center justify-center h-full">👤</span>
+                  )}
+                </div>
+                <h3 className="text-xl font-black text-slate-700">{item.nama}</h3>
+                <p className="inline-block bg-pink-100 text-pink-600 font-bold px-4 py-1 rounded-full text-sm mt-2">
+                  {item.jabatan}
+                </p>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+        </section>
 
-          {berita.length === 0 && (
-            <div className="col-span-3 text-center py-16 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-              <p className="text-gray-500 italic">Belum ada pengumuman hari ini.</p>
-            </div>
-          )}
-        </div>
-      </section>
+        {/* ================= SECTION GALERI ================= */}
+        <section>
+          <div className="text-center mb-12">
+             <h2 className="text-4xl font-black text-pink-500 mb-4 inline-block bg-pink-100 px-8 py-3 rounded-[3rem] border-4 border-pink-300 shadow-sm">
+                📸 Karya & Senyum Ceria
+             </h2>
+          </div>
 
-      {/* 4. CTA SECTION */}
-      <section className="bg-emerald-50 py-16 border-y border-emerald-100">
-        <div className="max-w-4xl mx-auto text-center px-4">
-          <h2 className="text-3xl font-black text-emerald-900 mb-4">Siap Bergabung Bersama At-Tajdied?</h2>
-          <p className="text-emerald-700 mb-8 font-medium">Pendaftaran Tahun Ajaran Baru telah dibuka. Dapatkan informasi selengkapnya sekarang.</p>
-          <button className="bg-emerald-700 text-white px-10 py-4 rounded-full font-black shadow-lg hover:bg-emerald-800 transition uppercase tracking-widest">Informasi Pendaftaran</button>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 px-2">
+            {galeri.map((item, index) => (
+              <div key={item.id || index} className={`bg-white p-3 rounded-2xl border-4 border-pink-200 shadow-md transition-all hover:scale-110 hover:z-10 ${index % 2 === 0 ? 'rotate-2' : '-rotate-2'}`}>
+                <img src={item.urlFoto} alt={item.judul} className="w-full h-40 md:h-48 object-cover rounded-xl border-2 border-pink-50 mb-3" />
+                <h4 className="font-extrabold text-slate-700 text-center text-sm mb-2">{item.judul}</h4>
+              </div>
+            ))}
+          </div>
+        </section>
+
+      </div>
+
+      {/* ================= FOOTER LUCU ================= */}
+      <footer className="bg-sky-400 pt-16 pb-8 border-t-8 border-sky-300 mt-20 text-center relative overflow-hidden">
+        <div className="absolute -top-6 left-20 text-5xl">🏰</div>
+        <div className="absolute -top-6 right-20 text-5xl">🌈</div>
+        
+        <h2 className="text-3xl font-black text-white mb-6">TK Ceria Kita</h2>
+        <p className="text-sky-100 font-bold text-lg mb-8">Belajar seru, bermain asyik setiap hari!</p>
+        <div className="bg-sky-500/50 inline-block px-8 py-3 rounded-full text-white font-bold">
+          © {new Date().getFullYear()} Dibuat dengan ❤️ untuk Anak-Anak
         </div>
-      </section>
+      </footer>
 
     </div>
   );

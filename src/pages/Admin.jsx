@@ -14,7 +14,7 @@ function Admin(props) {
 
   // === STATE BERITA ===
   const [keteranganBaru, setKeteranganBaru] = useState('');
-  const [linkBerita, setLinkBerita] = useState(''); // State khusus link berita
+  const [linkBerita, setLinkBerita] = useState('');
 
   // Sinkronisasi link saat tombol Edit Berita diklik
   useEffect(() => {
@@ -48,6 +48,7 @@ function Admin(props) {
   const [judulG, setJudulG] = useState('');
   const [ketG, setKetG] = useState('');
   const [linkG, setLinkG] = useState('');
+  const [idEditG, setIdEditG] = useState(null); // TAMBAHAN: State untuk Edit Galeri
 
   // === STATE BUKU TAMU ===
   const [dataBukuTamu, setDataBukuTamu] = useState([]);
@@ -75,7 +76,7 @@ function Admin(props) {
   useEffect(() => { if (user) ambilSemuaData(); }, [user]);
 
 
-  // ==================== FUNGSI CRUD (MENGGUNAKAN LINK) ====================
+  // ==================== FUNGSI CRUD ====================
 
   // 1. BERITA
   const simpanBerita = async (e) => {
@@ -151,19 +152,41 @@ function Admin(props) {
   };
   const hapusPolling = async (id) => { if (window.confirm("Hapus polling?")) { await deleteDoc(doc(db, "polling", id)); ambilSemuaData(); } };
 
-  // 5. GALERI
+  // 5. GALERI (SUDAH DITAMBAHKAN EDIT)
   const simpanGaleri = async (e) => {
     e.preventDefault();
     if (!linkG) return alert("Masukkan Link Foto terlebih dahulu!");
     setProsesLoading(true);
     try {
-      await addDoc(collection(db, "galeri"), { judul: judulG, keterangan: ketG, urlFoto: linkG });
-      alert("Foto berhasil ditambahkan ke Galeri!");
-      setJudulG(''); setKetG(''); setLinkG('');
+      const dataObj = { judul: judulG, keterangan: ketG, urlFoto: linkG };
+      if (idEditG) {
+        await updateDoc(doc(db, "galeri", idEditG), dataObj);
+        alert("Foto berhasil diperbarui!");
+      } else {
+        await addDoc(collection(db, "galeri"), dataObj);
+        alert("Foto berhasil ditambahkan ke Galeri!");
+      }
+      batalEditGaleri();
       ambilSemuaData();
     } catch (error) { alert("Gagal menyimpan foto."); }
     setProsesLoading(false);
   };
+  
+  const mulaiEditGaleri = (item) => {
+    setIdEditG(item.id);
+    setJudulG(item.judul || '');
+    setKetG(item.keterangan || '');
+    setLinkG(item.urlFoto || '');
+    window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll ke atas saat klik edit
+  };
+
+  const batalEditGaleri = () => {
+    setIdEditG(null);
+    setJudulG('');
+    setKetG('');
+    setLinkG('');
+  };
+
   const hapusGaleri = async (id) => { if (window.confirm("Hapus foto?")) { await deleteDoc(doc(db, "galeri", id)); ambilSemuaData(); } };
 
   // 6. BUKU TAMU
@@ -224,7 +247,7 @@ function Admin(props) {
                   </div>
                   <div className="flex gap-4">
                     <button type="submit" disabled={prosesLoading} className="flex-1 bg-blue-700 text-white font-bold py-3 rounded">{prosesLoading ? 'Menyimpan...' : 'Simpan Data'}</button>
-                    {idEditP && <button type="button" onClick={batalEditPengurus} className="bg-gray-400 text-white px-6 rounded">Batal</button>}
+                    {idEditP && <button type="button" onClick={batalEditPengurus} className="bg-gray-400 text-white px-6 rounded font-bold">Batal</button>}
                   </div>
                 </form>
               </div>
@@ -239,8 +262,8 @@ function Admin(props) {
                         <p className="text-sm text-blue-600">{item.jabatan}</p>
                         <p className="text-xs text-gray-500">{item.keterangan}</p>
                         <div className="flex gap-2 mt-2">
-                          <button onClick={()=>{setIdEditP(item.id); setNamaP(item.nama); setJabatanP(item.jabatan); setKetP(item.keterangan || ''); setLinkP(item.foto || '')}} className="text-xs px-3 py-1 bg-amber-500 text-white rounded">Edit</button>
-                          <button onClick={()=>hapusPengurus(item.id)} className="text-xs px-3 py-1 bg-red-500 text-white rounded">Hapus</button>
+                          <button onClick={()=>{setIdEditP(item.id); setNamaP(item.nama); setJabatanP(item.jabatan); setKetP(item.keterangan || ''); setLinkP(item.foto || '')}} className="text-xs px-3 py-1 bg-amber-500 text-white rounded font-bold">Edit</button>
+                          <button onClick={()=>hapusPengurus(item.id)} className="text-xs px-3 py-1 bg-red-500 text-white rounded font-bold">Hapus</button>
                         </div>
                       </div>
                     </div>
@@ -280,7 +303,7 @@ function Admin(props) {
           {activeTab === 'berita' && (
             <div className="space-y-8">
               <div className="bg-white p-8 rounded-xl shadow-md border-t-8 border-blue-700">
-                <h3 className="text-2xl font-extrabold text-blue-800 mb-6">📝 Tulis Berita / Artikel</h3>
+                <h3 className="text-2xl font-extrabold text-blue-800 mb-6">📝 {idEdit ? 'Edit' : 'Tulis'} Berita / Artikel</h3>
                 <form onSubmit={simpanBerita} className="space-y-4">
                   <input type="text" placeholder="Judul Berita" value={judulBaru} onChange={(e)=>setJudulBaru(e.target.value)} className="w-full px-4 py-3 border rounded bg-gray-50" required />
                   <div className="grid md:grid-cols-2 gap-4">
@@ -298,7 +321,7 @@ function Admin(props) {
                   <textarea placeholder="Isi Konten Berita" value={isiBaru} onChange={(e)=>setIsiBaru(e.target.value)} className="w-full px-4 py-3 border rounded h-32 bg-gray-50" required></textarea>
                   <div className="flex gap-4">
                     <button type="submit" disabled={prosesLoading} className="flex-1 bg-blue-700 text-white font-bold py-3 rounded">{prosesLoading ? 'Menyimpan...' : 'Simpan Berita'}</button>
-                    {idEdit && <button type="button" onClick={batalEdit} className="bg-gray-400 text-white px-6 rounded">Batal</button>}
+                    {idEdit && <button type="button" onClick={batalEdit} className="bg-gray-400 text-white px-6 rounded font-bold">Batal</button>}
                   </div>
                 </form>
               </div>
@@ -345,7 +368,7 @@ function Admin(props) {
           {activeTab === 'galeri' && (
             <div className="space-y-8">
               <div className="bg-white p-8 rounded-xl shadow-md border-t-8 border-blue-700">
-                <h3 className="text-2xl font-extrabold text-blue-800 mb-6">📸 Tambah Foto Galeri</h3>
+                <h3 className="text-2xl font-extrabold text-blue-800 mb-6">{idEditG ? '✏️ Edit Foto Galeri' : '📸 Tambah Foto Galeri'}</h3>
                 <form onSubmit={simpanGaleri} className="space-y-4">
                   <input type="text" placeholder="Judul Foto" value={judulG} onChange={(e)=>setJudulG(e.target.value)} className="w-full px-4 py-3 border rounded bg-gray-50" required />
                   <input type="text" placeholder="Keterangan Tambahan" value={ketG} onChange={(e)=>setKetG(e.target.value)} className="w-full px-4 py-3 border rounded bg-gray-50" />
@@ -353,16 +376,26 @@ function Admin(props) {
                     <label className="block text-gray-700 font-bold mb-2">Tautan (Link) Foto Direct (Berakhiran .jpg/.png)</label>
                     <input type="text" placeholder="Paste link foto dari ImgBB di sini..." value={linkG} onChange={(e)=>setLinkG(e.target.value)} className="w-full px-4 py-3 border rounded bg-blue-50 border-blue-200 outline-none" required />
                   </div>
-                  <button type="submit" disabled={prosesLoading} className="w-full bg-blue-700 text-white font-bold py-3 rounded">{prosesLoading ? 'Menyimpan...' : 'Simpan ke Galeri'}</button>
+                  <div className="flex gap-4">
+                    <button type="submit" disabled={prosesLoading} className="flex-1 bg-blue-700 text-white font-bold py-3 rounded">
+                      {prosesLoading ? 'Menyimpan...' : (idEditG ? 'Simpan Perubahan' : 'Simpan ke Galeri')}
+                    </button>
+                    {idEditG && <button type="button" onClick={batalEditGaleri} className="bg-gray-400 text-white px-6 rounded font-bold">Batal</button>}
+                  </div>
                 </form>
               </div>
               <div className="bg-white p-8 rounded-xl shadow-md">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {dataGaleri.map(item => (
-                    <div key={item.id} className="border p-2 rounded-lg bg-gray-50">
+                    <div key={item.id} className="border p-2 rounded-lg bg-gray-50 flex flex-col h-full">
                       <img src={item.urlFoto} className="h-32 w-full object-cover rounded mb-2" alt={item.judul} />
-                      <p className="text-sm font-bold text-center truncate">{item.judul}</p>
-                      <button onClick={()=>hapusGaleri(item.id)} className="w-full mt-2 py-1 bg-red-600 text-white text-xs font-bold rounded">Hapus</button>
+                      <p className="text-sm font-bold text-center truncate px-1 flex-1">{item.judul}</p>
+                      
+                      {/* Tombol Edit dan Hapus dibuat bersebelahan */}
+                      <div className="flex gap-2 mt-2 w-full">
+                        <button onClick={()=>mulaiEditGaleri(item)} className="w-1/2 py-1 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded transition">Edit</button>
+                        <button onClick={()=>hapusGaleri(item.id)} className="w-1/2 py-1 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded transition">Hapus</button>
+                      </div>
                     </div>
                   ))}
                 </div>
