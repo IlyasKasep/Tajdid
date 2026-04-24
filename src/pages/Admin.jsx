@@ -48,7 +48,7 @@ function Admin(props) {
   const [judulG, setJudulG] = useState('');
   const [ketG, setKetG] = useState('');
   const [linkG, setLinkG] = useState('');
-  const [idEditG, setIdEditG] = useState(null); // TAMBAHAN: State untuk Edit Galeri
+  const [idEditG, setIdEditG] = useState(null);
 
   // === STATE BUKU TAMU ===
   const [dataBukuTamu, setDataBukuTamu] = useState([]);
@@ -74,6 +74,39 @@ function Admin(props) {
   };
 
   useEffect(() => { if (user) ambilSemuaData(); }, [user]);
+
+
+  // ==================== FUNGSI FORMATTING TEXT (BOLD, ITALIC, UNDERLINE) ====================
+  const applyFormat = (elementId, tag, stateValue, stateSetter) => {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    const textBefore = stateValue.substring(0, start);
+    const selectedText = stateValue.substring(start, end);
+    const textAfter = stateValue.substring(end);
+
+    const newText = `${textBefore}<${tag}>${selectedText}</${tag}>${textAfter}`;
+    stateSetter(newText);
+
+    setTimeout(() => {
+      el.focus();
+      if (start === end) {
+        el.setSelectionRange(start + tag.length + 2, start + tag.length + 2);
+      } else {
+        el.setSelectionRange(start, end + (tag.length * 2) + 5);
+      }
+    }, 0);
+  };
+
+  // Komponen Toolbar Format Kecil
+  const FormatToolbar = ({ elementId, stateValue, stateSetter }) => (
+    <div className="flex gap-1 mb-2 bg-slate-50 p-1 rounded-md border border-slate-200 w-fit shadow-sm">
+      <button type="button" onClick={() => applyFormat(elementId, 'b', stateValue, stateSetter)} className="w-8 h-8 flex items-center justify-center bg-white border border-slate-200 rounded hover:bg-slate-100 font-bold text-slate-700 transition" title="Bold (Tebal)">B</button>
+      <button type="button" onClick={() => applyFormat(elementId, 'i', stateValue, stateSetter)} className="w-8 h-8 flex items-center justify-center bg-white border border-slate-200 rounded hover:bg-slate-100 italic font-serif text-slate-700 transition" title="Italic (Miring)">I</button>
+      <button type="button" onClick={() => applyFormat(elementId, 'u', stateValue, stateSetter)} className="w-8 h-8 flex items-center justify-center bg-white border border-slate-200 rounded hover:bg-slate-100 underline text-slate-700 transition" title="Underline (Garis Bawah)">U</button>
+    </div>
+  );
 
 
   // ==================== FUNGSI CRUD ====================
@@ -152,7 +185,7 @@ function Admin(props) {
   };
   const hapusPolling = async (id) => { if (window.confirm("Hapus polling?")) { await deleteDoc(doc(db, "polling", id)); ambilSemuaData(); } };
 
-  // 5. GALERI (SUDAH DITAMBAHKAN EDIT)
+  // 5. GALERI
   const simpanGaleri = async (e) => {
     e.preventDefault();
     if (!linkG) return alert("Masukkan Link Foto terlebih dahulu!");
@@ -177,250 +210,288 @@ function Admin(props) {
     setJudulG(item.judul || '');
     setKetG(item.keterangan || '');
     setLinkG(item.urlFoto || '');
-    window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll ke atas saat klik edit
+    window.scrollTo({ top: 0, behavior: 'smooth' }); 
   };
 
-  const batalEditGaleri = () => {
-    setIdEditG(null);
-    setJudulG('');
-    setKetG('');
-    setLinkG('');
-  };
-
+  const batalEditGaleri = () => { setIdEditG(null); setJudulG(''); setKetG(''); setLinkG(''); };
   const hapusGaleri = async (id) => { if (window.confirm("Hapus foto?")) { await deleteDoc(doc(db, "galeri", id)); ambilSemuaData(); } };
 
   // 6. BUKU TAMU
   const hapusBukuTamu = async (id) => { if (window.confirm("Hapus pesan?")) { await deleteDoc(doc(db, "bukutamu", id)); ambilSemuaData(); } };
 
 
-  // ==================== TAMPILAN ANTARMUKA ====================
+  // ==================== TAMPILAN ANTARMUKA ELEGANT ====================
   return (
-    <section className="py-12 max-w-6xl mx-auto px-4 min-h-screen">
+    <section className="bg-slate-50 min-h-screen font-sans text-slate-800">
       {!user ? (
-        // FORM LOGIN
-        <div className="bg-white p-8 rounded-xl shadow-2xl border-t-8 border-blue-800 max-w-md mx-auto mt-10">
-          <div className="text-center mb-8">
-            <h3 className="text-3xl font-extrabold text-blue-900 tracking-tight">Admin Portal</h3>
-            <p className="text-blue-600 font-medium mt-2">Silakan login untuk mengelola sistem</p>
+        // FORM LOGIN ELEGANT
+        <div className="flex items-center justify-center min-h-screen px-4">
+          <div className="bg-white p-10 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 max-w-md w-full">
+            <div className="text-center mb-10">
+              <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4">🔐</div>
+              <h3 className="text-2xl font-black text-slate-800 tracking-tight">Admin Workspace</h3>
+              <p className="text-slate-500 text-sm mt-2">Masuk untuk mengelola sistem portal</p>
+            </div>
+            {errorLogin && <p className="text-red-600 text-sm mb-6 text-center bg-red-50 p-3 rounded-lg font-medium border border-red-100">{errorLogin}</p>}
+            <form onSubmit={tanganiLogin} className="space-y-5">
+              <div>
+                <label className="block text-slate-700 text-sm font-bold mb-2">Email</label>
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition bg-slate-50 focus:bg-white" placeholder="admin@sekolah.com" required />
+              </div>
+              <div>
+                <label className="block text-slate-700 text-sm font-bold mb-2">Password</label>
+                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition bg-slate-50 focus:bg-white" placeholder="••••••••" required />
+              </div>
+              <button type="submit" className="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl hover:bg-emerald-700 transition shadow-md shadow-emerald-200 mt-4">Login ke Dashboard</button>
+            </form>
           </div>
-          {errorLogin && <p className="text-red-500 text-sm mb-4 text-center bg-red-50 p-3 rounded font-semibold border border-red-200">{errorLogin}</p>}
-          <form onSubmit={tanganiLogin} className="space-y-6">
-            <div>
-              <label className="block text-gray-700 text-sm font-bold mb-2">Email Akses</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-3 border border-gray-300 rounded focus:ring-2 focus:ring-blue-600 outline-none bg-gray-50 transition" required />
-            </div>
-            <div>
-              <label className="block text-gray-700 text-sm font-bold mb-2">Kata Sandi</label>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-3 border border-gray-300 rounded focus:ring-2 focus:ring-blue-600 outline-none bg-gray-50 transition" required />
-            </div>
-            <button type="submit" className="w-full bg-blue-800 text-white font-bold py-3.5 rounded hover:bg-blue-900 transition duration-300 shadow-lg">Masuk ke Dasbor</button>
-          </form>
         </div>
       ) : (
-        // DASBOR UTAMA ADMIN
-        <div>
-          {/* TABS MENU */}
-          <div className="flex flex-wrap gap-2 mb-10 border-b-2 border-gray-200 pb-4">
-            <button onClick={() => setActiveTab('pengurus')} className={`px-4 py-2 font-bold rounded-md transition duration-300 ${activeTab === 'pengurus' ? 'bg-blue-800 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-300 hover:bg-blue-50'}`}>👥 Pengurus</button>
-            <button onClick={() => setActiveTab('download')} className={`px-4 py-2 font-bold rounded-md transition duration-300 ${activeTab === 'download' ? 'bg-blue-800 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-300 hover:bg-blue-50'}`}>📁 Download</button>
-            <button onClick={() => setActiveTab('berita')} className={`px-4 py-2 font-bold rounded-md transition duration-300 ${activeTab === 'berita' ? 'bg-blue-800 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-300 hover:bg-blue-50'}`}>📰 Berita</button>
-            <button onClick={() => setActiveTab('polling')} className={`px-4 py-2 font-bold rounded-md transition duration-300 ${activeTab === 'polling' ? 'bg-blue-800 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-300 hover:bg-blue-50'}`}>📊 Polling</button>
-            <button onClick={() => setActiveTab('galeri')} className={`px-4 py-2 font-bold rounded-md transition duration-300 ${activeTab === 'galeri' ? 'bg-blue-800 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-300 hover:bg-blue-50'}`}>📸 Galeri</button>
-            <button onClick={() => setActiveTab('bukutamu')} className={`px-4 py-2 font-bold rounded-md transition duration-300 ${activeTab === 'bukutamu' ? 'bg-blue-800 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-300 hover:bg-blue-50'}`}>📖 Buku Tamu</button>
-            <button onClick={tanganiLogout} className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-md shadow-md ml-auto">🚪 Keluar</button>
+        // DASBOR UTAMA ADMIN ELEGANT
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          
+          {/* HEADER DASHBOARD */}
+          <div className="flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-8 gap-4">
+            <div>
+              <h2 className="text-2xl font-black text-slate-800">Administrator Panel</h2>
+              <p className="text-slate-500 text-sm">Selamat datang, kelola konten website dengan mudah.</p>
+            </div>
+            <button onClick={tanganiLogout} className="px-6 py-2.5 bg-slate-100 hover:bg-red-50 text-slate-700 hover:text-red-600 font-bold text-sm rounded-lg transition border border-slate-200 hover:border-red-200 shadow-sm">
+              Keluar Sesi
+            </button>
           </div>
 
-          {/* === TAB 1: PENGURUS === */}
-          {activeTab === 'pengurus' && (
-            <div className="space-y-8">
-              <div className="bg-white p-8 rounded-xl shadow-md border-t-8 border-blue-700">
-                <h3 className="text-2xl font-extrabold text-blue-800 mb-6">👤 {idEditP ? 'Edit' : 'Tambah'} Biodata Pengurus</h3>
-                <form onSubmit={simpanPengurus} className="space-y-4">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <input type="text" placeholder="Nama Lengkap" value={namaP} onChange={(e)=>setNamaP(e.target.value)} className="w-full px-4 py-3 border rounded bg-gray-50 outline-none" required />
-                    <input type="text" placeholder="Jabatan" value={jabatanP} onChange={(e)=>setJabatanP(e.target.value)} className="w-full px-4 py-3 border rounded bg-gray-50 outline-none" required />
-                  </div>
-                  <input type="text" placeholder="Keterangan (Opsional)" value={ketP} onChange={(e)=>setKetP(e.target.value)} className="w-full px-4 py-3 border rounded bg-gray-50 outline-none" />
-                  <div>
-                    <label className="block font-bold text-gray-700 mb-2">Tautan (Link) Foto Pengurus</label>
-                    <input type="text" placeholder="Paste link foto berakhiran .jpg/.png di sini..." value={linkP} onChange={(e)=>setLinkP(e.target.value)} className="w-full px-4 py-3 border rounded bg-blue-50 text-blue-800 outline-none border-blue-200" required />
-                  </div>
-                  <div className="flex gap-4">
-                    <button type="submit" disabled={prosesLoading} className="flex-1 bg-blue-700 text-white font-bold py-3 rounded">{prosesLoading ? 'Menyimpan...' : 'Simpan Data'}</button>
-                    {idEditP && <button type="button" onClick={batalEditPengurus} className="bg-gray-400 text-white px-6 rounded font-bold">Batal</button>}
-                  </div>
-                </form>
-              </div>
-              <div className="bg-white p-8 rounded-xl shadow-md">
-                <h3 className="text-xl font-bold mb-4">Database Pengurus</h3>
-                <div className="grid md:grid-cols-2 gap-4">
-                  {pengurus.map(item => (
-                    <div key={item.id} className="border p-4 rounded-lg flex gap-4 items-center bg-gray-50">
-                      {item.foto ? <img src={item.foto} className="w-16 h-16 rounded-full object-cover" alt="foto" /> : <div className="w-16 h-16 bg-blue-100 rounded-full"></div>}
-                      <div className="flex-1">
-                        <h4 className="font-bold">{item.nama}</h4>
-                        <p className="text-sm text-blue-600">{item.jabatan}</p>
-                        <p className="text-xs text-gray-500">{item.keterangan}</p>
-                        <div className="flex gap-2 mt-2">
-                          <button onClick={()=>{setIdEditP(item.id); setNamaP(item.nama); setJabatanP(item.jabatan); setKetP(item.keterangan || ''); setLinkP(item.foto || '')}} className="text-xs px-3 py-1 bg-amber-500 text-white rounded font-bold">Edit</button>
-                          <button onClick={()=>hapusPengurus(item.id)} className="text-xs px-3 py-1 bg-red-500 text-white rounded font-bold">Hapus</button>
+          {/* TABS MENU ELEGANT */}
+          <div className="flex overflow-x-auto space-x-2 mb-8 bg-white p-2 rounded-xl shadow-sm border border-slate-200 hide-scrollbar">
+            {[
+              { id: 'pengurus', label: '👥 Data Pengurus' },
+              { id: 'download', label: '📁 File Download' },
+              { id: 'berita', label: '📰 Berita & Artikel' },
+              { id: 'polling', label: '📊 Polling' },
+              { id: 'galeri', label: '📸 Galeri Foto' },
+              { id: 'bukutamu', label: '📖 Buku Tamu' },
+            ].map(tab => (
+              <button 
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)} 
+                className={`px-5 py-2.5 text-sm font-bold rounded-lg transition whitespace-nowrap ${activeTab === tab.id ? 'bg-emerald-600 text-white shadow-md' : 'bg-transparent text-slate-600 hover:bg-slate-100'}`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* ==================================================== */}
+          {/* ================= KONTEN TAB ======================= */}
+          {/* ==================================================== */}
+          <div className="grid lg:grid-cols-12 gap-8">
+            
+            {/* --- KOLOM KIRI (FORM) --- */}
+            <div className="lg:col-span-5 space-y-6">
+              
+              {/* === TAB 1: PENGURUS (FORM) === */}
+              {activeTab === 'pengurus' && (
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                  <h3 className="text-lg font-black text-slate-800 mb-6 pb-4 border-b border-slate-100">{idEditP ? 'Edit Data Pengurus' : 'Tambah Pengurus Baru'}</h3>
+                  <form onSubmit={simpanPengurus} className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Nama Lengkap</label>
+                      <input type="text" value={namaP} onChange={(e)=>setNamaP(e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition" required />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Jabatan</label>
+                      <input type="text" value={jabatanP} onChange={(e)=>setJabatanP(e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition" required />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Keterangan (Mendukung Format Text)</label>
+                      <FormatToolbar elementId="ket-pengurus" stateValue={ketP} stateSetter={setKetP} />
+                      <textarea id="ket-pengurus" value={ketP} onChange={(e)=>setKetP(e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition h-24" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Link Foto (ImgBB .jpg/.png)</label>
+                      <input type="text" value={linkP} onChange={(e)=>setLinkP(e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition" required />
+                    </div>
+                    <div className="flex gap-3 pt-4">
+                      <button type="submit" disabled={prosesLoading} className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg transition">{prosesLoading ? 'Menyimpan...' : 'Simpan Data'}</button>
+                      {idEditP && <button type="button" onClick={batalEditPengurus} className="px-5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg transition">Batal</button>}
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {/* === TAB 3: BERITA (FORM) === */}
+              {activeTab === 'berita' && (
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                  <h3 className="text-lg font-black text-slate-800 mb-6 pb-4 border-b border-slate-100">{idEdit ? 'Edit Berita / Artikel' : 'Tulis Berita Baru'}</h3>
+                  <form onSubmit={simpanBerita} className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Judul Artikel</label>
+                      <input type="text" value={judulBaru} onChange={(e)=>setJudulBaru(e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition" required />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Kategori</label>
+                        <select value={kategoriBaru} onChange={(e)=>setKategoriBaru(e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition">
+                          <option value="Pengumuman">Pengumuman</option>
+                          <option value="Prestasi">Prestasi</option>
+                          <option value="Kegiatan">Kegiatan</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Link Gambar Cover</label>
+                        <input type="text" value={linkBerita} onChange={(e)=>setLinkBerita(e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition" required />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Ringkasan (Keterangan Pendek)</label>
+                      <FormatToolbar elementId="ket-berita" stateValue={keteranganBaru} stateSetter={setKeteranganBaru} />
+                      <textarea id="ket-berita" value={keteranganBaru} onChange={(e)=>setKeteranganBaru(e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition h-20" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Isi Konten Berita Lengkap</label>
+                      <FormatToolbar elementId="isi-berita" stateValue={isiBaru} stateSetter={setIsiBaru} />
+                      <textarea id="isi-berita" value={isiBaru} onChange={(e)=>setIsiBaru(e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition h-40" required></textarea>
+                    </div>
+                    <div className="flex gap-3 pt-4">
+                      <button type="submit" disabled={prosesLoading} className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg transition">{prosesLoading ? 'Menyimpan...' : 'Simpan Berita'}</button>
+                      {idEdit && <button type="button" onClick={batalEdit} className="px-5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg transition">Batal</button>}
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {/* === TAB GALERI (FORM) === */}
+              {activeTab === 'galeri' && (
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                  <h3 className="text-lg font-black text-slate-800 mb-6 pb-4 border-b border-slate-100">{idEditG ? 'Edit Foto Galeri' : 'Tambah Foto Galeri'}</h3>
+                  <form onSubmit={simpanGaleri} className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Judul Foto</label>
+                      <input type="text" value={judulG} onChange={(e)=>setJudulG(e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition" required />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Keterangan Tambahan</label>
+                      <FormatToolbar elementId="ket-galeri" stateValue={ketG} stateSetter={setKetG} />
+                      <textarea id="ket-galeri" value={ketG} onChange={(e)=>setKetG(e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition h-24" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Link Foto (ImgBB .jpg/.png)</label>
+                      <input type="text" value={linkG} onChange={(e)=>setLinkG(e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition" required />
+                    </div>
+                    <div className="flex gap-3 pt-4">
+                      <button type="submit" disabled={prosesLoading} className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg transition">{prosesLoading ? 'Menyimpan...' : 'Simpan Foto'}</button>
+                      {idEditG && <button type="button" onClick={batalEditGaleri} className="px-5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg transition">Batal</button>}
+                    </div>
+                  </form>
+                </div>
+              )}
+
+               {/* === TAB DOWNLOAD & POLLING & BUKU TAMU (FORM RINGKAS) === */}
+               {activeTab === 'download' && (
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                  <h3 className="text-lg font-black text-slate-800 mb-6 pb-4 border-b border-slate-100">Tambah File Download</h3>
+                  <form onSubmit={simpanDownload} className="space-y-4">
+                    <input type="text" placeholder="Nama Dokumen" value={namaFileD} onChange={(e)=>setNamaFileD(e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" required />
+                    <input type="text" placeholder="Link Google Drive / Tautan File" value={linkD} onChange={(e)=>setLinkD(e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" required />
+                    <textarea placeholder="Keterangan Singkat" value={ketD} onChange={(e)=>setKetD(e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none h-24" />
+                    <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg transition">Simpan Dokumen</button>
+                  </form>
+                </div>
+              )}
+
+              {activeTab === 'polling' && (
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                  <h3 className="text-lg font-black text-slate-800 mb-6 pb-4 border-b border-slate-100">Buat Polling Baru</h3>
+                  <form onSubmit={simpanPolling} className="space-y-4">
+                    <input type="text" placeholder="Pertanyaan Polling" value={pertanyaanPol} onChange={(e)=>setPertanyaanPol(e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" required />
+                    <input type="text" placeholder="Opsi Jawaban (Koma Pisah)" value={opsiPol} onChange={(e)=>setOpsiPol(e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" required />
+                    <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg transition">Terbitkan Polling</button>
+                  </form>
+                </div>
+              )}
+
+            </div>
+
+            {/* --- KOLOM KANAN (DATA VIEW) --- */}
+            <div className="lg:col-span-7">
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 min-h-full">
+                <h3 className="text-lg font-black text-slate-800 mb-6 pb-4 border-b border-slate-100 flex items-center justify-between">
+                  <span>Database Tersimpan</span>
+                  <span className="text-xs bg-slate-100 text-slate-500 px-3 py-1 rounded-full font-bold">Kategori: {activeTab.toUpperCase()}</span>
+                </h3>
+
+                {/* LIST PENGURUS */}
+                {activeTab === 'pengurus' && (
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {pengurus.map(item => (
+                      <div key={item.id} className="border border-slate-100 p-4 rounded-xl flex gap-4 items-center hover:shadow-md transition bg-slate-50/50">
+                        {item.foto ? <img src={item.foto} className="w-14 h-14 rounded-full object-cover shadow-sm border-2 border-white" alt="foto" /> : <div className="w-14 h-14 bg-slate-200 rounded-full"></div>}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-bold text-slate-800 truncate">{item.nama}</h4>
+                          <p className="text-xs text-emerald-600 font-medium mb-2">{item.jabatan}</p>
+                          <div className="flex gap-2">
+                            <button onClick={()=>{setIdEditP(item.id); setNamaP(item.nama); setJabatanP(item.jabatan); setKetP(item.keterangan || ''); setLinkP(item.foto || '')}} className="text-[10px] px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-md font-bold transition">Edit</button>
+                            <button onClick={()=>hapusPengurus(item.id)} className="text-[10px] px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-md font-bold transition">Hapus</button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
+                    ))}
+                  </div>
+                )}
 
-          {/* === TAB 2: DOWNLOAD === */}
-          {activeTab === 'download' && (
-            <div className="space-y-8">
-              <div className="bg-white p-8 rounded-xl shadow-md border-t-8 border-blue-700">
-                <h3 className="text-2xl font-extrabold text-blue-800 mb-6">📁 Tambah File Download</h3>
-                <form onSubmit={simpanDownload} className="space-y-4">
-                  <input type="text" placeholder="Nama Dokumen" value={namaFileD} onChange={(e)=>setNamaFileD(e.target.value)} className="w-full px-4 py-3 border rounded bg-gray-50" required />
-                  <input type="text" placeholder="Link Google Drive / Tautan File" value={linkD} onChange={(e)=>setLinkD(e.target.value)} className="w-full px-4 py-3 border rounded bg-blue-50 border-blue-200" required />
-                  <input type="text" placeholder="Keterangan" value={ketD} onChange={(e)=>setKetD(e.target.value)} className="w-full px-4 py-3 border rounded bg-gray-50" />
-                  <button type="submit" className="w-full bg-blue-700 text-white font-bold py-3 rounded">Simpan Dokumen</button>
-                </form>
-              </div>
-              <div className="bg-white p-8 rounded-xl shadow-md">
-                {dataDownload.map(item => (
-                  <div key={item.id} className="border p-4 rounded mb-2 flex justify-between items-center">
-                    <div>
-                      <p className="font-bold">{item.judul}</p>
-                      <a href={item.link} className="text-sm text-blue-500 underline" target="_blank" rel="noreferrer">Lihat Link</a>
-                    </div>
-                    <button onClick={()=>hapusDownload(item.id)} className="px-4 py-2 bg-red-500 text-white rounded font-bold text-sm">Hapus</button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* === TAB 3: BERITA === */}
-          {activeTab === 'berita' && (
-            <div className="space-y-8">
-              <div className="bg-white p-8 rounded-xl shadow-md border-t-8 border-blue-700">
-                <h3 className="text-2xl font-extrabold text-blue-800 mb-6">📝 {idEdit ? 'Edit' : 'Tulis'} Berita / Artikel</h3>
-                <form onSubmit={simpanBerita} className="space-y-4">
-                  <input type="text" placeholder="Judul Berita" value={judulBaru} onChange={(e)=>setJudulBaru(e.target.value)} className="w-full px-4 py-3 border rounded bg-gray-50" required />
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <select value={kategoriBaru} onChange={(e)=>setKategoriBaru(e.target.value)} className="w-full px-4 py-3 border rounded bg-gray-50">
-                      <option value="Pengumuman">Pengumuman</option>
-                      <option value="Prestasi">Prestasi</option>
-                      <option value="Kegiatan">Kegiatan</option>
-                    </select>
-                    <div>
-                      <label className="block text-xs font-bold text-gray-500 mb-1">Link Gambar Cover (Berakhiran .jpg/.png)</label>
-                      <input type="text" placeholder="https://i.ibb.co/..." value={linkBerita} onChange={(e)=>setLinkBerita(e.target.value)} className="w-full px-4 py-3 border rounded bg-blue-50 border-blue-200 outline-none" required />
-                    </div>
-                  </div>
-                  <input type="text" placeholder="Keterangan / Ringkasan Pendek" value={keteranganBaru} onChange={(e)=>setKeteranganBaru(e.target.value)} className="w-full px-4 py-3 border rounded bg-gray-50" />
-                  <textarea placeholder="Isi Konten Berita" value={isiBaru} onChange={(e)=>setIsiBaru(e.target.value)} className="w-full px-4 py-3 border rounded h-32 bg-gray-50" required></textarea>
-                  <div className="flex gap-4">
-                    <button type="submit" disabled={prosesLoading} className="flex-1 bg-blue-700 text-white font-bold py-3 rounded">{prosesLoading ? 'Menyimpan...' : 'Simpan Berita'}</button>
-                    {idEdit && <button type="button" onClick={batalEdit} className="bg-gray-400 text-white px-6 rounded font-bold">Batal</button>}
-                  </div>
-                </form>
-              </div>
-              <div className="bg-white p-8 rounded-xl shadow-md">
-                {berita.map(item => (
-                  <div key={item.id} className="border-b p-4 flex justify-between items-center">
-                    <div>
-                      <h4 className="font-bold">{item.judul}</h4>
-                      <p className="text-sm text-gray-500">{item.tanggal} - {item.kategori}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <button onClick={()=>mulaiEdit(item)} className="px-4 py-2 bg-amber-500 text-white rounded text-sm font-bold">Edit</button>
-                      <button onClick={()=>hapusBerita(item.id)} className="px-4 py-2 bg-red-500 text-white rounded text-sm font-bold">Hapus</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* === TAB 4: POLLING === */}
-          {activeTab === 'polling' && (
-            <div className="space-y-8">
-              <div className="bg-white p-8 rounded-xl shadow-md border-t-8 border-blue-700">
-                <h3 className="text-2xl font-extrabold text-blue-800 mb-6">📊 Buat Polling</h3>
-                <form onSubmit={simpanPolling} className="space-y-4">
-                  <input type="text" placeholder="Pertanyaan Polling (Contoh: Apa kegiatan favoritmu?)" value={pertanyaanPol} onChange={(e)=>setPertanyaanPol(e.target.value)} className="w-full px-4 py-3 border rounded bg-gray-50" required />
-                  <input type="text" placeholder="Pilihan Jawaban (Pisahkan dengan Koma. Contoh: Olahraga,Seni,Pramuka)" value={opsiPol} onChange={(e)=>setOpsiPol(e.target.value)} className="w-full px-4 py-3 border rounded bg-gray-50" required />
-                  <button type="submit" className="w-full bg-blue-700 text-white font-bold py-3 rounded">Simpan Polling</button>
-                </form>
-              </div>
-              <div className="bg-white p-8 rounded-xl shadow-md">
-                {dataPolling.map(item => (
-                  <div key={item.id} className="border p-4 rounded mb-2 flex justify-between items-center">
-                    <div><p className="font-bold">{item.pertanyaan}</p><p className="text-sm text-gray-500">Opsi: {item.opsi}</p></div>
-                    <button onClick={()=>hapusPolling(item.id)} className="px-4 py-2 bg-red-500 text-white rounded font-bold text-sm">Hapus</button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* === TAB 5: GALERI === */}
-          {activeTab === 'galeri' && (
-            <div className="space-y-8">
-              <div className="bg-white p-8 rounded-xl shadow-md border-t-8 border-blue-700">
-                <h3 className="text-2xl font-extrabold text-blue-800 mb-6">{idEditG ? '✏️ Edit Foto Galeri' : '📸 Tambah Foto Galeri'}</h3>
-                <form onSubmit={simpanGaleri} className="space-y-4">
-                  <input type="text" placeholder="Judul Foto" value={judulG} onChange={(e)=>setJudulG(e.target.value)} className="w-full px-4 py-3 border rounded bg-gray-50" required />
-                  <input type="text" placeholder="Keterangan Tambahan" value={ketG} onChange={(e)=>setKetG(e.target.value)} className="w-full px-4 py-3 border rounded bg-gray-50" />
-                  <div>
-                    <label className="block text-gray-700 font-bold mb-2">Tautan (Link) Foto Direct (Berakhiran .jpg/.png)</label>
-                    <input type="text" placeholder="Paste link foto dari ImgBB di sini..." value={linkG} onChange={(e)=>setLinkG(e.target.value)} className="w-full px-4 py-3 border rounded bg-blue-50 border-blue-200 outline-none" required />
-                  </div>
-                  <div className="flex gap-4">
-                    <button type="submit" disabled={prosesLoading} className="flex-1 bg-blue-700 text-white font-bold py-3 rounded">
-                      {prosesLoading ? 'Menyimpan...' : (idEditG ? 'Simpan Perubahan' : 'Simpan ke Galeri')}
-                    </button>
-                    {idEditG && <button type="button" onClick={batalEditGaleri} className="bg-gray-400 text-white px-6 rounded font-bold">Batal</button>}
-                  </div>
-                </form>
-              </div>
-              <div className="bg-white p-8 rounded-xl shadow-md">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {dataGaleri.map(item => (
-                    <div key={item.id} className="border p-2 rounded-lg bg-gray-50 flex flex-col h-full">
-                      <img src={item.urlFoto} className="h-32 w-full object-cover rounded mb-2" alt={item.judul} />
-                      <p className="text-sm font-bold text-center truncate px-1 flex-1">{item.judul}</p>
-                      
-                      {/* Tombol Edit dan Hapus dibuat bersebelahan */}
-                      <div className="flex gap-2 mt-2 w-full">
-                        <button onClick={()=>mulaiEditGaleri(item)} className="w-1/2 py-1 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded transition">Edit</button>
-                        <button onClick={()=>hapusGaleri(item.id)} className="w-1/2 py-1 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded transition">Hapus</button>
+                {/* LIST BERITA */}
+                {activeTab === 'berita' && (
+                  <div className="space-y-3">
+                    {berita.map(item => (
+                      <div key={item.id} className="border border-slate-100 p-4 rounded-xl flex justify-between items-center hover:shadow-md transition bg-slate-50/50">
+                        <div className="flex-1 pr-4">
+                          <h4 className="font-bold text-slate-800 truncate">{item.judul}</h4>
+                          <p className="text-xs text-slate-500 mt-1">{item.tanggal} • {item.kategori}</p>
+                        </div>
+                        <div className="flex gap-2 flex-shrink-0">
+                          <button onClick={()=>mulaiEdit(item)} className="text-[11px] px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-md font-bold transition">Edit</button>
+                          <button onClick={()=>hapusBerita(item.id)} className="text-[11px] px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-md font-bold transition">Hapus</button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* === TAB 6: BUKU TAMU === */}
-          {activeTab === 'bukutamu' && (
-            <div className="bg-white p-8 rounded-xl shadow-md border border-gray-200">
-              <h3 className="text-2xl font-extrabold text-blue-900 mb-6">📖 Daftar Buku Tamu</h3>
-              <div className="space-y-4">
-                {dataBukuTamu.map((item) => (
-                  <div key={item.id} className="border p-5 rounded-lg flex justify-between bg-gray-50">
-                    <div>
-                      <h4 className="font-bold">{item.nama} <span className="text-xs bg-blue-100 text-blue-800 px-2 rounded">{item.asal}</span></h4>
-                      <p className="text-gray-700 text-sm mt-1">"{item.pesan}"</p>
-                    </div>
-                    <button onClick={() => hapusBukuTamu(item.id)} className="px-4 py-2 bg-red-500 text-white font-bold rounded text-sm">Hapus</button>
+                    ))}
                   </div>
-                ))}
+                )}
+
+                {/* GRID GALERI */}
+                {activeTab === 'galeri' && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    {dataGaleri.map(item => (
+                      <div key={item.id} className="border border-slate-100 p-2 rounded-xl hover:shadow-md transition bg-slate-50/50 group relative">
+                        <img src={item.urlFoto} className="h-32 w-full object-cover rounded-lg mb-3" alt={item.judul} />
+                        <p className="text-xs font-bold text-slate-800 text-center truncate px-1 mb-2">{item.judul}</p>
+                        <div className="absolute inset-0 bg-white/90 opacity-0 group-hover:opacity-100 transition flex flex-col justify-center items-center gap-2 rounded-xl backdrop-blur-sm">
+                          <button onClick={()=>mulaiEditGaleri(item)} className="px-6 py-2 bg-slate-800 text-white text-xs font-bold rounded-md">Edit</button>
+                          <button onClick={()=>hapusGaleri(item.id)} className="px-6 py-2 bg-red-600 text-white text-xs font-bold rounded-md">Hapus</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* LIST DOWNLOAD, POLLING, BUKUTAMU */}
+                {(activeTab === 'download' || activeTab === 'polling' || activeTab === 'bukutamu') && (
+                  <div className="space-y-3">
+                    {(activeTab === 'download' ? dataDownload : activeTab === 'polling' ? dataPolling : dataBukuTamu).map(item => (
+                      <div key={item.id} className="border border-slate-100 p-4 rounded-xl flex justify-between items-center hover:shadow-md transition bg-slate-50/50">
+                        <div>
+                          <h4 className="font-bold text-slate-800">{item.judul || item.pertanyaan || item.nama}</h4>
+                          <p className="text-xs text-slate-500 mt-1">{item.opsi || item.pesan || "Data tersimpan"}</p>
+                        </div>
+                        <button onClick={() => activeTab === 'download' ? hapusDownload(item.id) : activeTab === 'polling' ? hapusPolling(item.id) : hapusBukuTamu(item.id)} className="text-[11px] px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-md font-bold transition">Hapus</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
               </div>
             </div>
-          )}
-
+            
+          </div>
         </div>
       )}
     </section>
