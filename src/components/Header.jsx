@@ -27,8 +27,8 @@ function Header() {
 />
 
             <div>
-              <h1 className="text-xl font-extrabold tracking-wide">AT-TAJDIED</h1>
-              <p className="text-[10px] sm:text-xs text-emerald-200 font-medium tracking-widest">Islamic School</p>
+              <h1 className="text-xl font-extrabold tracking-wide">AT-TAJDID</h1>
+              <p className="text-[10px] sm:text-xs text-emerald-200 font-medium tracking-widest"> Raudhatul Athfal Persis 175</p>
             </div>
           </Link>
 
