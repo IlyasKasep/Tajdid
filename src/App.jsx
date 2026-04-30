@@ -19,6 +19,7 @@ import Chat from './pages/Chat';
 import Tahfidz from './pages/Tahfidz';
 import Sains from './pages/Sains';
 import Ekskul from './pages/Ekskul';
+import BiodataDetail from './pages/BiodataDetail';
 
 // === API KEY IMGBB ===
 const IMGBB_API_KEY = 'cb9b2aec11b80af3765d32f4d6f572da '; 
@@ -151,6 +152,7 @@ function App() {
           <Route path="/tahfidz" element={<Tahfidz />} />
           <Route path="/sains" element={<Sains />} />
           <Route path="/ekskul" element={<Ekskul />} />
+          <Route path="/biodata/:id" element={<BiodataDetail />} />
           <Route path="/admin" element={
             <Admin 
               user={user} email={email} setEmail={setEmail} password={password} setPassword={setPassword} 

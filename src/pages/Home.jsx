@@ -111,7 +111,7 @@ function Home({ berita = [], pengurus = [], galeri = [] }) {
             </div>
             <h1 className="text-5xl lg:text-6xl font-black text-slate-800 leading-[1.2]">
               Dunia Ceria di <br />
-              <span className="text-emerald-600 drop-shadow-md">RA At-Tajdied!</span>
+              <span className="text-emerald-600 drop-shadow-md">RA At-Tajdid!</span>
             </h1>
             <p className="text-lg text-slate-600 font-medium max-w-md mx-auto lg:mx-0 bg-white/40 backdrop-blur-sm p-4 rounded-3xl border-2 border-white/50 shadow-sm">
               Tempat di mana si kecil bermain, berimajinasi, dan belajar nilai-nilai Islami dengan penuh kegembiraan setiap hari.
@@ -131,8 +131,8 @@ function Home({ berita = [], pengurus = [], galeri = [] }) {
             </div>
 
             {/* Badge Since 2010 */}
-            <div className="absolute -bottom-6 -left-4 bg-amber-400 text-amber-900 font-black px-5 py-5 rounded-full border-4 border-white shadow-xl z-10">
-              <p className="text-center leading-tight text-sm">Since<br />2010</p>
+            <div className="absolute -bottom-17 -left-2 bg-amber-400 text-amber-900 font-black px-5 py-5 rounded-full border-4 border-white shadow-xl z-10">
+              <p className="text-center leading-tight text-sm">"Dunia adalah taman bermainmu<br/>ayo belajar sambil bergembira!"</p>
             </div>
           </div>
         </div>
@@ -157,7 +157,7 @@ function Home({ berita = [], pengurus = [], galeri = [] }) {
             <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-20 h-6 bg-rose-300/80 rounded-full rotate-[-3deg]"></div>
             <div className="text-6xl mb-4">📖</div>
             <h3 className="text-2xl font-black text-rose-500 mb-2">Buku Tamu</h3>
-            <p className="font-medium text-slate-500 text-sm">Tinggalkan sapaan manis untuk teman-teman RA At-Tajdied!</p>
+            <p className="font-medium text-slate-500 text-sm">Tinggalkan sapaan manis untuk teman-teman RA At-Tajdid!</p>
           </Link>
 
           <Link to="/polling" className="group bg-white rounded-[2.5rem] p-6 text-center border-4 border-amber-100 hover:border-amber-300 shadow-lg hover:shadow-2xl hover:-translate-y-3 transition-all duration-300 relative mt-8 lg:mt-0">
@@ -171,7 +171,7 @@ function Home({ berita = [], pengurus = [], galeri = [] }) {
             <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-20 h-6 bg-sky-300/80 rounded-full rotate-[-2deg]"></div>
             <div className="text-6xl mb-4">💬</div>
             <h3 className="text-2xl font-black text-sky-500 mb-2">Forum Chat</h3>
-            <p className="font-medium text-slate-500 text-sm">Ruang ngobrol asyik ayah, bunda, dan bunda guru.</p>
+            <p className="font-medium text-slate-500 text-sm">Ruang ngobrol asyik ayah, bunda, dan guru.</p>
           </Link>
 
           <Link to="/download" className="group bg-white rounded-[2.5rem] p-6 text-center border-4 border-emerald-100 hover:border-emerald-300 shadow-lg hover:shadow-2xl hover:-translate-y-3 transition-all duration-300 relative mt-8 lg:mt-0">
@@ -187,7 +187,7 @@ function Home({ berita = [], pengurus = [], galeri = [] }) {
       <section className="py-20 px-6 max-w-6xl mx-auto">
         <div className="flex flex-col lg:flex-row justify-between items-end mb-12 gap-6">
           <div>
-            <h2 className="text-4xl font-black text-slate-800">Kenalan dengan Bunda! 💖</h2>
+            <h2 className="text-4xl font-black text-slate-800">Kenalan dengan Guru! 💖</h2>
             <p className="text-emerald-500 font-bold mt-2">Pendidik super sabar yang siap menemani si kecil</p>
           </div>
           <Link to="/biodata" className="bg-emerald-100 text-emerald-700 border-2 border-emerald-200 px-8 py-3 rounded-full font-bold hover:bg-emerald-500 hover:text-white transition-all shadow-sm hover:shadow-md hover:-translate-y-1">Lihat Semua Guru</Link>
@@ -251,7 +251,7 @@ function Home({ berita = [], pengurus = [], galeri = [] }) {
       {/* ================= GALERI KARYA ================= */}
       <section className="py-24 px-6 max-w-6xl mx-auto text-center">
         <h2 className="text-4xl font-black text-slate-800 mb-4">Galeri Momen Indah 🖼️</h2>
-        <p className="text-slate-500 font-medium mb-16 bg-white inline-block px-6 py-2 rounded-full border border-slate-200 shadow-sm">Karya hebat dan senyum manis anak-anak RA At-Tajdied</p>
+        <p className="text-slate-500 font-medium mb-16 bg-white inline-block px-6 py-2 rounded-full border border-slate-200 shadow-sm">Karya hebat dan senyum manis anak-anak RA At-Tajdid</p>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 px-4 md:px-0">
           {galeri.slice(0, 4).map((item, idx) => (
@@ -288,7 +288,7 @@ function Home({ berita = [], pengurus = [], galeri = [] }) {
           Menemani langkah kecil anak-anak menuju masa depan yang cerdas, kreatif, dan berakhlak karimah.
         </p>
         <div className="text-emerald-400 text-xs font-bold border-t border-emerald-700 pt-8 w-full max-w-4xl mx-auto">
-          © {new Date().getFullYear()} RA AT-TAJDIED. Bermain & Belajar Sepenuh Hati. ❤️
+          © {new Date().getFullYear()} RA AT-TAJDID. Bermain & Belajar Sepenuh Hati. ❤️
         </div>
       </footer>
 

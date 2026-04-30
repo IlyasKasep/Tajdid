@@ -41,27 +41,29 @@ function Download() {
               </tr>
             </thead>
             <tbody>
-              {dokumen.map((item, index) => (
-                <tr key={item.id} className={`border-b border-gray-100 hover:bg-gray-50 transition ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
-                  <td className="p-4 flex items-center gap-3">
-                    <span className="text-2xl">📄</span>
-                    <div>
-                      <h4 className="font-bold text-gray-800">{item.namaFile}</h4>
-                      <p className="text-xs text-gray-500">Diupload: {item.tanggal}</p>
-                    </div>
-                  </td>
-                  <td className="p-4 text-center">
-                    <a 
-                      href={item.linkFile} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="inline-block bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold px-5 py-2 rounded transition shadow"
-                    >
-                      Download
-                    </a>
-                  </td>
-                </tr>
-              ))}
+                {dokumen.map((item, index) => (
+                  <tr key={item.id} className={`border-b border-gray-100 hover:bg-gray-50 transition ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
+                    <td className="p-4 flex items-center gap-3">
+                      <span className="text-2xl">📄</span>
+                      <div>
+                        {/* PERBAIKAN: Gunakan item.judul karena di Admin disimpan sebagai 'judul' */}
+                        <h4 className="font-bold text-gray-800">{item.judul || "Tanpa Nama File"}</h4>
+                        <p className="text-xs text-gray-500">Diupload: {item.tanggal || 'Baru saja'}</p>
+                      </div>
+                    </td>
+                    <td className="p-4 text-center">
+                      {/* PERBAIKAN: Gunakan item.link karena di Admin biasanya disimpan sebagai 'link' atau 'linkFile' */}
+                      <a 
+                        href={item.link || item.linkFile} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="inline-block bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold px-5 py-2 rounded transition shadow"
+                      >
+                        Download
+                      </a>
+                    </td>
+                  </tr>
+                ))}
               {dokumen.length === 0 && (
                 <tr>
                   <td colSpan="2" className="p-8 text-center text-gray-500 italic">Belum ada dokumen yang tersedia untuk diunduh.</td>
