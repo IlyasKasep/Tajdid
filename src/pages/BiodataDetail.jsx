@@ -1,171 +1,188 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../firebase'; // Sesuaikan path jika berbeda
-import { motion } from 'framer-motion';
-import { ArrowLeft, Mail, GraduationCap, Brain, MessageSquareQuote } from 'lucide-react';
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { ArrowLeft, GraduationCap, Heart, Star, Award } from 'lucide-react';
+
+// === DATA LENGKAP PENGELOLA & GURU ===
+const teamData = [
+  {
+    id: 1,
+    nama: "Ela Helasni",
+    jabatan: "Kepala RA",
+    pendidikan: "S1 Kependidikan",
+    moto: "Mendidik dengan hati, membangun karakter sejak dini.",
+    deskripsi: "Sebagai pemimpin di RA Persis 175 At Tajdid, Ibu Ela berfokus pada pengembangan kurikulum yang ramah anak dan inovatif.",
+    foto: "https://images.unsplash.com/photo-1544717297-fa95b3ee51f8?w=500&q=80",
+    warna: "bg-emerald-500",
+    ikon: "👑"
+  },
+  {
+    id: 2,
+    nama: "Siti Kuraesin, S.Pd.",
+    jabatan: "Guru Kelas",
+    pendidikan: "S1 Pendidikan Guru PAUD",
+    moto: "Setiap anak adalah bintang yang bersinar dengan caranya sendiri.",
+    deskripsi: "Ibu Siti adalah pengajar yang berpengalaman dalam metode belajar sambil bermain (Learning by Playing).",
+    foto: "https://images.unsplash.com/photo-1580894732444-8ecded7900cd?w=500&q=80",
+    warna: "bg-rose-500",
+    ikon: "🎨"
+  },
+  {
+    id: 3,
+    nama: "Windi Wulandari Rahayu",
+    jabatan: "Guru Kelas",
+    pendidikan: "Diploma Kependidikan",
+    moto: "Sabar dan kasih sayang adalah kunci utama mendidik anak.",
+    deskripsi: "Ibu Windi sangat telaten dalam mendampingi tumbuh kembang emosional anak-anak di kelas.",
+    foto: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&q=80",
+    warna: "bg-sky-500",
+    ikon: "🎈"
+  },
+  {
+    id: 4,
+    nama: "Mila Nur Amelia",
+    jabatan: "Guru Pendamping",
+    pendidikan: "Pendidikan Menengah Kependidikan",
+    moto: "Ciptakan lingkungan belajar yang seru dan menyenangkan!",
+    deskripsi: "Ibu Mila memiliki semangat tinggi dalam membimbing kreativitas anak melalui seni dan prakarya.",
+    foto: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=500&q=80",
+    warna: "bg-amber-500",
+    ikon: "🚀"
+  },
+  {
+    id: 5,
+    nama: "Sucika Risalah Bonita",
+    jabatan: "Guru Pendamping",
+    pendidikan: "Pendidikan Menengah Kependidikan",
+    moto: "Tanamkan kejujuran dan akhlak mulia setiap hari.",
+    deskripsi: "Ibu Sucika berfokus pada pembiasaan adab dan doa harian bagi ananda di sekolah.",
+    foto: "https://images.unsplash.com/photo-1554151228-14d9def656e4?w=500&q=80",
+    warna: "bg-purple-500",
+    ikon: "🌟"
+  }
+];
 
 function BiodataDetail() {
-  const { id } = useParams(); // Mengambil ID dari URL
-  const navigate = useNavigate();
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const ambilDetail = async () => {
-      try {
-        const docRef = doc(db, "pengurus", id);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setData(docSnap.data());
-        } else {
-          console.log("Data tidak ditemukan!");
-        }
-      } catch (error) {
-        console.error("Error:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    ambilDetail();
-  }, [id]);
-
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-emerald-500"></div>
-    </div>
-  );
-
-  if (!data) return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 p-8 text-center">
-      <div className="text-8xl mb-8">👤</div>
-      <h2 className="text-3xl font-black text-slate-800 dark:text-slate-100">Data Tidak Ditemukan</h2>
-      <p className="text-slate-500 dark:text-slate-400 mt-2 max-w-sm">
-        Biodata guru yang Anda cari mungkin telah dihapus atau tidak tersedia di database.
-      </p>
-      <button 
-        onClick={() => navigate('/biodata')}
-        className="mt-8 flex items-center gap-2 text-emerald-600 font-bold hover:underline"
-      >
-        <ArrowLeft size={18} /> Kembali ke Daftar
-      </button>
-    </div>
-  );
-
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans text-slate-700 dark:text-slate-300 pb-24">
-      {/* Tombol Kembali di Atas */}
-      <div className="max-w-7xl mx-auto px-6 md:px-12 pt-10">
-        <button 
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors font-bold text-sm mb-12"
-        >
-          <ArrowLeft size={18} /> Kembali ke Daftar
-        </button>
-      </div>
-
-      <motion.main 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-3 gap-8"
-      >
+    <div className="bg-teal-50 min-h-screen font-sans pb-20 overflow-x-hidden">
+      
+      {/* ================= HEADER SECTION ================= */}
+      <header className="relative pt-20 pb-12 px-6 bg-gradient-to-b from-emerald-200 to-teal-50 overflow-hidden">
+        {/* Dekorasi Bergerak */}
+        <div className="absolute top-10 left-10 text-5xl animate-bounce-slow opacity-30">🌈</div>
+        <div className="absolute top-20 right-20 text-6xl animate-spin-slow opacity-20">🌻</div>
         
-        {/* Kolom Kiri: Kartu Profil Utama */}
-        <div className="md:col-span-1 space-y-8">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col items-center text-center">
-            {/* Foto Profil Lingkaran Besar */}
-            <div className="w-40 h-40 rounded-full object-cover mb-6 border-4 border-white dark:border-slate-800 shadow-md overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-              {data.foto ? (
-                <img src={data.foto} alt={data.nama} className="w-full h-full object-cover" />
-              ) : (
-                <div className="text-5xl opacity-30">👤</div>
-              )}
-            </div>
-            {/* Nama & Peran */}
-            <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-1 leading-tight capitalize">
-              {data.nama}
-            </h1>
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-8 capitalize">
-              {data.jabatan || 'Staff Pengajar RA At-Tajdied'}
-            </p>
-            
-            {/* Bagian Kontak */}
-            <div className="w-full text-left border-t border-slate-100 dark:border-slate-800 pt-6">
-              <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">
-                Informasi Kontak
-              </h4>
-              <div className="flex items-center gap-3">
-                <Mail size={18} className="text-purple-700 dark:text-purple-400" />
-                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-                  {data.kontak || 'Email/No. HP Belum Tersedia'}
-                </p>
-              </div>
-            </div>
-          </div>
+        <div className="max-w-4xl mx-auto text-center relative z-10">
+          <Link to="/" className="inline-flex items-center gap-2 text-emerald-700 font-bold hover:gap-3 transition-all mb-6 bg-white/50 px-4 py-2 rounded-full shadow-sm">
+            <ArrowLeft size={18} /> Kembali ke Beranda
+          </Link>
+          <h1 className="text-4xl md:text-5xl font-black text-slate-800 mb-4 drop-shadow-sm">
+            Mengenal Lebih Dekat <br/>
+            <span className="text-emerald-600">Pendidik At-Tajdied</span>
+          </h1>
+          <p className="text-slate-600 font-medium max-w-2xl mx-auto">
+            Inilah wajah-wajah penuh kasih sayang yang mendampingi ananda dalam belajar, bermain, dan bertumbuh setiap hari.
+          </p>
         </div>
+      </header>
 
-        {/* Kolom Kanan: Kartu Konten Biodata Lengkap */}
-        <div className="md:col-span-2">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 md:p-10 shadow-sm border border-slate-100 dark:border-slate-800 h-full">
-            
-            {/* Bagian Overview (Paragraf Teks) */}
-            <div className="mb-12">
-              <span className="inline-block bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 px-4 py-1.5 rounded-full text-xs font-semibold mb-3">
-                Overview
-              </span>
-              <p className="text-base text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
-                {data.keterangan || "Wali Kelas Kelompok B di RA At-Tajdied yang sabar, ceria, dan sangat menyayangi anak-anak. Beliau memiliki pengalaman luas dalam menciptakan suasana belajar yang menyenangkan sambil menanamkan nilai-nilai Islami dasar pada si kecil."}
-              </p>
-            </div>
-
-            {/* Bagian Details (Field Data) */}
-            <div>
-              <span className="inline-block bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 px-4 py-1.5 rounded-full text-xs font-semibold mb-6">
-                Details
-              </span>
+      {/* ================= CONTENT: TEACHER CARDS ================= */}
+      <main className="max-w-6xl mx-auto px-6 -mt-8">
+        <div className="grid gap-12 lg:gap-16">
+          {teamData.map((staff, index) => (
+            <div 
+              key={staff.id} 
+              className={`flex flex-col ${index % 2 === 0 ? 'lg:flex-row' : 'lg:flex-row-reverse'} items-center gap-8 bg-white p-6 md:p-10 rounded-[3rem] shadow-xl border-b-8 border-slate-100 hover:shadow-2xl transition-all group`}
+            >
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-6 text-sm">
-                
-                {/* Field 1 (Pendidikan) */}
-                <div className="flex justify-between items-center pb-3 border-b border-slate-100 dark:border-slate-800/50">
-                  <div className="flex items-center gap-3">
-                    <GraduationCap size={16} className="text-purple-700 dark:text-purple-400" />
-                    <p className="font-medium text-slate-500 dark:text-slate-400">Pendidikan</p>
+              {/* Sisi Foto dengan Frame Lucu */}
+              <div className="relative w-full max-w-[300px]">
+                <div className={`absolute inset-0 ${staff.warna} rounded-[2.5rem] rotate-6 group-hover:rotate-0 transition-transform duration-500`}></div>
+                <div className="relative bg-white p-3 rounded-[2.5rem] shadow-lg overflow-hidden aspect-[4/5]">
+                  <img 
+                    src={staff.foto} 
+                    alt={staff.nama} 
+                    className="w-full h-full object-cover rounded-[2rem] group-hover:scale-110 transition-transform duration-700"
+                  />
+                  <div className="absolute top-4 right-4 text-4xl bg-white/90 p-2 rounded-2xl shadow-sm animate-wiggle">
+                    {staff.ikon}
                   </div>
-                  <p className="font-semibold text-slate-800 dark:text-slate-100 text-right capitalize">
-                    {data.pendidikan || 'S1 PGPAUD / Pendidikan Islam'}
-                  </p>
                 </div>
-
-                {/* Field 2 (Keahlian) */}
-                <div className="flex justify-between items-center pb-3 border-b border-slate-100 dark:border-slate-800/50">
-                  <div className="flex items-center gap-3">
-                    <Brain size={16} className="text-purple-700 dark:text-purple-400" />
-                    <p className="font-medium text-slate-500 dark:text-slate-400">Keahlian</p>
-                  </div>
-                  <p className="font-semibold text-slate-800 dark:text-slate-100 text-right capitalize">
-                    {data.keahlian || 'Mendongeng & Kreativitas'}
-                  </p>
-                </div>
-
-                {/* Field 3 (Motto) */}
-                <div className="flex justify-between items-center pb-3 border-b border-slate-100 dark:border-slate-800/50 sm:col-span-2">
-                  <div className="flex items-center gap-3 pr-6">
-                    <MessageSquareQuote size={16} className="text-purple-700 dark:text-purple-400" />
-                    <p className="font-medium text-slate-500 dark:text-slate-400">Motto</p>
-                  </div>
-                  <p className="font-semibold text-slate-800 dark:text-slate-100 italic leading-snug max-w-md text-right">
-                    "{data.motto || 'Membimbing anak dengan cinta, membangun masa depan dengan akhlak.'}"
-                  </p>
-                </div>
-
               </div>
+
+              {/* Sisi Detail Deskripsi */}
+              <div className="flex-1 space-y-4 text-center lg:text-left">
+                <div>
+                  <h2 className="text-2xl md:text-3xl font-black text-slate-800 mb-1">{staff.nama}</h2>
+                  <p className={`inline-block px-4 py-1 rounded-full text-white font-bold text-sm uppercase tracking-widest ${staff.warna}`}>
+                    {staff.jabatan}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center gap-3 bg-teal-50 p-3 rounded-2xl">
+                    <GraduationCap className="text-teal-600" />
+                    <div className="text-left">
+                      <p className="text-[10px] text-teal-600 font-bold uppercase">Pendidikan</p>
+                      <p className="text-sm font-bold text-slate-700">{staff.pendidikan}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 bg-rose-50 p-3 rounded-2xl">
+                    <Heart className="text-rose-500" />
+                    <div className="text-left">
+                      <p className="text-[10px] text-rose-500 font-bold uppercase">Moto</p>
+                      <p className="text-sm font-bold text-slate-700">{staff.moto}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-slate-50 p-6 rounded-[2rem] border-2 border-dashed border-slate-200">
+                  <h4 className="font-black text-slate-800 text-sm mb-2 flex items-center gap-2 justify-center lg:justify-start">
+                    <Star size={16} className="text-amber-500" /> Tentang Guru
+                  </h4>
+                  <p className="text-slate-600 leading-relaxed italic text-sm md:text-base">
+                    "{staff.deskripsi}"
+                  </p>
+                </div>
+
+                <div className="flex justify-center lg:justify-start gap-2 pt-2">
+                   <div className="h-2 w-12 bg-teal-200 rounded-full"></div>
+                   <div className="h-2 w-4 bg-rose-200 rounded-full"></div>
+                </div>
+              </div>
+
             </div>
-
-          </div>
+          ))}
         </div>
+      </main>
 
-      </motion.main>
+      {/* ================= FOOTER DECORATION ================= */}
+      <footer className="mt-20 text-center">
+        <div className="inline-block bg-white p-8 rounded-[3rem] shadow-lg border-2 border-emerald-100">
+          <Award className="mx-auto text-emerald-500 mb-4" size={48} />
+          <h3 className="text-xl font-black text-slate-800">Kami Siap Mendampingi Si Kecil!</h3>
+          <p className="text-slate-500 text-sm mt-2">RA Persis 175 At Tajdid - Sejak 2010</p>
+        </div>
+      </footer>
+
+      {/* ================= STYLING ANIMASI ================= */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes bounce-slow {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-20px); }
+        }
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        @keyframes wiggle {
+          0%, 100% { transform: rotate(-5deg); }
+          50% { transform: rotate(5deg); }
+        }
+        .animate-bounce-slow { animation: bounce-slow 4s ease-in-out infinite; }
+        .animate-spin-slow { animation: spin-slow 12s linear infinite; }
+        .animate-wiggle { animation: wiggle 2s ease-in-out infinite; }
+      `}} />
+
     </div>
   );
 }

@@ -1,31 +1,36 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense, lazy } from 'react';
 import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from './firebase';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 
-
-// MENGIMPOR KOMPONEN DAN HALAMAN YANG BARU KITA BUAT
+// Import Komponen Global (Langsung dimuat karena selalu muncul)
 import Header from './components/Header';
 import Footer from './components/Footer';
-import Home from './pages/Home';
-import Admin from './pages/Admin';
-import Biodata from './pages/Biodata';
-import BukuTamu from './pages/BukuTamu';
-import Galeri from './pages/Galeri';
-import Download from './pages/Download';
-import Polling from './pages/Polling';
-import Chat from './pages/Chat';
-import Tahfidz from './pages/Tahfidz';
-import Sains from './pages/Sains';
-import Ekskul from './pages/Ekskul';
-import BiodataDetail from './pages/BiodataDetail';
+
+// MENGGUNAKAN LAZY LOADING: Halaman hanya dimuat saat diklik (Mencegah Blank Putih)
+const Home = lazy(() => import('./pages/Home'));
+const Admin = lazy(() => import('./pages/Admin'));
+const Biodata = lazy(() => import('./pages/Biodata'));
+const BeritaSekolah = lazy(() => import('./pages/BeritaSekolah'));
+const Galeri = lazy(() => import('./pages/Galeri'));
+const Download = lazy(() => import('./pages/Download'));
+const Kontak = lazy(() => import('./pages/Kontak'));
+const BiodataDetail = lazy(() => import('./pages/BiodataDetail'));
+
+// Komponen Tampilan Loading (Fallback)
+const PageLoader = () => (
+  <div className="flex flex-col items-center justify-center min-h-[60vh] text-emerald-600">
+    <div className="w-12 h-12 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin mb-4"></div>
+    <p className="font-bold animate-pulse text-sm">Menyiapkan halaman...</p>
+  </div>
+);
 
 // === API KEY IMGBB ===
 const IMGBB_API_KEY = 'cb9b2aec11b80af3765d32f4d6f572da '; 
 
 function App() {
-  // STATE DATA
+  // STATE DATA (Dipertahankan dari kode lama Anda)
   const [berita, setBerita] = useState([]);
   const [judulBaru, setJudulBaru] = useState('');
   const [isiBaru, setIsiBaru] = useState('');
@@ -43,7 +48,7 @@ function App() {
 
   const navigate = useNavigate();
 
-  // FUNGSI-FUNGSI DATABASE & AUTENTIKASI
+  // FUNGSI-FUNGSI DATABASE & AUTENTIKASI (Dipertahankan dari kode lama Anda)
   const ambilDataBerita = async () => {
     try {
       const querySnapshot = await getDocs(collection(db, "berita"));
@@ -66,18 +71,20 @@ function App() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       setEmail(''); setPassword('');
+      navigate('/admin'); // Arahkan ke admin setelah login sukses
     } catch (error) {
       setErrorLogin('Login gagal! Cek kembali email dan password Anda.');
     }
   };
 
   const tanganiLogout = () => {
-  signOut(auth).then(() => {
-    alert("Anda telah keluar dari sistem.");
-  }).catch((error) => {
-    console.error("Gagal Logout:", error);
-  });
-};  
+    signOut(auth).then(() => {
+      alert("Anda telah keluar dari sistem.");
+      navigate('/'); // Arahkan ke home setelah logout
+    }).catch((error) => {
+      console.error("Gagal Logout:", error);
+    });
+  };  
 
   const uploadFotoKeImgBB = async (foto) => {
     const formData = new FormData();
@@ -87,7 +94,7 @@ function App() {
       const data = await response.json();
       return data.data.url; 
     } catch (error) {
-      alert("Gagal mengunggah foto. Pastikan koneksi internet stabil.");
+      alert("Gagal mengunggah foto.");
       return null;
     }
   };
@@ -108,7 +115,13 @@ function App() {
         await updateDoc(doc(db, "berita", idEdit), { judul: judulBaru, isi: isiBaru, kategori: kategoriBaru, gambar: urlGambarFinal });
         alert("Berita berhasil diperbarui!");
       } else {
-        await addDoc(collection(db, "berita"), { judul: judulBaru, isi: isiBaru, kategori: kategoriBaru, gambar: urlGambarFinal, tanggal: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) });
+        await addDoc(collection(db, "berita"), { 
+          judul: judulBaru, 
+          isi: isiBaru, 
+          kategori: kategoriBaru, 
+          gambar: urlGambarFinal, 
+          tanggal: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) 
+        });
         alert("Pengumuman berhasil diunggah!");
       }
       batalEdit(); ambilDataBerita();
@@ -128,45 +141,45 @@ function App() {
   };
 
   const hapusBerita = async (idBerita) => {
-    if (window.confirm("Yakin ingin menghapus pengumuman ini secara permanen?")) {
+    if (window.confirm("Yakin ingin menghapus pengumuman ini?")) {
       await deleteDoc(doc(db, "berita", idBerita));
       alert("Berita berhasil dihapus!");
       ambilDataBerita(); 
     }
   };
 
-  // TAMPILAN UTAMA (SANGAT BERSIH KARENA SUDAH DIPISAH)
   return (
-    <div className="min-h-screen bg-gray-100 font-sans flex flex-col">
+    <div className="min-h-screen bg-gray-50 font-sans flex flex-col">
+      {/* HEADER GLOBAL */}
       <Header user={user} tanganiLogout={tanganiLogout} />
       
-      <div className="flex-grow">
-        <Routes>
-          <Route path="/" element={<Home berita={berita} />} />
-          <Route path="/biodata" element={<Biodata />} />
-          <Route path="/bukutamu" element={<BukuTamu />} />
-          <Route path="/galeri" element={<Galeri />} />
-          <Route path="/download" element={<Download />} />
-          <Route path="/polling" element={<Polling />} />
-          <Route path="/Chat" element={<Chat />} />
-          <Route path="/tahfidz" element={<Tahfidz />} />
-          <Route path="/sains" element={<Sains />} />
-          <Route path="/ekskul" element={<Ekskul />} />
-          <Route path="/biodata/:id" element={<BiodataDetail />} />
-          <Route path="/admin" element={
-            <Admin 
-              user={user} email={email} setEmail={setEmail} password={password} setPassword={setPassword} 
-              errorLogin={errorLogin} tanganiLogin={tanganiLogin} berita={berita} judulBaru={judulBaru} 
-              setJudulBaru={setJudulBaru} kategoriBaru={kategoriBaru} setKategoriBaru={setKategoriBaru} 
-              fileGambar={fileGambar} setFileGambar={setFileGambar} urlGambarLama={urlGambarLama} 
-              isiBaru={isiBaru} setIsiBaru={setIsiBaru} simpanAtauUpdateBerita={simpanAtauUpdateBerita} 
-              prosesSimpan={prosesSimpan} idEdit={idEdit} batalEdit={batalEdit} mulaiEdit={mulaiEdit} 
-              hapusBerita={hapusBerita}tanganiLogout={tanganiLogout}
-            />
-          } />
-        </Routes>
+      <div className="flex-grow pt-4">
+        {/* SUSPENSE membungkus Routes untuk menangani loading saat pindah halaman */}
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/" element={<Home berita={berita} />} />
+            <Route path="/biodata" element={<Biodata />} />
+            <Route path="/biodata/:id" element={<BiodataDetail />} />
+            <Route path="/galeri" element={<Galeri />} />
+            <Route path="/berita" element={<BeritaSekolah berita={berita} />} />
+            <Route path="/download" element={<Download />} />
+            <Route path="/kontak" element={<Kontak />} />
+            <Route path="/admin" element={
+              <Admin 
+                user={user} email={email} setEmail={setEmail} password={password} setPassword={setPassword} 
+                errorLogin={errorLogin} tanganiLogin={tanganiLogin} berita={berita} judulBaru={judulBaru} 
+                setJudulBaru={setJudulBaru} kategoriBaru={kategoriBaru} setKategoriBaru={setKategoriBaru} 
+                fileGambar={fileGambar} setFileGambar={setFileGambar} urlGambarLama={urlGambarLama} 
+                isiBaru={isiBaru} setIsiBaru={setIsiBaru} simpanAtauUpdateBerita={simpanAtauUpdateBerita} 
+                prosesSimpan={prosesSimpan} idEdit={idEdit} batalEdit={batalEdit} mulaiEdit={mulaiEdit} 
+                hapusBerita={hapusBerita} tanganiLogout={tanganiLogout}
+              />
+            } />
+          </Routes>
+        </Suspense>
       </div>
 
+      {/* FOOTER GLOBAL */}
       <Footer />
     </div>
   );

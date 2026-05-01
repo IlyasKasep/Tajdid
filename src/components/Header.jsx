@@ -1,95 +1,98 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-
+import { Link, useLocation } from 'react-router-dom';
 import logoSekolah from '../assets/Logo_Persis.png';
-function Header() {
-  // State untuk mengontrol apakah menu mobile sedang terbuka atau tertutup
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Fungsi untuk membalikkan state (buka/tutup)
-  const toggleMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
+function Header() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation(); // Mendeteksi halaman saat ini
+
+  const toggleMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+
+  // Sesuaikan path ini dengan yang ada di App.jsx
+  const menuItems = [
+    { name: 'HOME', path: '/' },
+    { name: 'PENGURUS', path: '/biodata' },
+    { name: 'GALERI', path: '/galeri' },
+    { name: 'BERITA', path: '/berita' }, // Tambahkan ini
+    { name: 'DOWNLOAD', path: '/download' },
+    { name: 'KONTAK', path: '/kontak' }, // Tambahkan ini
+  ];
 
   return (
-    <header className="bg-emerald-700 text-white shadow-lg sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="flex justify-between items-center py-4">
-          
-          {/* Logo & Judul Sekolah */}
-          <Link to="/" className="flex items-center gap-3">
+    <>
+      <header className="bg-gradient-to-r from-emerald-700 via-teal-600 to-emerald-800 bg-[length:200%_auto] animate-gradient-x text-white shadow-lg sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="flex justify-between items-center py-4">
             
-            {/* BAGIAN INI YANG DIUBAH: Hapus div bg-white, langsung gunakan tag img */}
-            <img 
-  src={logoSekolah} 
-  alt="Logo At-Tajdied" 
-  className="h-14 w-14 object-contain hover:scale-105 transition" 
-/>
-
-            <div>
-              <h1 className="text-xl font-extrabold tracking-wide">AT-TAJDID</h1>
-              <p className="text-[10px] sm:text-xs text-emerald-200 font-medium tracking-widest"> Raudhatul Athfal Persis 175</p>
-            </div>
-          </Link>
-
-          {/* ========================================= */}
-          {/* MENU DESKTOP (Sembunyi di layar kecil)    */}
-          {/* ========================================= */}
-          <nav className="hidden lg:flex items-center space-x-1">
-            <Link to="/" className="px-4 py-2 text-sm font-bold hover:bg-emerald-800 rounded transition">HOME</Link>
-            <Link to="/biodata" className="px-4 py-2 text-sm font-bold hover:bg-emerald-800 rounded transition">PENGURUS</Link>
-            <Link to="/galeri" className="px-4 py-2 text-sm font-bold hover:bg-emerald-800 rounded transition">GALERI</Link>
-            <Link to="/bukutamu" className="px-4 py-2 text-sm font-bold hover:bg-emerald-800 rounded transition">BUKU TAMU</Link>
-            <Link to="/polling" className="px-4 py-2 text-sm font-bold hover:bg-emerald-800 rounded transition">POLLING</Link>
-            <Link to="/chat" className="px-4 py-2 text-sm font-bold hover:bg-emerald-800 rounded transition text-yellow-300">FORUM CHAT</Link>
-            <Link to="/download" className="px-4 py-2 text-sm font-bold hover:bg-emerald-800 rounded transition text-emerald-200">DOWNLOAD</Link>
-            <div className="h-6 w-[1px] bg-emerald-500 mx-2"></div>
-          </nav>
-
-          {/* ========================================= */}
-          {/* TOMBOL HAMBURGER (Hanya tampil di Mobile) */}
-          {/* ========================================= */}
-          <button 
-            onClick={toggleMenu} 
-            className="lg:hidden p-2 text-emerald-100 hover:text-white hover:bg-emerald-600 rounded focus:outline-none transition"
-            aria-label="Toggle Menu"
-          >
-            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              {isMobileMenuOpen ? (
-                // Ikon Silang (X) jika menu terbuka
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                // Ikon Garis Tiga (Hamburger) jika menu tertutup
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              )}
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      {/* ========================================= */}
-      {/* MENU DROPDOWN MOBILE (Tampil jika ditekan)*/}
-      {/* ========================================= */}
-      {isMobileMenuOpen && (
-        <div className="lg:hidden bg-emerald-800 border-t border-emerald-600 shadow-inner animate-fade-in-down">
-          <nav className="flex flex-col px-4 pt-2 pb-6 space-y-1">
-            <Link to="/" onClick={toggleMenu} className="block px-4 py-3 text-sm font-bold hover:bg-emerald-700 rounded transition">HOME</Link>
-            <Link to="/biodata" onClick={toggleMenu} className="block px-4 py-3 text-sm font-bold hover:bg-emerald-700 rounded transition">PENGURUS</Link>
-            <Link to="/galeri" onClick={toggleMenu} className="block px-4 py-3 text-sm font-bold hover:bg-emerald-700 rounded transition">GALERI</Link>
-            <Link to="/bukutamu" onClick={toggleMenu} className="block px-4 py-3 text-sm font-bold hover:bg-emerald-700 rounded transition">BUKU TAMU</Link>
-            <Link to="/polling" onClick={toggleMenu} className="block px-4 py-3 text-sm font-bold hover:bg-emerald-700 rounded transition">POLLING</Link>
-            <Link to="/chat" onClick={toggleMenu} className="block px-4 py-3 text-sm font-bold text-yellow-300 hover:bg-emerald-700 rounded transition">FORUM CHAT</Link>
-            <Link to="/download" onClick={toggleMenu} className="block px-4 py-3 text-sm font-bold text-emerald-200 hover:bg-emerald-700 rounded transition">DOWNLOAD</Link>
-            
-            <div className="my-3 border-t border-emerald-600/50"></div>
-            
-            <Link to="/admin" onClick={toggleMenu} className="block text-center bg-emerald-500 px-5 py-3 rounded text-sm font-black hover:bg-white hover:text-emerald-800 transition shadow-md mt-2">
-              LOGIN ADMIN
+            {/* Logo */}
+            <Link to="/" className="flex items-center gap-3">
+              <img src={logoSekolah} alt="Logo" className="h-14 w-14 object-contain hover:scale-105 transition" />
+              <div>
+                <h1 className="text-xl font-extrabold tracking-wide">AT-TAJDID</h1>
+                <p className="text-[10px] text-emerald-200 font-medium uppercase tracking-widest">RA Persis 175</p>
+              </div>
             </Link>
+
+            {/* Menu Desktop */}
+            <nav className="hidden lg:flex items-center space-x-1">
+              {menuItems.map((item) => {
+                const isActive = location.pathname === item.path;
+                return (
+                  <Link 
+                    key={item.name} 
+                    to={item.path} 
+                    className={`px-4 py-2 text-sm font-bold rounded-lg transition-all relative
+                      ${isActive ? 'bg-white/20 text-white' : 'hover:bg-emerald-800 text-emerald-50'}`}
+                  >
+                    {item.name}
+                    {/* Garis bawah penanda aktif */}
+                    {isActive && (
+                      <span className="absolute bottom-1 left-4 right-4 h-0.5 bg-yellow-300 rounded-full"></span>
+                    )}
+                  </Link>
+                );
+              })}
+            </nav>
+
+            {/* Tombol Mobile */}
+            <button onClick={toggleMenu} className="lg:hidden p-2">
+              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {isMobileMenuOpen ? (
+                  <path d="M6 18L18 6M6 6l12 12" strokeWidth={2} strokeLinecap="round" />
+                ) : (
+                  <path d="M4 6h16M4 12h16M4 18h16" strokeWidth={2} strokeLinecap="round" />
+                )}
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Menu Mobile Dropdown */}
+        <div className={`lg:hidden bg-emerald-900 transition-all duration-300 overflow-hidden ${isMobileMenuOpen ? 'max-h-screen' : 'max-h-0'}`}>
+          <nav className="flex flex-col p-4 space-y-2">
+            {menuItems.map((item) => (
+              <Link 
+                key={item.name} 
+                to={item.path} 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`block px-4 py-3 text-sm font-bold rounded-xl ${location.pathname === item.path ? 'bg-emerald-700 text-white' : 'text-emerald-100'}`}
+              >
+                {item.name} {location.pathname === item.path && '📍'}
+              </Link>
+            ))}
           </nav>
         </div>
-      )}
-    </header>
+      </header>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes gradient-x {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        .animate-gradient-x { animation: gradient-x 8s ease-in-out infinite; }
+      `}} />
+    </>
   );
 }
 
