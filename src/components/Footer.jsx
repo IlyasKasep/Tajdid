@@ -24,7 +24,7 @@ function Footer() {
           
           <ul className="text-emerald-200 text-sm space-y-3 font-medium mb-6 grid grid-cols-2 gap-x-4">
             <li><Link to="/" className="hover:text-white hover:translate-x-1 inline-block transition-transform">Home</Link></li>
-            <li><Link to="/biodata" className="hover:text-white hover:translate-x-1 inline-block transition-transform">Pengurus</Link></li>
+            <li><Link to="/biodata" className="hover:text-white hover:translate-x-1 inline-block transition-transform">Pengelola</Link></li>
             <li><Link to="/galeri" className="hover:text-white hover:translate-x-1 inline-block transition-transform">Galeri</Link></li>
             <li><Link to="/berita" className="hover:text-white hover:translate-x-1 inline-block transition-transform">Berita</Link></li>
             <li><Link to="/download" className="hover:text-white hover:translate-x-1 inline-block transition-transform">Download</Link></li>
@@ -33,7 +33,7 @@ function Footer() {
 
           {/* Tombol WhatsApp Redirect */}
           <a 
-            href="https://wa.me/6281234567890" 
+            href="https://wa.me/6287821057917" 
             target="_blank" 
             rel="noopener noreferrer" 
             className="inline-flex items-center gap-2 bg-emerald-800 hover:bg-emerald-700 text-amber-300 hover:text-white px-5 py-2.5 rounded-xl transition-all font-bold border border-emerald-700 shadow-sm"
@@ -52,9 +52,8 @@ function Footer() {
             <div className="flex items-start gap-3">
               <span className="text-xl">📍</span>
               <p>
-                Jl. Raya Pendidikan No. 175<br />
-                Kecamatan Maju Bersama<br />
-                Kota Pendidikan, 12345
+              RA Persis 175 At Tajdid<br></br>
+              Jl. Pasanggrahan, Pasirjambu, Kec. Pasirjambu, Kabupaten Bandung, Jawa Barat 40972
               </p>
             </div>
             <div className="flex items-start gap-3">

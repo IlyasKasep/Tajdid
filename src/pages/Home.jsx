@@ -11,15 +11,15 @@ import 'swiper/css/pagination';
 // === DATA FOTO & SLOGAN UNIK ANAK TK ===
 const sliderData = [
   {
-    src: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=800&q=80",
+    src: "https://i.pinimg.com/736x/71/33/41/713341b70a80652e7fe057de2cca8de4.jpg",
     slogan: "✨ Bermain dengan Hati, Belajar dengan Gembira!"
   },
   {
-    src: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=800&auto=format&fit=crop",
+    src: "https://i.pinimg.com/736x/aa/3b/9a/aa3b9a64432539d78c68de336e001209.jpg",
     slogan: "🌟 Menjadi Bintang Kecil yang Berakhlak Mulia"
   },
   {
-    src: "https://images.unsplash.com/photo-1587654062363-20a2ea0958b2?q=80&w=800&auto=format&fit=crop",
+    src: "https://i.pinimg.com/1200x/b2/07/b5/b207b540c15b176d252ff575eb9612cb.jpg",
     slogan: "🚀 Eksplorasi Tanpa Batas, Tumbuh dengan Cerdas"
   }
 ];
@@ -48,14 +48,15 @@ function Home({ berita = [] }) {
             </div>
             {/* Ukuran font disesuaikan: text-3xl untuk mobile, text-6xl untuk laptop */}
             <h1 className="text-3xl lg:text-6xl font-black text-slate-800 leading-tight">
-              Dunia Ceria di <br className="hidden lg:block" />
-              <span className="text-emerald-600 drop-shadow-sm">RA At-Tajdid!</span>
+              Belajar Adalah <br className="hidden lg:block" /> 
+              <span className="text-emerald-600 drop-shadow-sm">PETUALANGAN</span>
             </h1>
             <p className="text-sm lg:text-base text-slate-600 max-w-[280px] md:max-w-md mx-auto lg:mx-0 leading-relaxed font-medium">
+              RA AT-TAJDID<br></br>
               Tempat tumbuhnya generasi sehat, cerdas, bahagia, dan berakhlak mulia sejak tahun 2010.
             </p>
             <div className="flex flex-wrap justify-center lg:justify-start gap-4 pt-2">
-              <Link to="/kontak" className="bg-rose-500 text-white font-black px-6 py-3 lg:px-8 lg:py-3.5 rounded-full hover:bg-rose-600 transition-all hover:scale-105 shadow-[0_4px_0_rgb(225,29,72,1)] active:translate-y-1 active:shadow-none text-sm lg:text-base">
+              <Link to="https://bit.ly/PendaftaranOnlineRAattajdid" className="bg-rose-500 text-white font-black px-6 py-3 lg:px-8 lg:py-3.5 rounded-full hover:bg-rose-600 transition-all hover:scale-105 shadow-[0_4px_0_rgb(225,29,72,1)] active:translate-y-1 active:shadow-none text-sm lg:text-base">
                 Daftar Sekarang 🚀
               </Link>
             </div>

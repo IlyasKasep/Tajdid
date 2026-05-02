@@ -54,7 +54,7 @@ function Kontak() {
                 </div>
 
                 {/* WhatsApp */}
-                <a href="https://wa.me/628123456789" target="_blank" rel="noreferrer" className="flex gap-4 group">
+                <a href="https://wa.me/6287821057917" target="_blank" rel="noreferrer" className="flex gap-4 group">
                   <div className="bg-emerald-50 p-3 rounded-2xl text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors h-fit">
                     <MessageCircle size={24} />
                   </div>

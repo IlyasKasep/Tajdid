@@ -11,7 +11,7 @@ function Header() {
   // Sesuaikan path ini dengan yang ada di App.jsx
   const menuItems = [
     { name: 'HOME', path: '/' },
-    { name: 'PENGURUS', path: '/biodata' },
+    { name: 'PENGELOLA', path: '/biodata' },
     { name: 'GALERI', path: '/galeri' },
     { name: 'BERITA', path: '/berita' }, // Tambahkan ini
     { name: 'DOWNLOAD', path: '/download' },

@@ -30,7 +30,7 @@ function Biodata() {
     <main className="py-16 max-w-7xl mx-auto px-4 min-h-screen bg-slate-50">
       <div className="text-center mb-16">
         <h2 className="text-3xl md:text-4xl font-black text-slate-800 uppercase tracking-widest">
-          Profil Pengurus & Guru
+          Profil Pengelola & Guru
         </h2>
         <p className="text-emerald-600 mt-2 font-bold italic">RA At-Tajdied</p>
         <div className="w-24 h-1.5 bg-emerald-500 mx-auto mt-4 rounded-full"></div>
