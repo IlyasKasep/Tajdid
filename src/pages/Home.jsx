@@ -31,36 +31,40 @@ function Home({ berita = [] }) {
     <div className="bg-teal-50 min-h-screen font-sans text-slate-700 overflow-x-hidden">
       
       {/* ================= HERO SECTION ================= */}
-      <section className="relative pt-12 pb-32 lg:pt-20 lg:pb-48 bg-gradient-to-b from-emerald-200 to-teal-50 px-6 overflow-hidden">
+      <section className="relative pt-8 pb-16 lg:pt-20 lg:pb-48 bg-gradient-to-b from-emerald-200 to-teal-50 px-6 overflow-hidden">
         
-        {/* Dekorasi Bergerak */}
+        {/* Dekorasi Bergerak (Hanya tampil di layar besar) */}
         <div className="hidden lg:block absolute top-10 left-10 text-6xl animate-slow-spin opacity-70 select-none">☀️</div>
         <div className="hidden lg:block absolute top-24 right-16 text-5xl animate-float opacity-80 select-none">🦋</div>
         <div className="hidden lg:block absolute bottom-20 left-20 text-7xl animate-float-delayed opacity-70 select-none">🐌</div>
 
-        <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-center relative z-10">
+        {/* Ubah gap-12 menjadi gap-8 lg:gap-12 agar jarak atas-bawah pas di mobile */}
+        <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-8 lg:gap-12 items-center relative z-10">
           
-          <div className="text-center lg:text-left space-y-6">
-            <div className="inline-block bg-teal-600 text-white font-black px-4 py-1.5 rounded-full text-sm tracking-widest uppercase mb-2 shadow-sm animate-pulse-slow">
+          {/* AREA TEKS */}
+          <div className="text-center lg:text-left space-y-4 lg:space-y-6">
+            <div className="inline-block bg-teal-600 text-white font-black px-3 py-1 lg:px-4 lg:py-1.5 rounded-full text-xs lg:text-sm tracking-widest uppercase mb-1 shadow-sm animate-pulse-slow">
               RA PERSIS 175 AT TAJDID
             </div>
-            <h1 className="text-4xl lg:text-6xl font-black text-slate-800 leading-tight">
-              Dunia Ceria di <br />
+            {/* Ukuran font disesuaikan: text-3xl untuk mobile, text-6xl untuk laptop */}
+            <h1 className="text-3xl lg:text-6xl font-black text-slate-800 leading-tight">
+              Dunia Ceria di <br className="hidden lg:block" />
               <span className="text-emerald-600 drop-shadow-sm">RA At-Tajdid!</span>
             </h1>
-            <p className="text-base text-slate-600 max-w-md mx-auto lg:mx-0 leading-relaxed font-medium">
+            <p className="text-sm lg:text-base text-slate-600 max-w-[280px] md:max-w-md mx-auto lg:mx-0 leading-relaxed font-medium">
               Tempat tumbuhnya generasi sehat, cerdas, bahagia, dan berakhlak mulia sejak tahun 2010.
             </p>
             <div className="flex flex-wrap justify-center lg:justify-start gap-4 pt-2">
-              <Link to="/kontak" className="bg-rose-500 text-white font-black px-8 py-3.5 rounded-full hover:bg-rose-600 transition-all hover:scale-105 shadow-[0_4px_0_rgb(225,29,72,1)] active:translate-y-1 active:shadow-none">
+              <Link to="/kontak" className="bg-rose-500 text-white font-black px-6 py-3 lg:px-8 lg:py-3.5 rounded-full hover:bg-rose-600 transition-all hover:scale-105 shadow-[0_4px_0_rgb(225,29,72,1)] active:translate-y-1 active:shadow-none text-sm lg:text-base">
                 Daftar Sekarang 🚀
               </Link>
             </div>
           </div>
 
           {/* SWIPER SLIDER */}
-          <div className="relative flex flex-col items-center group w-full">
-            <div className="w-full aspect-[4/3] md:aspect-square max-w-[450px] rounded-[2.5rem] shadow-2xl overflow-hidden border-8 border-white bg-white relative">
+          <div className="relative flex flex-col items-center group w-full mt-2 lg:mt-0">
+            {/* Ukuran max-width slider dikecilkan di mobile (max-w-[320px]) dan border dipertipis (border-4) */}
+            <div className="w-full aspect-[4/3] md:aspect-square max-w-[320px] lg:max-w-[450px] rounded-[2rem] lg:rounded-[2.5rem] shadow-2xl overflow-hidden border-4 lg:border-8 border-white bg-white relative">
               <Swiper
                 modules={[Navigation, Pagination, Autoplay]}
                 navigation={true}
@@ -68,7 +72,7 @@ function Home({ berita = [] }) {
                 autoplay={{ delay: 5000, disableOnInteraction: false }}
                 loop={true}
                 onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
-                className="w-full h-full rounded-[2rem] hero-swiper"
+                className="w-full h-full rounded-[1.5rem] lg:rounded-[2rem] hero-swiper"
               >
                 {sliderData.map((item, index) => (
                   <SwiperSlide key={index}>
@@ -77,8 +81,9 @@ function Home({ berita = [] }) {
                 ))}
               </Swiper>
             </div>
-            <div className="mt-6 text-center h-12 flex items-center justify-center w-full max-w-[400px]">
-               <p key={activeIndex} className="text-teal-800 font-bold text-lg md:text-xl italic animate-bounce drop-shadow-sm">
+            {/* Deskripsi slogan disesuaikan margin dan font-nya untuk mobile */}
+            <div className="mt-4 lg:mt-6 text-center h-10 lg:h-12 flex items-center justify-center w-full max-w-[320px] lg:max-w-[400px] px-2">
+               <p key={activeIndex} className="text-teal-800 font-bold text-sm lg:text-xl italic animate-bounce drop-shadow-sm leading-snug">
                  {sliderData[activeIndex]?.slogan}
                </p>
             </div>
@@ -215,7 +220,7 @@ function Home({ berita = [] }) {
           <h2 className="text-3xl font-black text-slate-800">Tentang Kami</h2>
         </div>
         <p className="text-slate-600 leading-relaxed text-lg">
-          <strong className="text-emerald-600">RA Persis 175 At Tajdid</strong> adalah lembaga Pendidikan Anak Usia Dini untuk anak usia 4-6 tahun yang telah mendapat ijin operasional sejak tahun <span className="bg-emerald-100 px-2 py-0.5 rounded font-bold text-emerald-700">2010</span>. 
+          <strong className="text-emerald-600">RA Persis 175 At Tajdid</strong> merupakan lembaga Pendidikan Anak Usia Dini untuk anak usia 4-6 tahun yang telah mendapat ijin operasional sejak tahun <span className="bg-emerald-100 px-2 py-0.5 rounded font-bold text-emerald-700">2010</span>. 
         </p>
         
         {/* Tim Pengelola */}
