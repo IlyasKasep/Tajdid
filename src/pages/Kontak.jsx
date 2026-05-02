@@ -47,7 +47,8 @@ function Kontak() {
                   <div>
                     <p className="text-xs font-black text-teal-600 uppercase tracking-widest mb-1">Alamat Sekolah</p>
                     <p className="text-slate-600 text-sm leading-relaxed">
-                      Jl. Terusan Bojongsoang No.175, Kec. Bojongsoang, Kabupaten Bandung, Jawa Barat.
+                    RA Persis 175 At Tajdid
+                    Jl. Pasanggrahan, Pasirjambu, Kec. Pasirjambu, Kabupaten Bandung, Jawa Barat 40972
                     </p>
                   </div>
                 </div>
@@ -102,7 +103,7 @@ function Kontak() {
               <div className="w-full h-[400px] lg:h-full min-h-[500px] rounded-[2.2rem] overflow-hidden bg-slate-100 border-2 border-slate-50 relative">
                 <iframe 
                   title="Lokasi RA At-Tajdid"
-                  src={mapUrl}
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3108.6264484830467!2d107.4717579!3d-7.097503899999999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e68f315cd98db3b%3A0x87a663b4939a900e!2sRA%20Persis%20175%20At%20Tajdid!5e1!3m2!1sid!2sid!4v1777647154582!5m2!1sid!2sid"
                   className="w-full h-full border-0"
                   allowFullScreen="" 
                   loading="lazy" 
@@ -112,8 +113,8 @@ function Kontak() {
                 {/* Floating Button Google Maps */}
                 <div className="absolute bottom-6 left-6 right-6">
                     <a 
-                      href="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3959.2456717917485!2d107.46918297375399!3d-7.097498569581883!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e68f315cd98db3b%3A0x87a663b4939a900e!2sRA%20Persis%20175%20At%20Tajdid!5e0!3m2!1sid!2sid!4v1777621321508!5m2!1sid!2sid" 
-                      target="_blank" 
+                      href="https://www.google.com/maps/place/RA+Persis+175+At+Tajdid/"
+                      target="_blank"
                       rel="noreferrer"
                       className="bg-white/90 backdrop-blur px-6 py-3 rounded-2xl shadow-xl flex items-center justify-center gap-3 text-slate-800 font-black hover:bg-emerald-500 hover:text-white transition-all transform active:scale-95"
                     >

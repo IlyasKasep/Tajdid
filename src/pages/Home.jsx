@@ -87,6 +87,122 @@ function Home({ berita = [] }) {
         </div>
       </section>
 
+      {/* ================= SECTION BARU: DESKRIPSI & PROFIL LENGKAP ================= */}
+      <section className="py-16 px-6 max-w-6xl mx-auto relative z-10">
+        <div className="bg-white rounded-[3rem] shadow-xl border-t-8 border-emerald-500 overflow-hidden relative group">
+          
+          {/* Dekorasi Latar Belakang */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-50 rounded-bl-[100%] pointer-events-none transition-transform duration-700 group-hover:scale-110"></div>
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-amber-50 rounded-tr-[100%] pointer-events-none transition-transform duration-700 group-hover:scale-110"></div>
+          
+          <div className="p-8 md:p-12 lg:p-16 space-y-12 relative z-10">
+            
+            {/* 1. Header & Intro Paragraf */}
+            <div className="text-center space-y-6 max-w-4xl mx-auto">
+              <h2 className="text-3xl lg:text-4xl font-black text-slate-800 leading-tight">
+                Selamat Datang di <br className="hidden md:block"/>
+                <span className="text-emerald-600">RA Persis 175 At Tajdid</span>
+              </h2>
+              <p className="inline-block bg-teal-100 text-teal-800 font-bold px-6 py-2 rounded-full text-sm md:text-base border border-teal-200">
+                "Tempat Tumbuhnya Generasi Sehat, Cerdas, Bahagia & Berakhlak Mulia"
+              </p>
+              
+              <div className="text-slate-600 leading-relaxed space-y-5 text-justify md:text-center font-medium mt-6">
+                <p>
+                  Setiap anak adalah amanah sekaligus anugerah dari Allah yang luar biasa. Kami percaya bahwa setiap anak istimewa dengan potensi luar biasa. Kami hadir sebagai ruang belajar yang aman, menyenangkan, dan penuh kasih sayang, di mana anak-anak dapat tumbuh dan berkembang secara optimal, baik secara kognitif, sosial-emosional, maupun spiritual.
+                </p>
+                <p>
+                  Dengan pendekatan <strong className="text-emerald-600">Kurikulum Merdeka</strong> yang dipadukan dengan nilai-nilai keIslaman dan pendidikan berbasis cinta, kami mengajak anak belajar melalui bermain, bereksplorasi dan berinteraksi secara aktif. Setiap kegiatan dirancang untuk menumbuhkan ketauhidan, rasa ingin tahu, kemandirian, serta karakter positif sejak dini.
+                </p>
+              </div>
+            </div>
+
+            {/* 2. Grid Dua Kolom (Poin-Poin) */}
+            <div className="grid md:grid-cols-2 gap-8 lg:gap-10">
+              
+              {/* Kolom Kiri: Kami Mengenalkan */}
+              <div className="bg-teal-50/80 p-8 rounded-[2rem] border border-teal-100 shadow-sm hover:shadow-md transition-shadow">
+                <h3 className="text-xl font-black text-teal-800 mb-6 flex items-center gap-3">
+                  <span className="text-3xl animate-bounce-slow">🌱</span> Kami Mengenalkan:
+                </h3>
+                <ul className="space-y-4">
+                  {[
+                    "Akhlak mulia sejak dini",
+                    "Kemandirian dan rasa tanggung jawab",
+                    "Cinta kepada Allah, Rasul, sesama manusia, ilmu dan peduli lingkungan",
+                    "Kebiasaan baik dalam kehidupan sehari-hari"
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-start gap-3">
+                      <div className="bg-teal-200 text-teal-700 w-6 h-6 rounded-full flex items-center justify-center text-xs flex-shrink-0 mt-0.5 font-black">✓</div>
+                      <span className="text-slate-700 font-medium leading-relaxed">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Kolom Kanan: Mengapa Memilih Kami */}
+              <div className="bg-amber-50/80 p-8 rounded-[2rem] border border-amber-100 shadow-sm hover:shadow-md transition-shadow">
+                <h3 className="text-xl font-black text-amber-800 mb-6 flex items-center gap-3">
+                  <span className="text-3xl animate-wiggle">⭐</span> Mengapa Memilih Kami?
+                </h3>
+                <ul className="space-y-4">
+                  {[
+                    "Lingkungan belajar yang aman, nyaman, dan ramah anak",
+                    "Guru yang ramah, sabar, profesional, dan penuh kasih sayang",
+                    "Kegiatan kreatif, edukatif, dan menyenangkan setiap hari",
+                    "Penanaman nilai agama dan akhlak mulia sejak dini",
+                    "Pendekatan pembelajaran yang menghargai keunikan setiap anak",
+                    "Pembiasaan ibadah sederhana (doa, adab, dan kebiasaan baik)",
+                    "Pendampingan sesuai tahap tumbuh kembang anak"
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-start gap-3">
+                      <div className="bg-amber-200 text-amber-700 w-6 h-6 rounded-full flex items-center justify-center text-xs flex-shrink-0 mt-0.5 font-black">✓</div>
+                      <span className="text-slate-700 font-medium leading-relaxed">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+            </div>
+
+            {/* 3. Penutup & Call to Action Soft */}
+            <div className="bg-gradient-to-br from-emerald-600 to-teal-700 rounded-[2.5rem] p-8 md:p-12 text-white text-center shadow-xl relative overflow-hidden">
+              {/* Ornamen Background */}
+              <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-16 -mt-16 animate-slow-spin"></div>
+              <div className="absolute bottom-0 left-0 w-32 h-32 bg-yellow-300/10 rounded-full -ml-10 -mb-10 animate-float"></div>
+              
+              <div className="relative z-10 max-w-3xl mx-auto">
+                <p className="text-lg md:text-xl font-semibold mb-6">
+                  "Kami tidak hanya mendidik anak untuk menjadi pintar, tetapi juga membimbing mereka menjadi pribadi yang beriman, berilmu, berakhlak, percaya diri, mandiri dan siap menghadapi masa depan."
+                </p>
+                <h4 className="text-2xl lg:text-3xl font-black text-yellow-300 mb-8 drop-shadow-md">
+                  💛 Bersama kami, anak belajar dengan bahagia, tumbuh dengan cinta.
+                </h4>
+                
+                <div className="space-y-4 text-emerald-50 mb-10 text-sm md:text-base leading-relaxed">
+                  <p>
+                    Mari bergabung dan menjadi bagian dari keluarga besar RA Persis 175 At Tajdid. Kami berkomitmen mendampingi tumbuh kembang si kecil dengan penuh kasih sayang, kesabaran, dan nilai-nilai kebaikan.
+                  </p>
+                  <p>
+                    Di sini, anak-anak belajar melalui bermain, tertawa, dan bereksplorasi dalam suasana yang nyaman dan menyenangkan. Belajar tidak harus kaku, karena dengan hati yang bahagia, anak akan lebih mudah menyerap ilmu dan tumbuh menjadi pribadi yang percaya diri. Kami ingin setiap langkah kecil ananda di sini menjadi bagian dari perjalanan besar mereka di masa depan.
+                  </p>
+                </div>
+
+                <div className="border-t border-white/20 pt-8">
+                  <p className="font-bold text-lg md:text-xl mb-5">
+                    💛 Yuk, Ayah Bunda… temani tumbuh kembang si kecil bersama kami.
+                  </p>
+                  <div className="inline-block bg-white text-emerald-800 font-black px-6 py-3 rounded-full shadow-lg border-2 border-emerald-100 hover:scale-105 transition-transform duration-300">
+                    “Belajar dengan Ceria, Tumbuh dalam Cinta, Berakhlak Mulia”
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
       {/* ================= SECTION: PROFIL & PENGELOLA (UPDATED WITH LINKS) ================= */}
 <section className="py-16 px-6 max-w-6xl mx-auto">
   <div className="bg-white rounded-[3rem] shadow-xl border-t-8 border-emerald-500 overflow-hidden">
