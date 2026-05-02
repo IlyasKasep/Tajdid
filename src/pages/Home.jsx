@@ -264,7 +264,7 @@ function Home({ berita = [] }) {
             <div className="bg-white p-3 rounded-[2rem] shadow-2xl rotate-2 group-hover/photo:rotate-0 group-hover/photo:scale-105 transition-all duration-500">
               <div className="aspect-[4/3] rounded-[1.5rem] overflow-hidden bg-slate-200 relative">
                  <img 
-                  src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=800&q=80" 
+                  src="https://i.pinimg.com/736x/df/fd/3c/dffd3c56e49f41c63899eb47372925af.jpg" 
                   alt="Foto Pengelola RA At Tajdid" 
                   className="w-full h-full object-cover"
                  />
