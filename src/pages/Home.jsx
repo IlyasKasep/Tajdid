@@ -314,6 +314,48 @@ function Home({ berita = [] }) {
         </div>
       </section>
 
+      {/* ================= SECTION: GALERI SINGKAT ================= */}
+      <section className="py-16 px-6 max-w-6xl mx-auto">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl lg:text-4xl font-black text-slate-800 mb-4">
+            Keceriaan Kami <span className="inline-block animate-bounce-slow">📸</span>
+          </h2>
+          <p className="text-slate-600 font-medium">Potret keseruan ananda saat bermain dan belajar di RA At-Tajdid.</p>
+        </div>
+        
+        {/* Grid 4 Kolom (2 di mobile, 4 di layar besar), Total 8 Foto */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6">
+          {[
+            '/img/foto1.jpg',
+            '/img/foto2.jpg',
+            '/img/foto3.jpg',
+            '/img/foto4.jpg',
+            '/img/foto5.jpg',
+            '/img/foto6.jpg',
+            '/img/foto7.jpg',
+            '/img/foto8.jpg',
+          ].map((imgSrc, idx) => (
+            <div key={idx} className="aspect-square rounded-[2rem] overflow-hidden shadow-sm hover:shadow-xl border-4 border-white relative group">
+              {/* Gambar dari local */}
+              <img 
+                src={imgSrc} 
+                alt={`Kegiatan RA At-Tajdid ${idx + 1}`} 
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+              />
+              {/* Efek overlay tipis saat dihover */}
+              <div className="absolute inset-0 bg-emerald-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </div>
+          ))}
+        </div>
+        
+        {/* Tombol ke halaman Galeri penuh (opsional) */}
+        <div className="text-center mt-10">
+          <Link to="/galeri" className="inline-block bg-teal-50 text-teal-700 font-bold px-6 py-2.5 rounded-xl border border-teal-200 hover:bg-teal-100 transition-colors">
+            Lihat Semua Foto &rarr;
+          </Link>
+        </div>
+      </section>
+
       {/* ================= BERITA ================= */}
       <section className="py-16 px-6 max-w-6xl mx-auto">
         <div className="flex justify-between items-end mb-10">
