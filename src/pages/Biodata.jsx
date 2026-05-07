@@ -72,7 +72,7 @@ function Biodata() {
                   <div className="bg-white p-3 rounded-[2rem] shadow-2xl rotate-2">
                     <div className="aspect-[4/3] rounded-[1.5rem] overflow-hidden bg-slate-200 relative">
                        <img 
-                        src="https://i.pinimg.com/736x/df/fd/3c/dffd3c56e49f41c63899eb47372925af.jpg" 
+                        src="/img/guru.png" 
                         alt="Foto Pengelola RA At Tajdid" 
                         className="w-full h-full object-cover"
                        />

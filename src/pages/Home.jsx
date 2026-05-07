@@ -286,7 +286,8 @@ function Home({ berita = [] }) {
         <div className="grid md:grid-cols-3 gap-8">
           {berita.slice(0, 3).map((item, idx) => (
            <Link 
-           to="/berita" 
+           /* ======= UBAH BAGIAN INI ======= */
+           to={`/berita/${item.id}`} 
            key={idx} 
            className="bg-white rounded-[2rem] p-4 shadow-sm border-2 border-transparent hover:border-emerald-100 hover:shadow-xl transition-all block group"
          >
@@ -298,7 +299,7 @@ function Home({ berita = [] }) {
          </Link>
           ))}
         </div>
-      </section>  
+      </section>
 
       {/* ================= FOOTER ================= */}
       <footer className="bg-emerald-800 pt-20 pb-10 border-t-8 border-teal-400 text-white text-center relative overflow-hidden mt-10">

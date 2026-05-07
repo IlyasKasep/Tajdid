@@ -7,6 +7,7 @@ import { Routes, Route, useNavigate } from 'react-router-dom';
 // Import Komponen Global (Langsung dimuat karena selalu muncul)
 import Header from './components/Header';
 import Footer from './components/Footer';
+import BeritaDetail from './pages/BeritaDetail';
 
 // MENGGUNAKAN LAZY LOADING: Halaman hanya dimuat saat diklik (Mencegah Blank Putih)
 const Home = lazy(() => import('./pages/Home'));
@@ -162,6 +163,7 @@ function App() {
             <Route path="/biodata/:id" element={<BiodataDetail />} />
             <Route path="/galeri" element={<Galeri />} />
             <Route path="/berita" element={<BeritaSekolah berita={berita} />} />
+            <Route path="/berita/:id" element={<BeritaDetail />} />
             <Route path="/download" element={<Download />} />
             <Route path="/kontak" element={<Kontak />} />
             <Route path="/admin" element={

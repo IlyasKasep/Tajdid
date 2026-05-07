@@ -82,7 +82,7 @@ function Kontak() {
                   </div>
                   <div>
                     <p className="text-xs font-black text-amber-500 uppercase tracking-widest mb-1">Jam Belajar</p>
-                    <p className="text-slate-600 text-sm">Senin - Jumat: 07.30 - 11.00 WIB</p>
+                    <p className="text-slate-600 text-sm">Senin - Jumat: 07.30 - 12.00 WIB</p>
                   </div>
                 </div>
               </div>
