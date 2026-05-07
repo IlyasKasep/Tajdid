@@ -60,7 +60,7 @@ function Kontak() {
                   </div>
                   <div>
                     <p className="text-xs font-black text-emerald-600 uppercase tracking-widest mb-1">WhatsApp Admin</p>
-                    <p className="text-slate-800 font-bold hover:underline">0812-3456-7890 (Ibu Ela)</p>
+                    <p className="text-slate-800 font-bold hover:underline">+62 878-2105-7917 (Ibu Ela)</p>
                   </div>
                 </a>
 

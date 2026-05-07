@@ -11,15 +11,13 @@ import 'swiper/css/pagination';
 // === DATA FOTO & SLOGAN UNIK ANAK TK ===
 const sliderData = [
   {
-    src: '/img/1 (4).jpeg',
+    src: '/img/polisi.jpeg',
   },
   {
-    src: "https://i.pinimg.com/736x/aa/3b/9a/aa3b9a64432539d78c68de336e001209.jpg",
-    slogan: "🌟 Menjadi Bintang Kecil yang Berakhlak Mulia"
+    src: "/img/bartanam.jpeg",
   },
   {
-    src: "https://i.pinimg.com/1200x/b2/07/b5/b207b540c15b176d252ff575eb9612cb.jpg",
-    slogan: "🚀 Eksplorasi Tanpa Batas, Tumbuh dengan Cerdas"
+    src: "/img/manasik.jpeg",
   }
 ];
 
@@ -249,14 +247,14 @@ function Home({ berita = [] }) {
         {/* Grid 4 Kolom (2 di mobile, 4 di layar besar), Total 8 Foto */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6">
           {[
-            '/img/1 (1).jpeg',
-            '/img/1 (7).jpeg',
-            '/img/1 (2).jpeg',
-            '/img/1 (8).jpeg',
-            '/img/1 (9).jpeg',
-            '/img/1 (10).jpeg',
-            '/img/1 (11).jpeg',
-            '/img/1 (14).jpeg',
+            '/img/main.jpeg',
+            '/img/main2.jpeg',
+            '/img/main3.jpeg',
+            '/img/main4.jpeg',
+            '/img/main5.jpeg',
+            '/img/main6.jpeg',
+            '/img/main7.jpeg',
+            '/img/main8.jpeg',
           ].map((imgSrc, idx) => (
             <div key={idx} className="aspect-square rounded-[2rem] overflow-hidden shadow-sm hover:shadow-xl border-4 border-white relative group">
               {/* Gambar dari local */}
