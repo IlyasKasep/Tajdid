@@ -71,7 +71,7 @@ function Kontak() {
                   </div>
                   <div>
                     <p className="text-xs font-black text-rose-500 uppercase tracking-widest mb-1">Email Resmi</p>
-                    <p className="text-slate-800 font-bold">ra.attajdid@gmail.com</p>
+                    <p className="text-slate-800 font-bold">helasni@gmail.com</p>
                   </div>
                 </div>
 

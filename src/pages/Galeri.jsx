@@ -29,7 +29,6 @@ function Galeri() {
     <main className="py-16 max-w-7xl mx-auto px-4 min-h-screen relative">
       <div className="text-center mb-16">
         <h2 className="text-3xl md:text-4xl font-extrabold text-gray-800 uppercase tracking-widest">Galeri</h2>
-        <p className="text-emerald-600 mt-2 font-medium">Dokumentasi aktivitas dan momen berharga di At-Tajdid</p>
         <div className="w-24 h-1 bg-emerald-500 mx-auto mt-4 rounded-full"></div>
       </div>
 

@@ -14,7 +14,7 @@ function Footer() {
     RA PERSIS 175 <span className="text-emerald-400">AT-TAJDID</span>
   </h4>
   <p className="text-emerald-200 text-sm leading-relaxed font-medium">
-    Tempat tumbuhnya generasi sehat, cerdas, bahagia, dan berakhlak mulia sejak tahun 2010. Kami hadir sebagai ruang belajar yang aman, menyenangkan, dan penuh kasih sayang untuk buah hati Anda.
+    Tempat tumbuhnya generasi sehat, cerdas, bahagia, dan berakhlak mulia. Kami hadir sebagai ruang belajar yang aman, menyenangkan, dan penuh kasih sayang untuk buah hati Anda.
   </p>
 </div>
 

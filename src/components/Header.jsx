@@ -12,10 +12,11 @@ function Header() {
   const menuItems = [
     { name: 'HOME', path: '/' },
     { name: 'PENGELOLA', path: '/biodata' },
-    { name: 'GALERI', path: '/galeri' },
-    { name: 'BERITA', path: '/berita' }, // Tambahkan ini
+    { name: 'GALERI', path: '/galeri' },// Tambahkan ini
     { name: 'DOWNLOAD', path: '/download' },
-    { name: 'KONTAK', path: '/kontak' }, // Tambahkan ini
+    { name: 'KONTAK', path: '/kontak' }, 
+    { name: 'SARAN', path: '/saran' }, 
+    // Tambahkan ini
   ];
 
   return (

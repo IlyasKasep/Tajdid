@@ -27,7 +27,7 @@ function Download() {
       <div className="max-w-5xl mx-auto">
         
         {/* Header Halaman */}
-        <div className="text-center mb-12">
+        {/* <div className="text-center mb-12">
           <div className="inline-block bg-sky-200 text-sky-800 font-black px-4 py-1.5 rounded-full text-sm uppercase tracking-widest mb-4">
             Pusat Unduhan
           </div>
@@ -37,7 +37,7 @@ function Download() {
           <p className="text-slate-600 max-w-2xl mx-auto text-lg">
             Temukan dan unduh berbagai berkas keperluan administrasi, formulir pendaftaran, hingga brosur RA At-Tajdid di sini.
           </p>
-        </div>
+        </div> */}
 
         {/* Indikator Loading */}
         {loading ? (

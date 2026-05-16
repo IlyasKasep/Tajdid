@@ -8,6 +8,7 @@ import { Routes, Route, useNavigate } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import BeritaDetail from './pages/BeritaDetail';
+import Saran from './pages/Saran';
 
 // MENGGUNAKAN LAZY LOADING: Halaman hanya dimuat saat diklik (Mencegah Blank Putih)
 const Home = lazy(() => import('./pages/Home'));
@@ -18,6 +19,7 @@ const Galeri = lazy(() => import('./pages/Galeri'));
 const Download = lazy(() => import('./pages/Download'));
 const Kontak = lazy(() => import('./pages/Kontak'));
 const BiodataDetail = lazy(() => import('./pages/BiodataDetail'));
+
 
 // Komponen Tampilan Loading (Fallback)
 const PageLoader = () => (
@@ -166,6 +168,7 @@ function App() {
             <Route path="/berita/:id" element={<BeritaDetail />} />
             <Route path="/download" element={<Download />} />
             <Route path="/kontak" element={<Kontak />} />
+            <Route path="/saran" element={<Saran />} />
             <Route path="/admin" element={
               <Admin 
                 user={user} email={email} setEmail={setEmail} password={password} setPassword={setPassword} 

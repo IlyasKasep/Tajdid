@@ -40,23 +40,19 @@ function Home({ berita = [] }) {
           
           {/* AREA TEKS */}
           <div className="text-center lg:text-left space-y-4 lg:space-y-6">
-            <div className="inline-block bg-teal-600 text-white font-black px-3 py-1 lg:px-4 lg:py-1.5 rounded-full text-xs lg:text-sm tracking-widest uppercase mb-1 shadow-sm animate-pulse-slow">
-              RA PERSIS 175 AT TAJDID
-            </div>
+          <div className="inline-block bg-teal-600 text-white font-black px-3 py-1 lg:px-4 lg:py-1.5 rounded-full text-xs lg:text-sm tracking-widest uppercase mb-1 shadow-sm animate-pulse-slow">
+  RA PERSIS 175 AT TAJDID
+</div>
+
             {/* Ukuran font disesuaikan: text-3xl untuk mobile, text-6xl untuk laptop */}
             <h1 className="text-3xl lg:text-6xl font-black text-slate-800 leading-tight">
               Belajar Adalah <br className="hidden lg:block" /> 
-              <span className="text-emerald-600 drop-shadow-sm">PETUALANGAN</span>
+              <span className="text-emerald-600 drop-shadow-sm">BERPETUALANG</span>
             </h1>
             <p className="text-sm lg:text-base text-slate-600 max-w-[280px] md:max-w-md mx-auto lg:mx-0 leading-relaxed font-medium">
-              RA AT-TAJDID<br></br>
-              Tempat tumbuhnya generasi sehat, cerdas, bahagia, dan berakhlak mulia sejak tahun 2010.
+              RA PERSIS 175 AT-TAJDID <br></br>
+              Mewujudkan generasi bertakwa, cerdas, dan mandiri melalui pendidikan anak usia dini yang holistik. Bersama kami, potensi fitrah anak dikembangkan secara optimal demi mencetak pemimpin masa depan yang berakhlak mulia.
             </p>
-            <div className="flex flex-wrap justify-center lg:justify-start gap-4 pt-2">
-              <Link to="https://bit.ly/PendaftaranOnlineRAattajdid" className="bg-rose-500 text-white font-black px-6 py-3 lg:px-8 lg:py-3.5 rounded-full hover:bg-rose-600 transition-all hover:scale-105 shadow-[0_4px_0_rgb(225,29,72,1)] active:translate-y-1 active:shadow-none text-sm lg:text-base">
-                Daftar Sekarang 🚀
-              </Link>
-            </div>
           </div>
 
           {/* SWIPER SLIDER */}
@@ -239,9 +235,8 @@ function Home({ berita = [] }) {
       <section className="py-16 px-6 max-w-6xl mx-auto">
         <div className="text-center mb-10">
           <h2 className="text-3xl lg:text-4xl font-black text-slate-800 mb-4">
-            Keceriaan Kami <span className="inline-block animate-bounce-slow">📸</span>
+            Keseruan Kami <span className="inline-block animate-bounce-slow">📸</span>
           </h2>
-          <p className="text-slate-600 font-medium">Potret keseruan ananda saat bermain dan belajar di RA At-Tajdid.</p>
         </div>
         
         {/* Grid 4 Kolom (2 di mobile, 4 di layar besar), Total 8 Foto */}
@@ -278,34 +273,18 @@ function Home({ berita = [] }) {
       </section>
 
       {/* ================= BERITA ================= */}
-      <section className="py-16 px-6 max-w-6xl mx-auto">
-        <div className="flex justify-between items-end mb-10">
-          <h2 className="text-3xl lg:text-4xl font-black text-slate-800">Berita Sekolah <span className="inline-block animate-bounce-slow">🎪</span></h2>
-          <Link to="/berita" className="text-emerald-600 font-bold text-sm hover:underline">Lihat Semua</Link>
-        </div>
-        <div className="grid md:grid-cols-3 gap-8">
-          {berita.slice(0, 3).map((item, idx) => (
-           <Link 
-           /* ======= UBAH BAGIAN INI ======= */
-           to={`/berita/${item.id}`} 
-           key={idx} 
-           className="bg-white rounded-[2rem] p-4 shadow-sm border-2 border-transparent hover:border-emerald-100 hover:shadow-xl transition-all block group"
-         >
-           <div className="aspect-video bg-teal-50 rounded-2xl overflow-hidden mb-4 relative">
-             {item.gambar && <img src={item.gambar} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt={item.judul} />}
-           </div>
-           <h3 className="font-bold text-slate-800 mb-2 leading-tight group-hover:text-emerald-600 transition-colors">{item.judul}</h3>
-           <p className="text-slate-500 text-xs line-clamp-2">{item.isi}</p>
-         </Link>
-          ))}
-        </div>
-      </section>
+      
 
       {/* ================= FOOTER ================= */}
       <footer className="bg-emerald-800 pt-20 pb-10 border-t-8 border-teal-400 text-white text-center relative overflow-hidden mt-10">
         <div className="max-w-4xl mx-auto px-6">
-          <h2 className="text-3xl font-black mb-2 italic">“Belajar dengan Ceria, Tumbuh dalam Cinta”</h2>
+          <h2 className="text-3xl font-black mb-2 italic">“Belajar dengan Gembira, Tumbuh dalam Cinta”</h2>
           <p className="text-teal-300 font-black text-sm tracking-widest uppercase mb-6 bg-teal-900/50 inline-block px-4 py-1 rounded-full tracking-[0.2em]">RA At-Tajdid</p>
+          <div className="flex flex-wrap justify-center gap-4 pt-2 w-full">
+  <Link to="https://bit.ly/PendaftaranOnlineRAattajdid" className="bg-rose-500 text-white font-black px-6 py-3 lg:px-8 lg:py-3.5 rounded-full hover:bg-rose-600 transition-all hover:scale-105 shadow-[0_4px_0_rgb(225,29,72,1)] active:translate-y-1 active:shadow-none text-sm lg:text-base">
+    Daftar Sekarang 🚀
+  </Link>
+</div>
           <div className="pt-8 border-t border-emerald-700/50 text-[10px] opacity-60 uppercase tracking-widest">
             © {new Date().getFullYear()} RA Persis 175 At Tajdid
           </div>

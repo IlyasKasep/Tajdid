@@ -84,56 +84,6 @@ function Biodata() {
           </div>
         </div>
       </section>
-
-      {/* ================= 2. SECTION: DAFTAR PENGURUS LENGKAP ================= */}
-      <section className="py-12 px-6 max-w-6xl mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-black text-slate-800 mb-4">Guru & Staff Kami</h2>
-          <p className="text-slate-500 font-medium">Mengenal lebih dekat para pendidik di RA At-Tajdid</p>
-        </div>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {pengurus.map((item) => (
-            /* Bagian Link ke detail di-comment agar kartu tidak bisa diklik */
-            /* <Link key={item.id} to={`/biodata/${item.id}`} className="group"> */
-            <div key={item.id} className="bg-white rounded-[2.5rem] shadow-md overflow-hidden border border-slate-100 transition-all duration-300">
-              {/* Foto Profile */}
-              <div className="aspect-square relative overflow-hidden bg-slate-100">
-                {item.foto ? (
-                  <img src={item.foto} alt={item.nama} className="w-full h-full object-cover shadow-inner" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-6xl opacity-20">👤</div>
-                )}
-                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-4 py-1 rounded-full shadow-sm">
-                   <p className="text-[10px] font-black text-emerald-600 uppercase tracking-tighter">
-                     {item.jabatan || 'Staff'}
-                   </p>
-                </div>
-              </div>
-
-              {/* Detail */}
-              <div className="p-8">
-                <h3 className="font-black text-xl text-slate-800 mb-2 uppercase tracking-tight">
-                  {item.nama}
-                </h3>
-                <div className="mt-4 pt-4 border-t border-slate-50">
-                  <p className="text-slate-500 text-sm leading-relaxed italic">
-                    {item.keterangan || "Guru berdedikasi di RA At-Tajdied."}
-                  </p>
-                </div>
-              </div>
-            </div>
-            /* </Link> */
-          ))}
-
-          {pengurus.length === 0 && (
-            <div className="col-span-full text-center py-20 bg-white rounded-[3rem] border-2 border-dashed border-slate-200">
-              <p className="text-slate-400 font-medium italic">Data pengurus belum tersedia...</p>
-            </div>
-          )}
-        </div>
-      </section>
-
     </div>
   );
 }
