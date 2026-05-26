@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase'; 
+import { Link } from "react-router-dom";
 
 function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanganiLogin, tanganiLogout }) {
 
@@ -311,6 +312,11 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
               </div>
             </div>
           )}
+
+<Link to="/admin/saran" className="admin-menu-card">
+  <h3>Kelola Saran Masuk</h3>
+  <p>Lihat dan kelola saran yang dikirim oleh pengguna.</p>
+</Link>
 
         </main>
       </div>

@@ -9,6 +9,8 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import BeritaDetail from './pages/BeritaDetail';
 import Saran from './pages/Saran';
+import AdminSaran from "./pages/AdminSaran";
+import LogoPersis from "./assets/Logo_Persis.png";
 
 // MENGGUNAKAN LAZY LOADING: Halaman hanya dimuat saat diklik (Mencegah Blank Putih)
 const Home = lazy(() => import('./pages/Home'));
@@ -66,6 +68,21 @@ function App() {
     ambilDataBerita();
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => setUser(currentUser));
     return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    document.title = "RA Persis 175 At Tajdid";
+  
+    let favicon = document.querySelector("link[rel='icon']");
+  
+    if (!favicon) {
+      favicon = document.createElement("link");
+      favicon.rel = "icon";
+      favicon.type = "image/png";
+      document.head.appendChild(favicon);
+    }
+  
+    favicon.href = LogoPersis;
   }, []);
 
   const tanganiLogin = async (e) => {
@@ -169,6 +186,7 @@ function App() {
             <Route path="/download" element={<Download />} />
             <Route path="/kontak" element={<Kontak />} />
             <Route path="/saran" element={<Saran />} />
+            <Route path="/admin/saran" element={<AdminSaran />} />
             <Route path="/admin" element={
               <Admin 
                 user={user} email={email} setEmail={setEmail} password={password} setPassword={setPassword} 
