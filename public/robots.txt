@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://www.ra-attajdid-pasirjambu.sch.id/sitemap.xml
