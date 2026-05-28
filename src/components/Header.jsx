@@ -27,9 +27,7 @@ function Header() {
             
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3">
-            <a href='Admin.jsx'>
-              <img src={logoSekolah} alt="Logo" className="h-14 w-14 object-contain hover:scale-105 transition" />
-              </a>
+              <img src={logoSekolah} alt="Logo RA Persis 175 At-Tajdid" className="h-14 w-14 object-contain hover:scale-105 transition" />
               <div>
                 <h1 className="text-xl font-extrabold tracking-wide">AT-TAJDID</h1>
                 <p className="text-[10px] text-emerald-200 font-medium uppercase tracking-widest"> Raudhatul Athfal Persis 175</p>

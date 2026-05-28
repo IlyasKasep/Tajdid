@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase'; 
-import { Link } from "react-router-dom";
+import AdminSaran from './AdminSaran';
 
 function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanganiLogin, tanganiLogout }) {
 
@@ -124,6 +124,7 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
             { id: 'pengurus', label: '👥 Data Pengurus & Guru' },
             { id: 'galeri', label: '📸 Galeri Foto' },
             { id: 'download', label: '📂 File Download' },
+            { id: 'saran', label: '📩 Kotak Saran Masuk' },
           ].map((item) => (
             <button
               key={item.id} onClick={() => setActiveTab(item.id)}
@@ -139,7 +140,8 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
         {/* AREA KONTEN UTAMA */}
         <main className="lg:w-3/4 bg-white rounded-3xl shadow-sm border border-emerald-50 p-6 md:p-10">
           
-          {/* KETERANGAN / PANDUAN UPLOAD GAMBAR (Tampil di semua tab) */}
+          {/* KETERANGAN / PANDUAN UPLOAD GAMBAR (Tidak tampil di tab saran agar halaman lebih rapi) */}
+          {activeTab !== 'saran' && (
           <div className="bg-blue-50 border border-blue-200 p-5 rounded-2xl mb-8 flex gap-4 items-start shadow-sm">
             <div className="text-3xl animate-bounce-slow">💡</div>
             <div>
@@ -151,6 +153,7 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
               </p>
             </div>
           </div>
+          )}
 
           {/* ========================================================= */}
           {/* TAB 1: KELOLA BERITA */}
@@ -313,10 +316,11 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
             </div>
           )}
 
-<Link to="/admin/saran" className="admin-menu-card">
-  <h3>Kelola Saran Masuk</h3>
-  <p>Lihat dan kelola saran yang dikirim oleh pengguna.</p>
-</Link>
+
+          {/* ========================================================= */}
+          {/* TAB 5: KELOLA SARAN MASUK */}
+          {/* ========================================================= */}
+          {activeTab === 'saran' && <AdminSaran />}
 
         </main>
       </div>
