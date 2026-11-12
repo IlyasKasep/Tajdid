@@ -2,7 +2,8 @@ import { useState, useEffect, Suspense, lazy } from 'react';
 import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from './firebase';
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
+import { MotionConfig } from 'framer-motion';
 
 // Import Komponen Global (Langsung dimuat karena selalu muncul)
 import Header from './components/Header';
@@ -52,6 +53,7 @@ function App() {
   const [errorLogin, setErrorLogin] = useState('');
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   // FUNGSI-FUNGSI DATABASE & AUTENTIKASI (Dipertahankan dari kode lama Anda)
   const ambilDataBerita = async () => {
@@ -65,9 +67,22 @@ function App() {
   };
 
   useEffect(() => {
-    ambilDataBerita();
+    let aktif = true;
+    const muatBeritaAwal = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "berita"));
+        const dataFormat = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        if (aktif) setBerita(dataFormat);
+      } catch (error) {
+        console.error("Gagal mengambil data:", error);
+      }
+    };
+    muatBeritaAwal();
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => setUser(currentUser));
-    return () => unsubscribe();
+    return () => {
+      aktif = false;
+      unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -92,7 +107,7 @@ function App() {
       await signInWithEmailAndPassword(auth, email, password);
       setEmail(''); setPassword('');
       navigate('/admin'); // Arahkan ke admin setelah login sukses
-    } catch (error) {
+    } catch {
       setErrorLogin('Login gagal! Cek kembali email dan password Anda.');
     }
   };
@@ -113,7 +128,7 @@ function App() {
       const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: formData });
       const data = await response.json();
       return data.data.url; 
-    } catch (error) {
+    } catch {
       alert("Gagal mengunggah foto.");
       return null;
     }
@@ -145,7 +160,7 @@ function App() {
         alert("Pengumuman berhasil diunggah!");
       }
       batalEdit(); ambilDataBerita();
-    } catch (error) {
+    } catch {
       alert("Gagal memproses data!");
     }
     setProsesSimpan(false);
@@ -168,43 +183,61 @@ function App() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50 font-sans flex flex-col">
-      {/* HEADER GLOBAL */}
-      <Header user={user} tanganiLogout={tanganiLogout} />
-      
-      <div className="flex-grow pt-4">
-        {/* SUSPENSE membungkus Routes untuk menangani loading saat pindah halaman */}
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            <Route path="/" element={<Home berita={berita} />} />
-            <Route path="/biodata" element={<Biodata />} />
-            <Route path="/biodata/:id" element={<BiodataDetail />} />
-            <Route path="/galeri" element={<Galeri />} />
-            <Route path="/berita" element={<BeritaSekolah berita={berita} />} />
-            <Route path="/berita/:id" element={<BeritaDetail />} />
-            <Route path="/download" element={<Download />} />
-            <Route path="/kontak" element={<Kontak />} />
-            <Route path="/saran" element={<Saran />} />
-            <Route path="/admin/saran" element={<AdminSaran />} />
-            <Route path="/admin" element={
-              <Admin 
-                user={user} email={email} setEmail={setEmail} password={password} setPassword={setPassword} 
-                errorLogin={errorLogin} tanganiLogin={tanganiLogin} berita={berita} judulBaru={judulBaru} 
-                setJudulBaru={setJudulBaru} kategoriBaru={kategoriBaru} setKategoriBaru={setKategoriBaru} 
-                fileGambar={fileGambar} setFileGambar={setFileGambar} urlGambarLama={urlGambarLama} 
-                isiBaru={isiBaru} setIsiBaru={setIsiBaru} simpanAtauUpdateBerita={simpanAtauUpdateBerita} 
-                prosesSimpan={prosesSimpan} idEdit={idEdit} batalEdit={batalEdit} mulaiEdit={mulaiEdit} 
-                hapusBerita={hapusBerita} tanganiLogout={tanganiLogout}
-              />
-            } />
-          </Routes>
-        </Suspense>
-      </div>
+  const isAdminPage = location.pathname.startsWith('/admin');
 
-      {/* FOOTER GLOBAL */}
-      <Footer />
-    </div>
+  return (
+    <MotionConfig reducedMotion="user">
+      <div className="min-h-screen bg-teal-50 font-sans flex flex-col text-slate-900">
+        {/* HEADER GLOBAL (Disembunyikan pada halaman Admin login & dashboard) */}
+        {!isAdminPage && <Header user={user} tanganiLogout={tanganiLogout} />}
+        
+        <div className="flex-grow">
+          {/* SUSPENSE membungkus Routes untuk menangani loading saat pindah halaman */}
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/" element={<Home berita={berita} />} />
+              <Route path="/biodata" element={<Biodata />} />
+              <Route path="/pengelola" element={<Biodata />} />
+              <Route path="/biodata/:id" element={<BiodataDetail />} />
+              <Route path="/galeri" element={<Galeri />} />
+              <Route path="/berita" element={<BeritaSekolah berita={berita} />} />
+              <Route path="/berita/:id" element={<BeritaDetail />} />
+              <Route path="/download" element={<Download />} />
+              <Route path="/kontak" element={<Kontak />} />
+              <Route path="/saran" element={<Saran />} />
+              <Route
+                path="/admin/saran"
+                element={
+                  user ? (
+                    <div className="max-w-6xl mx-auto py-10 px-4 sm:px-6">
+                      <div className="bg-white rounded-3xl border-2 border-emerald-950 shadow-[8px_8px_0px_#064e3b] p-6 md:p-10">
+                        <AdminSaran />
+                      </div>
+                    </div>
+                  ) : (
+                    <Navigate to="/admin" replace />
+                  )
+                }
+              />
+              <Route path="/admin" element={
+                <Admin 
+                  user={user} email={email} setEmail={setEmail} password={password} setPassword={setPassword} 
+                  errorLogin={errorLogin} tanganiLogin={tanganiLogin} berita={berita} judulBaru={judulBaru} 
+                  setJudulBaru={setJudulBaru} kategoriBaru={kategoriBaru} setKategoriBaru={setKategoriBaru} 
+                  fileGambar={fileGambar} setFileGambar={setFileGambar} urlGambarLama={urlGambarLama} 
+                  isiBaru={isiBaru} setIsiBaru={setIsiBaru} simpanAtauUpdateBerita={simpanAtauUpdateBerita} 
+                  prosesSimpan={prosesSimpan} idEdit={idEdit} batalEdit={batalEdit} mulaiEdit={mulaiEdit} 
+                  hapusBerita={hapusBerita} tanganiLogout={tanganiLogout}
+                />
+              } />
+            </Routes>
+          </Suspense>
+        </div>
+
+        {/* FOOTER GLOBAL (Disembunyikan pada halaman Admin login & dashboard) */}
+        {!isAdminPage && <Footer />}
+      </div>
+    </MotionConfig>
   );
 }
 
