@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /admin/*
 
 Sitemap: https://ra-attajdid-pasirjambu.sch.id/sitemap.xml
