@@ -18,7 +18,6 @@ function Header() {
     { name: 'Download', path: '/download' },
     { name: 'Kontak', path: '/kontak' },
     { name: 'Saran', path: '/saran' },
-    { name: 'Panduan', path: '/panduan' },
   ];
 
   const isPathActive = (path) => {
