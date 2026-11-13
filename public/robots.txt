@@ -4,4 +4,4 @@ Disallow: /admin
 Disallow: /admin/
 Disallow: /admin/*
 
-Sitemap: https://ra-attajdid-pasirjambu.sch.id/sitemap.xml
+Sitemap: https://www.ra-attajdid-pasirjambu.sch.id/sitemap.xml
