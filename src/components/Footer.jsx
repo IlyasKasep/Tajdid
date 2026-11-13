@@ -47,6 +47,8 @@ function Footer() {
             <li><Link to="/download" className="hover:text-amber-300 hover:translate-x-1 inline-block transition-transform">Download</Link></li>
             <li><Link to="/kontak" className="hover:text-amber-300 hover:translate-x-1 inline-block transition-transform">Kontak</Link></li>
             <li><Link to="/saran" className="hover:text-amber-300 hover:translate-x-1 inline-block transition-transform">Kotak Saran</Link></li>
+            <li><Link to="/panduan" className="text-amber-300 hover:text-amber-200 hover:translate-x-1 inline-block transition-transform">🎬 Video Panduan</Link></li>
+            <li><Link to="/admin" className="hover:text-amber-300 hover:translate-x-1 inline-block transition-transform">Portal Admin</Link></li>
           </ul>
 
           <a

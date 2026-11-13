@@ -20,6 +20,7 @@ import {
   MessageSquareHeart,
   PanelLeftClose,
   PanelLeftOpen,
+  PlayCircle,
   Plus,
   Star,
   Trash2,
@@ -791,6 +792,16 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
                 })}
               </span>
             </div>
+
+            {/* Shortcut Video Panduan Admin */}
+            <Link
+              to="/panduan"
+              className="inline-flex items-center gap-1.5 bg-amber-300 hover:bg-amber-400 text-emerald-950 px-3 py-1.5 rounded-xl font-black border border-emerald-950 text-xs shadow-sm hover:shadow transition"
+              title="Tonton Video Panduan Penggunaan & Pengenalan"
+            >
+              <PlayCircle size={14} className="fill-emerald-950 text-amber-300" />
+              <span className="hidden sm:inline">Video Panduan</span>
+            </Link>
 
             {/* Shortcut Lihat Website (Satu-satunya link ke website) */}
             <Link

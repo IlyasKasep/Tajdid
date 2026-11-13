@@ -15,6 +15,7 @@ import BeritaDetail from './pages/BeritaDetail';
 import Download from './pages/Download';
 import Kontak from './pages/Kontak';
 import Saran from './pages/Saran';
+import VideoPanduan from './pages/VideoPanduan';
 import LogoPersis from "./assets/Logo_Persis.png";
 
 // LAZY LOADING khusus halaman Admin (Memisahkan bundle Three.js dari halaman publik)
@@ -30,6 +31,7 @@ const getMenuRouteIndex = (pathname) => {
   if (pathname === '/download') return 4;
   if (pathname === '/kontak') return 5;
   if (pathname === '/saran') return 6;
+  if (pathname === '/panduan' || pathname === '/video') return 7;
   return -1;
 };
 
@@ -209,6 +211,8 @@ function App() {
                   <Route path="/download" element={<Download />} />
                   <Route path="/kontak" element={<Kontak />} />
                   <Route path="/saran" element={<Saran />} />
+                  <Route path="/panduan" element={<VideoPanduan />} />
+                  <Route path="/video" element={<Navigate to="/panduan" replace />} />
                   <Route
                     path="/admin/saran"
                     element={
