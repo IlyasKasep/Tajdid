@@ -9,7 +9,20 @@
     scroll-behavior: smooth;
     color: #0f172a;
     background-color: #f0fdfa;
+    -webkit-tap-highlight-color: transparent;
   }
+
+  body {
+    overflow-x: hidden;
+  }
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 @keyframes slow-spin {

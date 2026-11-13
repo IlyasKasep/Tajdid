@@ -1,53 +1,328 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import {
   ArrowLeft,
+  Calendar,
+  Check,
   Edit3,
   ExternalLink,
+  Folder,
   FolderDown,
+  FolderOpen,
+  FolderPlus,
   Images,
   Lock,
   LogIn,
   LogOut,
   Mail,
   Megaphone,
+  Menu,
   MessageSquareHeart,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Plus,
+  Star,
   Trash2,
+  Upload,
   Users,
+  X,
 } from 'lucide-react';
-import { db } from '../firebase';
+import { supabase } from '../supabase';
 import logoSekolah from '../assets/Logo_Persis.png';
 import AdminLoginBackground from '../components/AdminLoginBackground';
 import AdminSaran from './AdminSaran';
 
 function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanganiLogin, tanganiLogout }) {
   const [activeTab, setActiveTab] = useState('berita');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [unreadSaranCount, setUnreadSaranCount] = useState(0);
 
   // ==========================================
   // STATE PENYIMPANAN DATA LOKAL ADMIN
   // ==========================================
   const [beritaList, setBeritaList] = useState([]);
   const [pengurusList, setPengurusList] = useState([]);
-  const [galeriList, setGaleriList] = useState([]);
   const [unduhanList, setUnduhanList] = useState([]);
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  // STATE KHUSUS FOLDER / ALBUM GALERI
+  const [albumList, setAlbumList] = useState([]);
+  const [activeAdminAlbum, setActiveAdminAlbum] = useState(null);
+  const [albumPhotosAdmin, setAlbumPhotosAdmin] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
+  const [manualFotoUrl, setManualFotoUrl] = useState('');
 
   // ==========================================
-  // STATE FORM INPUT (Semua menggunakan Link URL)
+  // STATE FORM INPUT
   // ==========================================
   const [formBerita, setFormBerita] = useState({ id: '', judul: '', kategori: 'Pengumuman', isi: '', gambar: '' });
   const [formPengurus, setFormPengurus] = useState({ id: '', nama: '', jabatan: '', foto: '', pendidikan: '', moto: '', deskripsi: '' });
-  const [formGaleri, setFormGaleri] = useState({ id: '', judul: '', foto: '' });
   const [formUnduhan, setFormUnduhan] = useState({ id: '', nama: '', format: 'PDF', link: '' });
+  const [formAlbum, setFormAlbum] = useState({ id: '', judul: '', tanggal: '', deskripsi: '', cover_foto: '' });
+
+  // ==========================================
+  // FUNGSI UPLOAD STORAGE SUPABASE
+  // ==========================================
+  const uploadFileToSupabase = async (file, folder = 'media') => {
+    if (!file) return null;
+    try {
+      setUploadingImage(true);
+      const fileExt = file.name.split('.').pop();
+      const sanitizedName = file.name.replace(/[^a-zA-Z0-9]/g, '_');
+      const filePath = `${folder}/${Date.now()}-${sanitizedName}.${fileExt}`;
+
+      const { data, error: uploadError } = await supabase.storage
+        .from('media-sekolah')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true,
+        });
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        alert(`Gagal mengunggah file: ${uploadError.message}`);
+        return null;
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from('media-sekolah')
+        .getPublicUrl(data.path);
+
+      return publicUrlData.publicUrl;
+    } catch (err) {
+      console.error('Unexpected upload error:', err);
+      alert('Terjadi kesalahan saat mengunggah file.');
+      return null;
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  // ==========================================
+  // FUNGSI KHUSUS FOLDER / ALBUM GALERI
+  // ==========================================
+  const fetchAlbums = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('galeri_album')
+        .select(`
+          *,
+          galeri_foto (id, foto)
+        `)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      setAlbumList(data || []);
+      setActiveAdminAlbum((prev) => (prev ? (data || []).find((a) => a.id === prev.id) || prev : null));
+    } catch (err) {
+      console.error('Gagal mengambil data album:', err);
+    }
+  }, []);
+
+  const fetchAlbumPhotos = async (albumId) => {
+    try {
+      const { data, error } = await supabase
+        .from('galeri_foto')
+        .select('*')
+        .eq('album_id', albumId)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      setAlbumPhotosAdmin(data || []);
+    } catch (err) {
+      console.error('Gagal mengambil foto album:', err);
+    }
+  };
+
+  const handleBukaFolder = (album) => {
+    setActiveAdminAlbum(album);
+    fetchAlbumPhotos(album.id);
+  };
+
+  const handleSimpanAlbum = async (e) => {
+    e.preventDefault();
+    try {
+      const dataToSave = {
+        judul: formAlbum.judul.trim(),
+        tanggal: formAlbum.tanggal.trim(),
+        deskripsi: formAlbum.deskripsi?.trim() || '',
+      };
+      if (formAlbum.cover_foto) {
+        dataToSave.cover_foto = formAlbum.cover_foto;
+      }
+
+      if (formAlbum.id) {
+        const { error } = await supabase
+          .from('galeri_album')
+          .update(dataToSave)
+          .eq('id', formAlbum.id);
+        if (error) throw error;
+        alert('Informasi folder berhasil diperbarui!');
+      } else {
+        const { error } = await supabase
+          .from('galeri_album')
+          .insert([dataToSave]);
+        if (error) throw error;
+        alert('Folder kegiatan baru berhasil dibuat!');
+      }
+
+      setFormAlbum({ id: '', judul: '', tanggal: '', deskripsi: '', cover_foto: '' });
+      fetchAlbums();
+    } catch (err) {
+      console.error('Gagal menyimpan album:', err);
+      alert('Gagal menyimpan album: ' + (err.message || 'Terjadi kesalahan'));
+    }
+  };
+
+  const handleHapusAlbum = async (albumId, albumJudul) => {
+    if (window.confirm(`Yakin ingin menghapus folder "${albumJudul}" beserta semua foto di dalamnya?`)) {
+      try {
+        const { error } = await supabase.from('galeri_album').delete().eq('id', albumId);
+        if (error) throw error;
+        alert('Folder kegiatan berhasil dihapus!');
+        if (activeAdminAlbum?.id === albumId) {
+          setActiveAdminAlbum(null);
+          setAlbumPhotosAdmin([]);
+        }
+        fetchAlbums();
+      } catch (err) {
+        console.error('Gagal menghapus album:', err);
+        alert('Gagal menghapus album: ' + (err.message || 'Terjadi kesalahan'));
+      }
+    }
+  };
+
+  const handleMultiUpload = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length || !activeAdminAlbum) return;
+
+    setUploadingImage(true);
+    setUploadProgress({ current: 0, total: files.length });
+
+    try {
+      let firstUploadedUrl = null;
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        setUploadProgress({ current: i + 1, total: files.length });
+
+        const fileExt = file.name.split('.').pop();
+        const sanitized = file.name.replace(/[^a-zA-Z0-9]/g, '_');
+        const filePath = `galeri/${activeAdminAlbum.id}/${Date.now()}-${i}-${sanitized}.${fileExt}`;
+
+        const { data, error: uploadErr } = await supabase.storage
+          .from('media-sekolah')
+          .upload(filePath, file, { cacheControl: '3600', upsert: true });
+
+        if (!uploadErr && data) {
+          const { data: publicUrlData } = supabase.storage
+            .from('media-sekolah')
+            .getPublicUrl(data.path);
+
+          const photoUrl = publicUrlData.publicUrl;
+          if (!firstUploadedUrl) firstUploadedUrl = photoUrl;
+
+          await supabase.from('galeri_foto').insert([
+            {
+              album_id: activeAdminAlbum.id,
+              foto: photoUrl,
+              caption: '',
+            },
+          ]);
+        }
+      }
+
+      if (!activeAdminAlbum.cover_foto && firstUploadedUrl) {
+        await supabase
+          .from('galeri_album')
+          .update({ cover_foto: firstUploadedUrl })
+          .eq('id', activeAdminAlbum.id);
+      }
+
+      alert(`Berhasil mengunggah ${files.length} foto ke folder "${activeAdminAlbum.judul}"!`);
+      fetchAlbumPhotos(activeAdminAlbum.id);
+      fetchAlbums();
+    } catch (err) {
+      console.error('Gagal upload multi foto:', err);
+      alert('Terjadi kesalahan saat mengunggah foto.');
+    } finally {
+      setUploadingImage(false);
+      setUploadProgress({ current: 0, total: 0 });
+      e.target.value = '';
+    }
+  };
+
+  const handleTambahFotoManual = async (url) => {
+    if (!url || !activeAdminAlbum) return;
+    try {
+      const { error } = await supabase.from('galeri_foto').insert([
+        {
+          album_id: activeAdminAlbum.id,
+          foto: url.trim(),
+          caption: '',
+        },
+      ]);
+      if (error) throw error;
+      if (!activeAdminAlbum.cover_foto) {
+        await supabase
+          .from('galeri_album')
+          .update({ cover_foto: url.trim() })
+          .eq('id', activeAdminAlbum.id);
+      }
+      alert('Foto berhasil ditambahkan ke folder!');
+      setManualFotoUrl('');
+      fetchAlbumPhotos(activeAdminAlbum.id);
+      fetchAlbums();
+    } catch (err) {
+      console.error('Gagal menambah foto:', err);
+      alert('Gagal menambah foto: ' + (err.message || 'Terjadi kesalahan'));
+    }
+  };
+
+  const handleHapusFoto = async (fotoId) => {
+    if (window.confirm('Hapus foto ini dari folder?')) {
+      try {
+        const { error } = await supabase.from('galeri_foto').delete().eq('id', fotoId);
+        if (error) throw error;
+        alert('Foto terhapus!');
+        if (activeAdminAlbum) {
+          fetchAlbumPhotos(activeAdminAlbum.id);
+          fetchAlbums();
+        }
+      } catch (err) {
+        console.error('Gagal menghapus foto:', err);
+        alert('Gagal menghapus foto: ' + (err.message || 'Terjadi kesalahan'));
+      }
+    }
+  };
+
+  const handleSetCover = async (fotoUrl) => {
+    if (!activeAdminAlbum) return;
+    try {
+      const { error } = await supabase
+        .from('galeri_album')
+        .update({ cover_foto: fotoUrl })
+        .eq('id', activeAdminAlbum.id);
+      if (error) throw error;
+      setActiveAdminAlbum((prev) => ({ ...prev, cover_foto: fotoUrl }));
+      fetchAlbums();
+      alert('Cover folder berhasil diperbarui!');
+    } catch (err) {
+      console.error('Gagal update cover:', err);
+      alert('Gagal update cover.');
+    }
+  };
 
   // ==========================================
   // FUNGSI FETCH & CRUD GLOBAL
   // ==========================================
   const fetchData = async (koleksi, setter) => {
     try {
-      const querySnapshot = await getDocs(collection(db, koleksi));
-      const data = querySnapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
-      setter(data);
+      const { data, error } = await supabase
+        .from(koleksi)
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      setter(data || []);
     } catch (error) {
       console.error(`Gagal mengambil data ${koleksi}:`, error);
     }
@@ -61,28 +336,43 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
       const pasangan = [
         ['berita', setBeritaList],
         ['pengurus', setPengurusList],
-        ['galeri', setGaleriList],
         ['unduhan', setUnduhanList],
       ];
 
       await Promise.all(
         pasangan.map(async ([koleksi, setter]) => {
           try {
-            const querySnapshot = await getDocs(collection(db, koleksi));
-            const data = querySnapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
-            if (aktif) setter(data);
+            const { data, error } = await supabase
+              .from(koleksi)
+              .select('*')
+              .order('created_at', { ascending: false });
+            if (error) throw error;
+            if (aktif) setter(data || []);
           } catch (error) {
             console.error(`Gagal mengambil data ${koleksi}:`, error);
           }
         })
       );
+
+      if (aktif) {
+        fetchAlbums();
+        try {
+          const { count } = await supabase
+            .from('saran')
+            .select('*', { count: 'exact', head: true })
+            .eq('dibaca', false);
+          if (aktif && count !== null) setUnreadSaranCount(count);
+        } catch {
+          // ignore
+        }
+      }
     };
 
     muatSemuaData();
     return () => {
       aktif = false;
     };
-  }, [user]);
+  }, [user, fetchAlbums]);
 
   const handleSimpan = async (e, koleksi, formData, setFormData, setter, resetState) => {
     e.preventDefault();
@@ -100,10 +390,12 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
       }
 
       if (docId) {
-        await updateDoc(doc(db, koleksi, docId), dataToSave);
+        const { error } = await supabase.from(koleksi).update(dataToSave).eq('id', docId);
+        if (error) throw error;
         alert('Data berhasil diperbarui!');
       } else {
-        await addDoc(collection(db, koleksi), dataToSave);
+        const { error } = await supabase.from(koleksi).insert([dataToSave]);
+        if (error) throw error;
         alert('Data baru berhasil ditambahkan!');
       }
 
@@ -111,15 +403,21 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
       setFormData(resetState);
     } catch (error) {
       console.error(`Gagal menyimpan ${koleksi}:`, error);
-      alert('Gagal menyimpan data!');
+      alert('Gagal menyimpan data: ' + (error.message || 'Terjadi kesalahan'));
     }
   };
 
   const handleHapus = async (koleksi, id, setter) => {
     if (window.confirm('Yakin ingin menghapus data ini secara permanen?')) {
-      await deleteDoc(doc(db, koleksi, id));
-      alert('Data terhapus!');
-      fetchData(koleksi, setter);
+      try {
+        const { error } = await supabase.from(koleksi).delete().eq('id', id);
+        if (error) throw error;
+        alert('Data terhapus!');
+        fetchData(koleksi, setter);
+      } catch (error) {
+        console.error(`Gagal menghapus ${koleksi}:`, error);
+        alert('Gagal menghapus data: ' + (error.message || 'Terjadi kesalahan'));
+      }
     }
   };
 
@@ -128,28 +426,28 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
   // ==========================================
   if (!user) {
     return (
-      <div className="min-h-screen relative flex items-center justify-center px-4 py-10 overflow-hidden">
+      <div className="min-h-screen relative flex items-center justify-center px-4 py-8 overflow-hidden">
         <AdminLoginBackground />
 
-        <div className="relative z-10 max-w-md w-full bg-white/95 backdrop-blur-md rounded-3xl border-2 border-emerald-950 shadow-[8px_8px_0px_#fbbf24] p-8 sm:p-10 animate-fade-in">
+        <div className="relative z-10 max-w-md w-full bg-white/95 backdrop-blur-md rounded-2xl sm:rounded-3xl border-2 border-emerald-950 shadow-[5px_5px_0px_#fbbf24] sm:shadow-[8px_8px_0px_#fbbf24] p-5 sm:p-10 animate-fade-in">
           {/* Logo Sekolah & Judul */}
-          <div className="text-center mb-8">
-            <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-white border-2 border-emerald-950 shadow-[4px_4px_0px_#0d9488] p-2 flex items-center justify-center">
+          <div className="text-center mb-6 sm:mb-8">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-3 sm:mb-4 rounded-2xl bg-white border-2 border-emerald-950 shadow-[3px_3px_0px_#0d9488] sm:shadow-[4px_4px_0px_#0d9488] p-1.5 sm:p-2 flex items-center justify-center">
               <img
                 src={logoSekolah}
                 alt="Logo RA Persis 175 At-Tajdid"
                 className="w-full h-full object-contain"
               />
             </div>
-            <h1 className="text-3xl font-black text-emerald-950 tracking-tight">ADMIN LOGIN</h1>
-            <p className="text-slate-600 text-sm font-medium mt-1">
+            <h1 className="text-2xl sm:text-3xl font-black text-emerald-950 tracking-tight">ADMIN LOGIN</h1>
+            <p className="text-slate-600 text-xs sm:text-sm font-medium mt-1">
               Masuk untuk mengelola konten website sekolah
             </p>
           </div>
 
-          <form onSubmit={tanganiLogin} className="space-y-5">
+          <form onSubmit={tanganiLogin} className="space-y-4 sm:space-y-5">
             <div>
-              <label className="block text-xs font-black uppercase tracking-wider text-emerald-950 mb-1.5">
+              <label className="block text-[11px] sm:text-xs font-black uppercase tracking-wider text-emerald-950 mb-1.5">
                 Email Admin
               </label>
               <div className="relative">
@@ -161,7 +459,7 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3.5 bg-teal-50/70 border-2 border-emerald-950 rounded-xl focus:bg-white focus:ring-2 focus:ring-amber-400 outline-none font-semibold text-slate-900"
+                  className="w-full pl-11 pr-4 py-2.5 sm:py-3.5 bg-teal-50/70 border-2 border-emerald-950 rounded-xl focus:bg-white focus:ring-2 focus:ring-amber-400 outline-none font-semibold text-slate-900 text-sm sm:text-base"
                   placeholder="admin@attajdid.sch.id"
                   required
                 />
@@ -169,7 +467,7 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
             </div>
 
             <div>
-              <label className="block text-xs font-black uppercase tracking-wider text-emerald-950 mb-1.5">
+              <label className="block text-[11px] sm:text-xs font-black uppercase tracking-wider text-emerald-950 mb-1.5">
                 Password
               </label>
               <div className="relative">
@@ -181,7 +479,7 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3.5 bg-teal-50/70 border-2 border-emerald-950 rounded-xl focus:bg-white focus:ring-2 focus:ring-amber-400 outline-none font-semibold text-slate-900"
+                  className="w-full pl-11 pr-4 py-2.5 sm:py-3.5 bg-teal-50/70 border-2 border-emerald-950 rounded-xl focus:bg-white focus:ring-2 focus:ring-amber-400 outline-none font-semibold text-slate-900 text-sm sm:text-base"
                   placeholder="••••••••"
                   required
                 />
@@ -196,14 +494,14 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
 
             <button
               type="submit"
-              className="w-full inline-flex items-center justify-center gap-2 bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black py-4 rounded-xl border-2 border-emerald-950 shadow-[4px_4px_0px_#064e3b] hover:shadow-[2px_2px_0px_#064e3b] hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer"
+              className="w-full inline-flex items-center justify-center gap-2 bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black py-3 sm:py-4 rounded-xl border-2 border-emerald-950 shadow-[3px_3px_0px_#064e3b] sm:shadow-[4px_4px_0px_#064e3b] hover:shadow-[2px_2px_0px_#064e3b] hover:translate-x-[2px] hover:translate-y-[2px] transition-all text-sm sm:text-base cursor-pointer"
             >
               <LogIn size={18} />
               MASUK
             </button>
           </form>
 
-          <div className="mt-6 pt-5 border-t border-emerald-950/15 text-center">
+          <div className="mt-5 sm:mt-6 pt-4 sm:pt-5 border-t border-emerald-950/15 text-center">
             <Link
               to="/"
               className="inline-flex items-center gap-1.5 text-xs font-extrabold text-emerald-800 hover:text-emerald-950 hover:underline"
@@ -220,103 +518,296 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
   // DASHBOARD ADMIN (Desain Neo-Brutalist Terbaru)
   // ==========================================
   const navTabs = [
-    { id: 'berita', label: 'Kelola Berita', icon: Megaphone, activeClass: 'bg-teal-200' },
-    { id: 'pengurus', label: 'Data Pengurus & Guru', icon: Users, activeClass: 'bg-emerald-200' },
-    { id: 'galeri', label: 'Galeri Foto', icon: Images, activeClass: 'bg-amber-300' },
-    { id: 'download', label: 'File Download', icon: FolderDown, activeClass: 'bg-sky-200' },
-    { id: 'saran', label: 'Kotak Saran Masuk', icon: MessageSquareHeart, activeClass: 'bg-rose-200' },
+    {
+      id: 'berita',
+      label: 'Kelola Berita',
+      icon: Megaphone,
+      count: beritaList.length,
+      activeClass: 'bg-teal-200',
+    },
+    {
+      id: 'pengurus',
+      label: 'Data Pengurus & Guru',
+      icon: Users,
+      count: pengurusList.length,
+      activeClass: 'bg-emerald-200',
+    },
+    {
+      id: 'galeri',
+      label: 'Folder Galeri Foto',
+      icon: Images,
+      count: albumList.length,
+      activeClass: 'bg-amber-300',
+    },
+    {
+      id: 'download',
+      label: 'File Download',
+      icon: FolderDown,
+      count: unduhanList.length,
+      activeClass: 'bg-sky-200',
+    },
+    {
+      id: 'saran',
+      label: 'Kotak Saran Masuk',
+      icon: MessageSquareHeart,
+      count: unreadSaranCount > 0 ? `${unreadSaranCount} Baru` : null,
+      activeClass: 'bg-rose-200',
+      isAlert: unreadSaranCount > 0,
+    },
   ];
 
+  const activeTabInfo = navTabs.find((t) => t.id === activeTab) || navTabs[0];
+
   const inputClass =
-    'w-full px-4 py-3 bg-white rounded-xl border-2 border-emerald-950 outline-none focus:ring-2 focus:ring-amber-400 font-medium text-slate-900';
+    'w-full px-4 py-2.5 sm:py-3 bg-white rounded-xl border-2 border-emerald-950/25 focus:border-emerald-950 focus:ring-2 focus:ring-amber-400 outline-none font-medium text-slate-900 text-sm sm:text-base transition';
 
   return (
-    <div className="bg-teal-50 min-h-screen py-8 px-4 sm:px-6">
-      <div className="max-w-7xl mx-auto">
-        {/* HEADER DASHBOARD */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 bg-white p-6 rounded-3xl border-2 border-emerald-950 shadow-[6px_6px_0px_#064e3b]">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-amber-300 border-2 border-emerald-950 p-1.5 flex items-center justify-center shrink-0">
-              <img src={logoSekolah} alt="Logo RA At-Tajdid" className="w-full h-full object-contain" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-black text-emerald-950">Dashboard Admin</h2>
-              <p className="text-slate-600 text-sm font-medium mt-0.5">
-                Masuk sebagai:{' '}
-                <span className="inline-block bg-teal-100 border border-emerald-950 px-2.5 py-0.5 rounded-full font-extrabold text-emerald-950 text-xs ml-1">
-                  {user.email}
-                </span>
-              </p>
+    <div className="h-screen bg-slate-100/70 flex flex-col lg:flex-row text-slate-900 font-sans antialiased overflow-hidden">
+      {/* 1. BACKDROP MOBILE KETIKA SIDEBAR TERBUKA */}
+      {mobileSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-emerald-950/60 backdrop-blur-sm z-40 lg:hidden transition-opacity"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
+
+      {/* 2. SIDEBAR KEKINIAN (BISA BUKA-TUTUP / COLLAPSIBLE - SELALU FULL HEIGHT & TERKUNCI DI VIEWPORT) */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 bg-white border-r-2 border-emerald-950 flex flex-col justify-between transition-all duration-300 ease-in-out lg:static lg:h-screen shrink-0 shadow-2xl lg:shadow-none ${
+          mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        } ${sidebarCollapsed ? 'lg:w-20' : 'lg:w-72 w-72'}`}
+      >
+        {/* SIDEBAR HEADER / BRANDING (Tepat h-16 selaras dengan topbar) */}
+        {sidebarCollapsed ? (
+          <div className="h-16 px-2 border-b-2 border-emerald-950/15 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-amber-300 border-2 border-emerald-950 p-1 flex items-center justify-center shadow-[2px_2px_0px_#064e3b]">
+              <img
+                src={logoSekolah}
+                alt="Logo"
+                className="w-full h-full object-contain"
+              />
             </div>
           </div>
+        ) : (
+          <div className="h-16 px-4 border-b-2 border-emerald-950/15 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-xl bg-amber-300 border-2 border-emerald-950 p-1 flex items-center justify-center shrink-0 shadow-[2px_2px_0px_#064e3b]">
+                <img src={logoSekolah} alt="Logo" className="w-full h-full object-contain" />
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-xs font-black text-emerald-950 uppercase tracking-tight truncate">
+                  RA PERSIS 175
+                </h1>
+                <p className="text-[10px] font-bold text-emerald-700 truncate">
+                  Portal Admin
+                </p>
+              </div>
+            </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <Link
-              to="/"
-              className="inline-flex items-center justify-center gap-2 bg-teal-100 hover:bg-teal-200 text-emerald-950 px-5 py-3 rounded-xl font-black border-2 border-emerald-950 shadow-[4px_4px_0px_#064e3b] hover:shadow-[2px_2px_0px_#064e3b] hover:translate-x-[2px] hover:translate-y-[2px] transition-all text-sm"
-            >
-              <ArrowLeft size={16} />
-              Lihat Website
-            </Link>
+            {/* Tombol Tutup di Mobile saja */}
             <button
               type="button"
-              onClick={tanganiLogout}
-              className="inline-flex items-center justify-center gap-2 bg-rose-500 hover:bg-rose-600 text-white px-6 py-3 rounded-xl font-black border-2 border-emerald-950 shadow-[4px_4px_0px_#064e3b] hover:shadow-[2px_2px_0px_#064e3b] hover:translate-x-[2px] hover:translate-y-[2px] transition-all text-sm cursor-pointer"
+              onClick={() => setMobileSidebarOpen(false)}
+              className="lg:hidden p-1.5 rounded-lg border-2 border-emerald-950 text-emerald-950 hover:bg-rose-100 transition cursor-pointer"
             >
-              <LogOut size={16} />
-              LOGOUT
+              <X size={18} />
             </button>
           </div>
-        </div>
+        )}
 
-        <div className="flex flex-col lg:flex-row gap-8 items-start">
-          {/* SIDEBAR NAVIGASI */}
-          <aside className="w-full lg:w-1/4 space-y-2.5">
-            {navTabs.map((item) => {
-              const Icon = item.icon;
-              const isActive = activeTab === item.id;
+        {/* DAFTAR MENU NAVIGASI (Vertical Menu) */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-3 space-y-2">
+          {!sidebarCollapsed && (
+            <p className="px-3 text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2">
+              Menu Dashboard
+            </p>
+          )}
+
+          {navTabs.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id;
+
+            if (sidebarCollapsed) {
               return (
                 <button
                   key={item.id}
                   type="button"
                   onClick={() => setActiveTab(item.id)}
-                  className={`w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl font-extrabold text-sm border-2 border-emerald-950 transition-all cursor-pointer ${
+                  title={item.count !== undefined && item.count !== null ? `${item.label} (${item.count})` : item.label}
+                  className={`w-11 h-11 mx-auto flex items-center justify-center rounded-xl border-2 transition-all cursor-pointer relative ${
                     isActive
-                      ? `${item.activeClass} text-emerald-950 shadow-[4px_4px_0px_#064e3b] lg:translate-x-1.5`
-                      : 'bg-white text-slate-700 hover:bg-emerald-50 shadow-[2px_2px_0px_#064e3b]'
+                      ? `${item.activeClass} text-emerald-950 border-emerald-950 shadow-[2px_2px_0px_#064e3b]`
+                      : 'bg-transparent text-slate-600 border-transparent hover:bg-slate-100 hover:text-emerald-950'
                   }`}
                 >
-                  <Icon size={18} />
-                  <span>{item.label}</span>
+                  <Icon size={19} className="shrink-0" />
+
+                  {item.isAlert && (
+                    <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white animate-pulse" />
+                  )}
                 </button>
               );
-            })}
-          </aside>
+            }
 
-          {/* AREA KONTEN UTAMA */}
-          <main className="w-full lg:w-3/4 bg-white rounded-3xl border-2 border-emerald-950 shadow-[8px_8px_0px_#064e3b] p-6 md:p-10">
-            {/* PANDUAN UPLOAD GAMBAR */}
-            {activeTab !== 'saran' && (
-              <div className="bg-sky-100 border-2 border-emerald-950 shadow-[4px_4px_0px_#064e3b] p-5 rounded-2xl mb-8 flex gap-4 items-start">
-                <div className="text-3xl shrink-0">💡</div>
-                <div>
-                  <h4 className="font-black text-emerald-950 mb-1">Panduan Upload Foto / Gambar</h4>
-                  <p className="text-sm text-slate-800 leading-relaxed font-medium">
-                    Untuk mengunggah gambar (Berita, Pengurus, Galeri), silakan upload foto Anda terlebih dahulu ke situs penyedia gambar gratis:{' '}
-                    <a
-                      href="https://imgbb.com/"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1 bg-amber-300 hover:bg-amber-400 text-emerald-950 px-3 py-1 rounded-lg border-2 border-emerald-950 font-extrabold text-xs mx-1 transition"
-                    >
-                      Buka ImgBB <ExternalLink size={12} />
-                    </a>{' '}
-                    Setelah diupload, <strong>salin "Direct Link" (Tautan Langsung)</strong> dari ImgBB dan{' '}
-                    <strong>tempelkan (paste)</strong> pada kolom isian Link Foto di bawah.
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => {
+                  setActiveTab(item.id);
+                  setMobileSidebarOpen(false);
+                }}
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 sm:py-3 rounded-xl font-black text-xs sm:text-sm border-2 transition-all cursor-pointer ${
+                  isActive
+                    ? `${item.activeClass} text-emerald-950 border-emerald-950 shadow-[3px_3px_0px_#064e3b] translate-x-1`
+                    : 'bg-transparent text-slate-700 border-transparent hover:bg-slate-100 hover:text-emerald-950'
+                }`}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <Icon size={18} className="shrink-0" />
+                  <span className="truncate">{item.label}</span>
+                </div>
+
+                {item.count !== undefined && item.count !== null && (
+                  <span
+                    className={`text-[10px] font-black px-2 py-0.5 rounded-full border border-emerald-950 shrink-0 ${
+                      item.isAlert
+                        ? 'bg-rose-500 text-white animate-bounce'
+                        : 'bg-white text-emerald-950'
+                    }`}
+                  >
+                    {item.count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* SIDEBAR FOOTER / PROFIL ADMIN (Desain Konsisten, Modern & Terpadu) */}
+        {!sidebarCollapsed ? (
+          <div className="p-3 sm:p-4 border-t-2 border-emerald-950/15 bg-slate-50/90 shrink-0">
+            {/* Kartu Profil Terpadu */}
+            <div className="p-2.5 bg-white rounded-2xl border-2 border-emerald-950 shadow-[2px_2px_0px_#064e3b] flex items-center justify-between gap-2.5">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="relative shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-800 text-white font-black text-xs flex items-center justify-center border-2 border-emerald-950 shadow-sm">
+                    AD
+                  </div>
+                  <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-black text-emerald-950 truncate leading-snug">
+                    Administrator
+                  </p>
+                  <p className="text-[10px] font-semibold text-slate-500 truncate" title={user?.email}>
+                    {user?.email || 'admin@attajdid.sch.id'}
                   </p>
                 </div>
               </div>
-            )}
+
+              {/* Tombol Logout Rapi & Konsisten */}
+              <button
+                type="button"
+                onClick={tanganiLogout}
+                className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition cursor-pointer shrink-0"
+                title="Keluar / Logout"
+              >
+                <LogOut size={16} />
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="p-3 border-t-2 border-emerald-950/15 bg-slate-50/90 flex flex-col items-center gap-2.5 shrink-0">
+            {/* Avatar Collapsed dengan Status Online */}
+            <div
+              className="relative cursor-default"
+              title={`${user?.email || 'Administrator'} (Online • Super Admin)`}
+            >
+              <div className="w-10 h-10 rounded-xl bg-emerald-800 text-white font-black text-xs flex items-center justify-center border-2 border-emerald-950 shadow-sm">
+                AD
+              </div>
+              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full" />
+            </div>
+
+            {/* Logout Collapsed */}
+            <button
+              type="button"
+              onClick={tanganiLogout}
+              className="w-10 h-10 rounded-xl flex items-center justify-center text-slate-500 hover:text-rose-600 hover:bg-rose-50 border-2 border-transparent hover:border-rose-200 transition cursor-pointer"
+              title="Keluar / Logout"
+            >
+              <LogOut size={16} />
+            </button>
+          </div>
+        )}
+      </aside>
+
+      {/* 3. MAIN WORKSPACE AREA (h-screen terpisah, konten memiliki scroll mandiri) */}
+      <div className="flex-1 min-w-0 flex flex-col h-screen overflow-hidden bg-slate-50">
+        {/* STICKY TOP NAVBAR (Tepat h-16 selaras sempurna dengan header sidebar) */}
+        <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b-2 border-emerald-950/15 px-4 sm:px-6 h-16 shrink-0 flex items-center justify-between shadow-sm">
+          <div className="flex items-center gap-3">
+            {/* Hamburger button (Mobile) */}
+            <button
+              type="button"
+              onClick={() => setMobileSidebarOpen(true)}
+              className="lg:hidden p-2 rounded-xl bg-amber-300 hover:bg-amber-400 border-2 border-emerald-950 shadow-[2px_2px_0px_#064e3b] text-emerald-950 transition cursor-pointer"
+              title="Buka Menu"
+            >
+              <Menu size={18} />
+            </button>
+
+            {/* Desktop Quick Toggle Sidebar Button (Satu-satunya tombol pembuka/penutup sidebar di desktop) */}
+            <button
+              type="button"
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="hidden lg:flex items-center justify-center w-9 h-9 rounded-xl border-2 border-emerald-950/20 hover:border-emerald-950 bg-slate-50 hover:bg-amber-200 text-emerald-950 shadow-sm hover:shadow-[2px_2px_0px_#064e3b] transition cursor-pointer"
+              title={sidebarCollapsed ? 'Perluas Sidebar' : 'Perkecil Sidebar'}
+            >
+              {sidebarCollapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}
+            </button>
+
+            {/* Breadcrumb Navigation */}
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
+              <span className="hidden sm:inline">Admin</span>
+              <span className="text-slate-300 hidden sm:inline">/</span>
+              <span className="inline-flex items-center gap-1.5 font-black text-sm sm:text-base text-emerald-950">
+                {activeTabInfo?.label}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Tanggal Hari Ini */}
+            <div className="hidden md:inline-flex items-center gap-1.5 bg-slate-50 border border-emerald-950/20 px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-950">
+              <Calendar size={13} className="text-emerald-700" />
+              <span>
+                {new Date().toLocaleDateString('id-ID', {
+                  weekday: 'short',
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                })}
+              </span>
+            </div>
+
+            {/* Shortcut Lihat Website (Satu-satunya link ke website) */}
+            <Link
+              to="/"
+              className="inline-flex items-center gap-1.5 bg-teal-50 hover:bg-teal-100 text-emerald-950 px-3.5 py-1.5 rounded-xl font-black border border-emerald-950/30 text-xs shadow-sm hover:shadow transition"
+            >
+              <ExternalLink size={13} />
+              <span className="hidden sm:inline">Lihat Website</span>
+            </Link>
+          </div>
+        </header>
+
+        {/* WORKSPACE CONTENT AREA (Scroll mandiri tanpa menggeser sidebar) */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+          <div className="max-w-6xl mx-auto space-y-6">
+            {/* KONTEN TAB UTAMA */}
+            <main className="bg-white rounded-2xl sm:rounded-3xl border-2 border-emerald-950 shadow-[4px_4px_0px_#064e3b] sm:shadow-[6px_6px_0px_#064e3b] p-4 sm:p-6 md:p-8">
 
             {/* ========================================================= */}
             {/* TAB 1: KELOLA BERITA */}
@@ -337,7 +828,7 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
                       gambar: '',
                     })
                   }
-                  className="bg-teal-100/70 border-2 border-emerald-950 shadow-[5px_5px_0px_#064e3b] p-6 rounded-2xl mb-8 space-y-4"
+                  className="bg-slate-50 border-2 border-emerald-950/20 rounded-2xl p-5 sm:p-6 mb-8 space-y-4 shadow-sm"
                 >
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <input
@@ -359,13 +850,57 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
                     </select>
                   </div>
 
-                  <input
-                    type="url"
-                    value={formBerita.gambar}
-                    onChange={(e) => setFormBerita({ ...formBerita, gambar: e.target.value })}
-                    placeholder="Paste Link Gambar dari ImgBB (Opsional)"
-                    className={inputClass}
-                  />
+                  <div className="space-y-2">
+                    <label className="block text-[11px] sm:text-xs font-black uppercase text-emerald-950">
+                      Foto Sampul Berita (Opsional)
+                    </label>
+                    <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center">
+                      <label className="inline-flex items-center justify-center gap-2 bg-white hover:bg-emerald-50 text-emerald-950 px-4 py-2.5 rounded-xl border-2 border-emerald-950 font-extrabold text-xs shadow-[2px_2px_0px_#064e3b] cursor-pointer transition shrink-0">
+                        <Upload size={15} />
+                        <span>{uploadingImage ? 'Mengunggah...' : 'Pilih Foto dari Perangkat'}</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          disabled={uploadingImage}
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const url = await uploadFileToSupabase(file, 'berita');
+                              if (url) setFormBerita((prev) => ({ ...prev, gambar: url }));
+                            }
+                          }}
+                        />
+                      </label>
+                      <span className="text-xs font-bold text-slate-500 text-center sm:text-left">atau link:</span>
+                      <input
+                        type="url"
+                        value={formBerita.gambar}
+                        onChange={(e) => setFormBerita({ ...formBerita, gambar: e.target.value })}
+                        placeholder="https://... (URL Foto)"
+                        className={`flex-1 ${inputClass}`}
+                      />
+                    </div>
+                    {formBerita.gambar && (
+                      <div className="flex items-center gap-3 p-2 bg-white rounded-xl border-2 border-emerald-950/20 shadow-sm">
+                        <img
+                          src={formBerita.gambar}
+                          alt="Preview"
+                          className="w-12 h-12 object-cover rounded-lg border border-emerald-950 shrink-0"
+                        />
+                        <span className="text-xs font-bold text-emerald-900 truncate flex-1">
+                          {formBerita.gambar}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setFormBerita((prev) => ({ ...prev, gambar: '' }))}
+                          className="text-rose-600 hover:text-rose-800 text-xs font-black px-2 py-1"
+                        >
+                          Hapus
+                        </button>
+                      </div>
+                    )}
+                  </div>
 
                   <textarea
                     value={formBerita.isi}
@@ -462,7 +997,7 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
                       deskripsi: '',
                     })
                   }
-                  className="bg-emerald-100/80 border-2 border-emerald-950 shadow-[5px_5px_0px_#064e3b] p-6 rounded-2xl mb-8 space-y-4"
+                  className="bg-slate-50 border-2 border-emerald-950/20 rounded-2xl p-5 sm:p-6 mb-8 space-y-4 shadow-sm"
                 >
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <input
@@ -500,14 +1035,58 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
                       required
                     />
                   </div>
-                  <input
-                    type="url"
-                    value={formPengurus.foto}
-                    onChange={(e) => setFormPengurus({ ...formPengurus, foto: e.target.value })}
-                    placeholder="Paste Link Foto ImgBB (https://i.ibb.co/...)"
-                    className={inputClass}
-                    required
-                  />
+                  <div className="space-y-2">
+                    <label className="block text-[11px] sm:text-xs font-black uppercase text-emerald-950">
+                      Foto Pengurus / Guru
+                    </label>
+                    <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center">
+                      <label className="inline-flex items-center justify-center gap-2 bg-white hover:bg-emerald-50 text-emerald-950 px-4 py-2.5 rounded-xl border-2 border-emerald-950 font-extrabold text-xs shadow-[2px_2px_0px_#064e3b] cursor-pointer transition shrink-0">
+                        <Upload size={15} />
+                        <span>{uploadingImage ? 'Mengunggah...' : 'Pilih Foto dari Perangkat'}</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          disabled={uploadingImage}
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const url = await uploadFileToSupabase(file, 'pengurus');
+                              if (url) setFormPengurus((prev) => ({ ...prev, foto: url }));
+                            }
+                          }}
+                        />
+                      </label>
+                      <span className="text-xs font-bold text-slate-500 text-center sm:text-left">atau link:</span>
+                      <input
+                        type="url"
+                        value={formPengurus.foto}
+                        onChange={(e) => setFormPengurus({ ...formPengurus, foto: e.target.value })}
+                        placeholder="https://... (URL Foto)"
+                        className={`flex-1 ${inputClass}`}
+                        required
+                      />
+                    </div>
+                    {formPengurus.foto && (
+                      <div className="flex items-center gap-3 p-2 bg-white rounded-xl border-2 border-emerald-950/20 shadow-sm">
+                        <img
+                          src={formPengurus.foto}
+                          alt="Preview"
+                          className="w-12 h-12 rounded-full object-cover border border-emerald-950 shrink-0"
+                        />
+                        <span className="text-xs font-bold text-emerald-900 truncate flex-1">
+                          {formPengurus.foto}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setFormPengurus((prev) => ({ ...prev, foto: '' }))}
+                          className="text-rose-600 hover:text-rose-800 text-xs font-black px-2 py-1"
+                        >
+                          Hapus
+                        </button>
+                      </div>
+                    )}
+                  </div>
                   <textarea
                     value={formPengurus.deskripsi}
                     onChange={(e) => setFormPengurus({ ...formPengurus, deskripsi: e.target.value })}
@@ -587,87 +1166,377 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
             )}
 
             {/* ========================================================= */}
-            {/* TAB 3: KELOLA GALERI */}
+            {/* TAB 3: KELOLA FOLDER & ALBUM GALERI */}
             {/* ========================================================= */}
             {activeTab === 'galeri' && (
               <div className="animate-fade-in">
-                <h3 className="text-xl sm:text-2xl font-black text-emerald-950 mb-6 border-b-2 border-emerald-950/15 pb-4">
-                  GALERI FOTO KEGIATAN
-                </h3>
-                <form
-                  onSubmit={(e) =>
-                    handleSimpan(e, 'galeri', formGaleri, setFormGaleri, setGaleriList, {
-                      id: '',
-                      judul: '',
-                      foto: '',
-                    })
-                  }
-                  className="bg-amber-200/80 border-2 border-emerald-950 shadow-[5px_5px_0px_#064e3b] p-6 rounded-2xl mb-8 space-y-4"
-                >
-                  <input
-                    type="text"
-                    value={formGaleri.judul}
-                    onChange={(e) => setFormGaleri({ ...formGaleri, judul: e.target.value })}
-                    placeholder="Judul Kegiatan"
-                    className={inputClass}
-                    required
-                  />
-                  <input
-                    type="url"
-                    value={formGaleri.foto}
-                    onChange={(e) => setFormGaleri({ ...formGaleri, foto: e.target.value })}
-                    placeholder="Paste Link Foto ImgBB"
-                    className={inputClass}
-                    required
-                  />
-                  <div className="flex flex-wrap gap-3">
-                    <button
-                      type="submit"
-                      className="bg-emerald-700 hover:bg-emerald-800 text-white font-black py-3 px-7 rounded-xl border-2 border-emerald-950 shadow-[3px_3px_0px_#064e3b] cursor-pointer"
+                {!activeAdminAlbum ? (
+                  /* ========================================================= */
+                  /* SUB-VIEW A: DAFTAR FOLDER KEGIATAN & FORM BUAT FOLDER */
+                  /* ========================================================= */
+                  <div>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6 border-b-2 border-emerald-950/15 pb-4">
+                      <div>
+                        <h3 className="text-xl sm:text-2xl font-black text-emerald-950">
+                          FOLDER & ALBUM DOKUMENTASI
+                        </h3>
+                        <p className="text-xs sm:text-sm text-slate-600 font-medium mt-1">
+                          Foto dikelompokkan per kegiatan agar rapi seperti Google Drive & mudah dicari oleh wali murid.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* FORM BUAT / EDIT FOLDER KEGIATAN */}
+                    <form
+                      onSubmit={handleSimpanAlbum}
+                      className="bg-slate-50 border-2 border-emerald-950/20 rounded-2xl p-5 sm:p-6 mb-8 space-y-4 shadow-sm"
                     >
-                      {formGaleri.id ? 'Update Foto' : 'Upload ke Galeri'}
-                    </button>
-                    {formGaleri.id && (
+                      <div className="flex items-center gap-2 text-emerald-950 font-black text-sm uppercase">
+                        <FolderPlus size={18} />
+                        <span>{formAlbum.id ? 'Edit Informasi Folder' : 'Buat Folder Kegiatan Baru'}</span>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[11px] font-black uppercase text-emerald-950 mb-1">
+                            Nama Kegiatan / Acara *
+                          </label>
+                          <input
+                            type="text"
+                            value={formAlbum.judul}
+                            onChange={(e) => setFormAlbum({ ...formAlbum, judul: e.target.value })}
+                            placeholder="cth: Manasik Haji Cilik 2026"
+                            className={inputClass}
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-black uppercase text-emerald-950 mb-1">
+                            Tanggal Kegiatan *
+                          </label>
+                          <input
+                            type="text"
+                            value={formAlbum.tanggal}
+                            onChange={(e) => setFormAlbum({ ...formAlbum, tanggal: e.target.value })}
+                            placeholder="cth: 14 November 2026"
+                            className={inputClass}
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-black uppercase text-emerald-950 mb-1">
+                          Deskripsi / Catatan Kegiatan (Opsional)
+                        </label>
+                        <textarea
+                          value={formAlbum.deskripsi}
+                          onChange={(e) => setFormAlbum({ ...formAlbum, deskripsi: e.target.value })}
+                          placeholder="Keterangan singkat tentang kegiatan ananda di acara ini..."
+                          className={inputClass}
+                          rows="2"
+                        />
+                      </div>
+
+                      <div className="flex flex-wrap gap-3 pt-1">
+                        <button
+                          type="submit"
+                          className="bg-emerald-700 hover:bg-emerald-800 text-white font-black py-2.5 sm:py-3 px-6 rounded-xl border-2 border-emerald-950 shadow-[3px_3px_0px_#064e3b] cursor-pointer text-xs sm:text-sm"
+                        >
+                          {formAlbum.id ? 'Perbarui Folder' : '➕ Buat Folder Kegiatan'}
+                        </button>
+                        {formAlbum.id && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setFormAlbum({ id: '', judul: '', tanggal: '', deskripsi: '', cover_foto: '' })
+                            }
+                            className="bg-white hover:bg-slate-100 text-emerald-950 px-5 py-2.5 rounded-xl font-extrabold border-2 border-emerald-950 cursor-pointer text-xs sm:text-sm"
+                          >
+                            Batal
+                          </button>
+                        )}
+                      </div>
+                    </form>
+
+                    {/* DAFTAR FOLDER ALBUM */}
+                    <div className="space-y-4">
+                      <h4 className="font-black text-emerald-950 text-sm uppercase tracking-wider flex items-center gap-2">
+                        <span>📁</span> Daftar Folder yang Tersedia ({albumList.length})
+                      </h4>
+
+                      {albumList.length === 0 ? (
+                        <div className="bg-teal-50 border-2 border-dashed border-emerald-950/40 rounded-2xl p-8 text-center">
+                          <p className="text-4xl mb-2">📂</p>
+                          <h5 className="font-black text-emerald-950">Belum Ada Folder Kegiatan</h5>
+                          <p className="text-xs text-slate-600 mt-1">
+                            Buat folder pertama Anda menggunakan form di atas untuk mulai mengelompokkan foto kegiatan.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {albumList.map((album) => {
+                            const totalFoto = album.galeri_foto?.length || 0;
+                            const cover = album.cover_foto || album.galeri_foto?.[0]?.foto;
+
+                            return (
+                              <div
+                                key={album.id}
+                                className="bg-white rounded-2xl border-2 border-emerald-950 shadow-[4px_4px_0px_#064e3b] p-4 flex flex-col justify-between hover:shadow-[6px_6px_0px_#064e3b] transition"
+                              >
+                                <div>
+                                  <div className="flex gap-3 items-start">
+                                    <div className="w-16 h-16 rounded-xl border-2 border-emerald-950 overflow-hidden bg-amber-100 shrink-0 flex items-center justify-center">
+                                      {cover ? (
+                                        <img src={cover} alt="" className="w-full h-full object-cover" />
+                                      ) : (
+                                        <Folder size={28} className="text-amber-500" />
+                                      )}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                                        <span className="bg-amber-300 text-emerald-950 text-[10px] font-black px-2 py-0.5 rounded-md border border-emerald-950">
+                                          {album.tanggal || 'Kegiatan'}
+                                        </span>
+                                        <span className="bg-teal-100 text-emerald-950 text-[10px] font-black px-2 py-0.5 rounded-md border border-emerald-950">
+                                          {totalFoto} Foto
+                                        </span>
+                                      </div>
+                                      <h4 className="font-extrabold text-emerald-950 text-sm truncate">
+                                        {album.judul}
+                                      </h4>
+                                      {album.deskripsi && (
+                                        <p className="text-xs text-slate-600 line-clamp-1 mt-0.5 font-medium">
+                                          {album.deskripsi}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="mt-4 pt-3 border-t-2 border-emerald-950/10 flex flex-wrap items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleBukaFolder(album)}
+                                    className="flex-1 inline-flex items-center justify-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white px-3.5 py-2 rounded-xl text-xs font-black border-2 border-emerald-950 shadow-[2px_2px_0px_#064e3b] transition cursor-pointer whitespace-nowrap"
+                                  >
+                                    <FolderOpen size={14} /> Buka & Upload Foto
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setFormAlbum(album);
+                                      window.scrollTo({ top: 300, behavior: 'smooth' });
+                                    }}
+                                    className="inline-flex items-center gap-1 bg-sky-100 hover:bg-sky-200 text-emerald-950 px-3 py-2 rounded-xl text-xs font-black border-2 border-emerald-950 cursor-pointer"
+                                    title="Edit Info Folder"
+                                  >
+                                    <Edit3 size={13} /> Edit
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleHapusAlbum(album.id, album.judul)}
+                                    className="inline-flex items-center gap-1 bg-rose-500 hover:bg-rose-600 text-white px-3 py-2 rounded-xl text-xs font-black border-2 border-emerald-950 cursor-pointer"
+                                    title="Hapus Folder Beserta Isinya"
+                                  >
+                                    <Trash2 size={13} />
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  /* ========================================================= */
+                  /* SUB-VIEW B: DI DALAM FOLDER AKTIF (UPLOAD MULTI FOTO) */
+                  /* ========================================================= */
+                  <div>
+                    {/* Header Navigasi Folder */}
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6 border-b-2 border-emerald-950/15 pb-4">
                       <button
                         type="button"
-                        onClick={() => setFormGaleri({ id: '', judul: '', foto: '' })}
-                        className="bg-white hover:bg-slate-100 text-emerald-950 px-6 py-3 rounded-xl font-extrabold border-2 border-emerald-950 cursor-pointer"
+                        onClick={() => {
+                          setActiveAdminAlbum(null);
+                          setAlbumPhotosAdmin([]);
+                        }}
+                        className="inline-flex items-center gap-1.5 bg-amber-300 hover:bg-amber-400 text-emerald-950 px-4 py-2 rounded-xl font-black border-2 border-emerald-950 shadow-[3px_3px_0px_#064e3b] hover:shadow-[1px_1px_0px_#064e3b] hover:translate-x-[2px] hover:translate-y-[2px] transition text-xs cursor-pointer w-fit"
                       >
-                        Batal
+                        <ArrowLeft size={15} /> Kembali ke Daftar Folder
                       </button>
-                    )}
-                  </div>
-                </form>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-                  {galeriList.map((item) => (
-                    <div
-                      key={item.id}
-                      className="rounded-2xl overflow-hidden border-2 border-emerald-950 shadow-[4px_4px_0px_#064e3b] bg-white flex flex-col"
-                    >
-                      <img src={item.foto} className="w-full aspect-square object-cover border-b-2 border-emerald-950" alt="Galeri" />
-                      <div className="p-3.5 flex flex-col gap-3 flex-grow justify-between">
-                        <p className="text-emerald-950 text-xs font-extrabold line-clamp-2">{item.judul}</p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-black bg-teal-100 border border-emerald-950 px-3 py-1 rounded-full text-emerald-950">
+                          📁 Sedang di dalam: <strong>{activeAdminAlbum.judul}</strong>
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* BANNER INFORMASI FOLDER */}
+                    <div className="bg-teal-100/70 border-2 border-emerald-950 shadow-[4px_4px_0px_#064e3b] rounded-2xl p-4 sm:p-5 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div>
+                        <div className="inline-flex items-center gap-1 text-[11px] font-black text-emerald-800 uppercase mb-1">
+                          <Calendar size={13} /> {activeAdminAlbum.tanggal}
+                        </div>
+                        <h3 className="text-lg sm:text-xl font-black text-emerald-950">
+                          {activeAdminAlbum.judul}
+                        </h3>
+                        {activeAdminAlbum.deskripsi && (
+                          <p className="text-xs text-slate-700 font-medium mt-1">
+                            {activeAdminAlbum.deskripsi}
+                          </p>
+                        )}
+                      </div>
+                      <div className="bg-white border-2 border-emerald-950 px-3.5 py-2 rounded-xl text-center shrink-0">
+                        <p className="text-[10px] font-black uppercase text-emerald-800">Total Foto</p>
+                        <p className="text-xl font-black text-emerald-950">{albumPhotosAdmin.length}</p>
+                      </div>
+                    </div>
+
+                    {/* AREA UPLOAD FOTO MULTI-UPLOAD */}
+                    <div className="bg-amber-50 border-2 border-dashed border-emerald-950 rounded-2xl p-5 sm:p-7 mb-8 text-center space-y-4">
+                      <div className="max-w-md mx-auto space-y-2">
+                        <div className="w-12 h-12 mx-auto rounded-full bg-amber-300 border-2 border-emerald-950 flex items-center justify-center text-emerald-950 shadow-[2px_2px_0px_#064e3b]">
+                          <Upload size={22} />
+                        </div>
+                        <h4 className="font-black text-emerald-950 text-base">
+                          Upload Foto ke Folder Ini
+                        </h4>
+                        <p className="text-xs text-slate-600 font-medium">
+                          Anda bisa memilih <strong>banyak foto sekaligus</strong> (10, 20, atau lebih) dari laptop / HP. Foto akan langsung tersimpan ke folder ini.
+                        </p>
+                      </div>
+
+                      {uploadingImage && (
+                        <div className="bg-white border-2 border-emerald-950 p-4 rounded-xl max-w-sm mx-auto shadow-[3px_3px_0px_#064e3b] animate-pulse">
+                          <p className="text-xs font-black text-emerald-950">
+                            Sedang Mengunggah Foto: {uploadProgress.current} dari {uploadProgress.total} file...
+                          </p>
+                          <div className="w-full bg-emerald-100 rounded-full h-2.5 mt-2 overflow-hidden border border-emerald-950">
+                            <div
+                              className="bg-emerald-600 h-2.5 rounded-full transition-all duration-300"
+                              style={{
+                                width: `${(uploadProgress.current / (uploadProgress.total || 1)) * 100}%`,
+                              }}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                        <label className="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-emerald-950 px-6 py-3 rounded-xl border-2 border-emerald-950 font-black text-xs sm:text-sm shadow-[3px_3px_0px_#064e3b] cursor-pointer transition">
+                          <Plus size={16} />
+                          <span>Pilih Banyak Foto dari Perangkat</span>
+                          <input
+                            type="file"
+                            multiple
+                            accept="image/*"
+                            className="hidden"
+                            disabled={uploadingImage}
+                            onChange={handleMultiUpload}
+                          />
+                        </label>
+                      </div>
+
+                      {/* Opsi Tambah Foto via Link URL jika ada */}
+                      <div className="pt-3 border-t border-emerald-950/15 max-w-lg mx-auto">
+                        <p className="text-[11px] font-bold text-slate-500 mb-1.5">
+                          Atau masukkan link foto eksternal:
+                        </p>
                         <div className="flex gap-2">
+                          <input
+                            type="url"
+                            value={manualFotoUrl}
+                            onChange={(e) => setManualFotoUrl(e.target.value)}
+                            placeholder="https://... (URL Foto)"
+                            className={`text-xs ${inputClass}`}
+                          />
                           <button
                             type="button"
-                            onClick={() => setFormGaleri(item)}
-                            className="flex-1 bg-sky-100 hover:bg-sky-200 text-emerald-950 text-xs font-extrabold py-2 rounded-lg border-2 border-emerald-950 cursor-pointer"
+                            onClick={() => handleTambahFotoManual(manualFotoUrl)}
+                            className="bg-white hover:bg-emerald-50 text-emerald-950 font-black px-4 py-2 rounded-xl border-2 border-emerald-950 text-xs shrink-0 cursor-pointer"
                           >
-                            Edit
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleHapus('galeri', item.id, setGaleriList)}
-                            className="flex-1 bg-rose-500 hover:bg-rose-600 text-white text-xs font-extrabold py-2 rounded-lg border-2 border-emerald-950 cursor-pointer"
-                          >
-                            Hapus
+                            Simpan Link
                           </button>
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
+
+                    {/* GRID FOTO DI DALAM FOLDER */}
+                    <div>
+                      <h4 className="font-black text-emerald-950 text-sm uppercase tracking-wider mb-4 flex items-center justify-between">
+                        <span>🖼️ Koleksi Foto di Folder ({albumPhotosAdmin.length})</span>
+                        <span className="text-xs font-semibold text-slate-500 normal-case">
+                          Klik ⭐ untuk jadikan foto sebagai cover folder
+                        </span>
+                      </h4>
+
+                      {albumPhotosAdmin.length === 0 ? (
+                        <div className="bg-white border-2 border-dashed border-emerald-950/40 rounded-2xl p-8 text-center">
+                          <p className="text-3xl mb-1">📸</p>
+                          <p className="text-xs font-bold text-slate-600">
+                            Folder ini masih kosong. Silakan gunakan tombol upload di atas untuk menambahkan foto.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
+                          {albumPhotosAdmin.map((photo) => {
+                            const isCover = activeAdminAlbum.cover_foto === photo.foto;
+
+                            return (
+                              <div
+                                key={photo.id}
+                                className={`rounded-xl overflow-hidden border-2 border-emerald-950 bg-white shadow-[3px_3px_0px_#064e3b] flex flex-col group relative ${
+                                  isCover ? 'ring-2 ring-amber-400' : ''
+                                }`}
+                              >
+                                <div className="aspect-square overflow-hidden relative bg-slate-100">
+                                  <img
+                                    src={photo.foto}
+                                    alt=""
+                                    className="w-full h-full object-cover group-hover:scale-105 transition"
+                                  />
+                                  {isCover && (
+                                    <div className="absolute top-1.5 left-1.5 bg-amber-300 border border-emerald-950 text-emerald-950 text-[10px] font-black px-2 py-0.5 rounded-md shadow-sm flex items-center gap-1">
+                                      <Star size={10} className="fill-emerald-950" /> Cover
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="p-2 bg-white flex items-center justify-between gap-1 border-t-2 border-emerald-950">
+                                  {!isCover ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleSetCover(photo.foto)}
+                                      className="text-[10px] font-black text-emerald-900 bg-amber-200 hover:bg-amber-300 px-2 py-1 rounded-lg border border-emerald-950 transition cursor-pointer flex items-center gap-1"
+                                      title="Jadikan Foto Sampul Album"
+                                    >
+                                      <Star size={11} /> Cover
+                                    </button>
+                                  ) : (
+                                    <span className="text-[10px] font-black text-emerald-700 px-1">
+                                      Sampul Aktif
+                                    </span>
+                                  )}
+
+                                  <button
+                                    type="button"
+                                    onClick={() => handleHapusFoto(photo.id)}
+                                    className="text-white bg-rose-500 hover:bg-rose-600 p-1.5 rounded-lg border border-emerald-950 transition cursor-pointer"
+                                    title="Hapus Foto"
+                                  >
+                                    <Trash2 size={12} />
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -688,7 +1557,7 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
                       link: '',
                     })
                   }
-                  className="bg-sky-100/80 border-2 border-emerald-950 shadow-[5px_5px_0px_#064e3b] p-6 rounded-2xl mb-8 space-y-4"
+                  className="bg-slate-50 border-2 border-emerald-950/20 rounded-2xl p-5 sm:p-6 mb-8 space-y-4 shadow-sm"
                 >
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <input
@@ -709,14 +1578,60 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
                       <option value="JPG">JPG / Gambar</option>
                     </select>
                   </div>
-                  <input
-                    type="url"
-                    value={formUnduhan.link}
-                    onChange={(e) => setFormUnduhan({ ...formUnduhan, link: e.target.value })}
-                    placeholder="Paste Link Dokumen (Google Drive, dll)"
-                    className={inputClass}
-                    required
-                  />
+                  <div className="space-y-2">
+                    <label className="block text-[11px] sm:text-xs font-black uppercase text-emerald-950">
+                      File Dokumen / Link Unduhan
+                    </label>
+                    <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center">
+                      <label className="inline-flex items-center justify-center gap-2 bg-white hover:bg-emerald-50 text-emerald-950 px-4 py-2.5 rounded-xl border-2 border-emerald-950 font-extrabold text-xs shadow-[2px_2px_0px_#064e3b] cursor-pointer transition shrink-0">
+                        <Upload size={15} />
+                        <span>{uploadingImage ? 'Mengunggah...' : 'Pilih Berkas dari Perangkat'}</span>
+                        <input
+                          type="file"
+                          className="hidden"
+                          disabled={uploadingImage}
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const ext = file.name.split('.').pop().toUpperCase();
+                              const url = await uploadFileToSupabase(file, 'unduhan');
+                              if (url) {
+                                setFormUnduhan((prev) => ({
+                                  ...prev,
+                                  link: url,
+                                  format: ['PDF', 'DOCX', 'JPG'].includes(ext) ? ext : 'PDF',
+                                  nama: prev.nama || file.name.replace(/\.[^/.]+$/, ''),
+                                }));
+                              }
+                            }
+                          }}
+                        />
+                      </label>
+                      <span className="text-xs font-bold text-slate-500 text-center sm:text-left">atau link:</span>
+                      <input
+                        type="url"
+                        value={formUnduhan.link}
+                        onChange={(e) => setFormUnduhan({ ...formUnduhan, link: e.target.value })}
+                        placeholder="https://... (Google Drive / Direct URL)"
+                        className={`flex-1 ${inputClass}`}
+                        required
+                      />
+                    </div>
+                    {formUnduhan.link && (
+                      <div className="flex items-center gap-3 p-2 bg-white rounded-xl border-2 border-emerald-950/20 shadow-sm">
+                        <span className="text-xs font-bold text-emerald-900 truncate flex-1">
+                          {formUnduhan.link}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setFormUnduhan((prev) => ({ ...prev, link: '' }))}
+                          className="text-rose-600 hover:text-rose-800 text-xs font-black px-2 py-1"
+                        >
+                          Hapus
+                        </button>
+                      </div>
+                    )}
+                  </div>
                   <div className="flex flex-wrap gap-3">
                     <button
                       type="submit"
@@ -786,7 +1701,8 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 }
 
 export default Admin;

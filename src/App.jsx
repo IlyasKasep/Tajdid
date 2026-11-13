@@ -1,30 +1,66 @@
-import { useState, useEffect, Suspense, lazy } from 'react';
-import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
-import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
-import { db, auth } from './firebase';
+import { useState, useEffect, useLayoutEffect, Suspense, lazy } from 'react';
+import { supabase } from './supabase';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
-import { MotionConfig } from 'framer-motion';
+import { AnimatePresence, MotionConfig, motion as Motion } from 'framer-motion';
 
-// Import Komponen Global (Langsung dimuat karena selalu muncul)
+// Import Komponen & Halaman Publik (Langsung dimuat agar transisi menu header mulus tanpa jeda spinner)
 import Header from './components/Header';
 import Footer from './components/Footer';
+import Home from './pages/Home';
+import Biodata from './pages/Biodata';
+import BiodataDetail from './pages/BiodataDetail';
+import Galeri from './pages/Galeri';
+import BeritaSekolah from './pages/BeritaSekolah';
 import BeritaDetail from './pages/BeritaDetail';
+import Download from './pages/Download';
+import Kontak from './pages/Kontak';
 import Saran from './pages/Saran';
-import AdminSaran from "./pages/AdminSaran";
 import LogoPersis from "./assets/Logo_Persis.png";
 
-// MENGGUNAKAN LAZY LOADING: Halaman hanya dimuat saat diklik (Mencegah Blank Putih)
-const Home = lazy(() => import('./pages/Home'));
+// LAZY LOADING khusus halaman Admin (Memisahkan bundle Three.js dari halaman publik)
 const Admin = lazy(() => import('./pages/Admin'));
-const Biodata = lazy(() => import('./pages/Biodata'));
-const BeritaSekolah = lazy(() => import('./pages/BeritaSekolah'));
-const Galeri = lazy(() => import('./pages/Galeri'));
-const Download = lazy(() => import('./pages/Download'));
-const Kontak = lazy(() => import('./pages/Kontak'));
-const BiodataDetail = lazy(() => import('./pages/BiodataDetail'));
+const AdminSaran = lazy(() => import('./pages/AdminSaran'));
 
+// Pemetaan urutan menu header untuk arah transisi halaman yang konsisten
+const getMenuRouteIndex = (pathname) => {
+  if (pathname === '/') return 0;
+  if (pathname === '/biodata' || pathname === '/pengelola' || pathname.startsWith('/biodata/')) return 1;
+  if (pathname === '/galeri') return 2;
+  if (pathname === '/berita' || pathname.startsWith('/berita/')) return 3;
+  if (pathname === '/download') return 4;
+  if (pathname === '/kontak') return 5;
+  if (pathname === '/saran') return 6;
+  return -1;
+};
 
-// Komponen Tampilan Loading (Fallback)
+const pageTransitionVariants = {
+  initial: (direction) =>
+    direction === 0
+      ? { opacity: 0, y: 12 }
+      : { opacity: 0, x: direction * 28 },
+  animate: {
+    opacity: 1,
+    x: 0,
+    y: 0,
+    transition: { duration: 0.28, ease: [0.22, 1, 0.36, 1] },
+  },
+  exit: (direction) =>
+    direction === 0
+      ? { opacity: 0, y: -10, transition: { duration: 0.16, ease: [0.4, 0, 1, 1] } }
+      : { opacity: 0, x: direction * -28, transition: { duration: 0.16, ease: [0.4, 0, 1, 1] } },
+};
+
+// Reset posisi scroll tepat sebelum halaman baru muncul di layar (setelah halaman lama selesai exit)
+function ScrollTopOnMount() {
+  useLayoutEffect(() => {
+    if (!window.location.hash) {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  }, []);
+  return null;
+}
+
+// Komponen Tampilan Loading (Fallback untuk halaman Admin lazy)
 const PageLoader = () => (
   <div className="flex flex-col items-center justify-center min-h-[60vh] text-emerald-600">
     <div className="w-12 h-12 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin mb-4"></div>
@@ -32,19 +68,8 @@ const PageLoader = () => (
   </div>
 );
 
-// === API KEY IMGBB ===
-const IMGBB_API_KEY = 'cb9b2aec11b80af3765d32f4d6f572da '; 
-
 function App() {
-  // STATE DATA (Dipertahankan dari kode lama Anda)
   const [berita, setBerita] = useState([]);
-  const [judulBaru, setJudulBaru] = useState('');
-  const [isiBaru, setIsiBaru] = useState('');
-  const [kategoriBaru, setKategoriBaru] = useState('Pengumuman');
-  const [fileGambar, setFileGambar] = useState(null);
-  const [urlGambarLama, setUrlGambarLama] = useState('');
-  const [prosesSimpan, setProsesSimpan] = useState(false);
-  const [idEdit, setIdEdit] = useState(null); 
 
   // STATE AUTENTIKASI
   const [user, setUser] = useState(null);
@@ -55,33 +80,35 @@ function App() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // FUNGSI-FUNGSI DATABASE & AUTENTIKASI (Dipertahankan dari kode lama Anda)
-  const ambilDataBerita = async () => {
-    try {
-      const querySnapshot = await getDocs(collection(db, "berita"));
-      const dataFormat = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setBerita(dataFormat);
-    } catch (error) {
-      console.error("Gagal mengambil data:", error);
-    }
-  };
-
   useEffect(() => {
     let aktif = true;
     const muatBeritaAwal = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "berita"));
-        const dataFormat = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-        if (aktif) setBerita(dataFormat);
+        const { data, error } = await supabase
+          .from('berita')
+          .select('*')
+          .order('created_at', { ascending: false });
+        if (error) throw error;
+        if (aktif) setBerita(data || []);
       } catch (error) {
         console.error("Gagal mengambil data:", error);
       }
     };
     muatBeritaAwal();
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => setUser(currentUser));
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (aktif) setUser(session?.user ?? null);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
     return () => {
       aktif = false;
-      unsubscribe();
+      subscription?.unsubscribe();
     };
   }, []);
 
@@ -104,84 +131,50 @@ function App() {
     e.preventDefault();
     setErrorLogin('');
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      setEmail(''); setPassword('');
-      navigate('/admin'); // Arahkan ke admin setelah login sukses
-    } catch {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      if (error) throw error;
+      setEmail('');
+      setPassword('');
+      navigate('/admin');
+    } catch (err) {
+      console.error("Login error:", err);
       setErrorLogin('Login gagal! Cek kembali email dan password Anda.');
     }
   };
 
-  const tanganiLogout = () => {
-    signOut(auth).then(() => {
+  const tanganiLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
       alert("Anda telah keluar dari sistem.");
-      navigate('/'); // Arahkan ke home setelah logout
-    }).catch((error) => {
+      navigate('/');
+    } catch (error) {
       console.error("Gagal Logout:", error);
+    }
+  };
+
+  const [routeTransition, setRouteTransition] = useState(() => ({
+    pathname: location.pathname,
+    direction: 0,
+  }));
+
+  if (routeTransition.pathname !== location.pathname) {
+    const prevIndex = getMenuRouteIndex(routeTransition.pathname);
+    const nextIndex = getMenuRouteIndex(location.pathname);
+    let direction = 0;
+
+    if (prevIndex !== -1 && nextIndex !== -1 && prevIndex !== nextIndex) {
+      direction = nextIndex > prevIndex ? 1 : -1;
+    }
+
+    setRouteTransition({
+      pathname: location.pathname,
+      direction,
     });
-  };  
-
-  const uploadFotoKeImgBB = async (foto) => {
-    const formData = new FormData();
-    formData.append('image', foto);
-    try {
-      const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: formData });
-      const data = await response.json();
-      return data.data.url; 
-    } catch {
-      alert("Gagal mengunggah foto.");
-      return null;
-    }
-  };
-
-  const simpanAtauUpdateBerita = async (e) => {
-    e.preventDefault();
-    if (!judulBaru || !isiBaru) return alert("Judul dan Isi tidak boleh kosong!");
-    setProsesSimpan(true);
-    try {
-      let urlGambarFinal = urlGambarLama; 
-      if (fileGambar) {
-        const urlBaru = await uploadFotoKeImgBB(fileGambar);
-        if (urlBaru) urlGambarFinal = urlBaru;
-        else { setProsesSimpan(false); return; }
-      }
-
-      if (idEdit) {
-        await updateDoc(doc(db, "berita", idEdit), { judul: judulBaru, isi: isiBaru, kategori: kategoriBaru, gambar: urlGambarFinal });
-        alert("Berita berhasil diperbarui!");
-      } else {
-        await addDoc(collection(db, "berita"), { 
-          judul: judulBaru, 
-          isi: isiBaru, 
-          kategori: kategoriBaru, 
-          gambar: urlGambarFinal, 
-          tanggal: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) 
-        });
-        alert("Pengumuman berhasil diunggah!");
-      }
-      batalEdit(); ambilDataBerita();
-    } catch {
-      alert("Gagal memproses data!");
-    }
-    setProsesSimpan(false);
-  };
-
-  const mulaiEdit = (item) => {
-    setIdEdit(item.id); setJudulBaru(item.judul); setIsiBaru(item.isi); setKategoriBaru(item.kategori || 'Pengumuman');
-    setUrlGambarLama(item.gambar || ''); setFileGambar(null); window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const batalEdit = () => {
-    setIdEdit(null); setJudulBaru(''); setIsiBaru(''); setKategoriBaru('Pengumuman'); setFileGambar(null); setUrlGambarLama('');
-  };
-
-  const hapusBerita = async (idBerita) => {
-    if (window.confirm("Yakin ingin menghapus pengumuman ini?")) {
-      await deleteDoc(doc(db, "berita", idBerita));
-      alert("Berita berhasil dihapus!");
-      ambilDataBerita(); 
-    }
-  };
+  }
 
   const isAdminPage = location.pathname.startsWith('/admin');
 
@@ -191,47 +184,64 @@ function App() {
         {/* HEADER GLOBAL (Disembunyikan pada halaman Admin login & dashboard) */}
         {!isAdminPage && <Header user={user} tanganiLogout={tanganiLogout} />}
         
-        <div className="flex-grow">
-          {/* SUSPENSE membungkus Routes untuk menangani loading saat pindah halaman */}
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
-              <Route path="/" element={<Home berita={berita} />} />
-              <Route path="/biodata" element={<Biodata />} />
-              <Route path="/pengelola" element={<Biodata />} />
-              <Route path="/biodata/:id" element={<BiodataDetail />} />
-              <Route path="/galeri" element={<Galeri />} />
-              <Route path="/berita" element={<BeritaSekolah berita={berita} />} />
-              <Route path="/berita/:id" element={<BeritaDetail />} />
-              <Route path="/download" element={<Download />} />
-              <Route path="/kontak" element={<Kontak />} />
-              <Route path="/saran" element={<Saran />} />
-              <Route
-                path="/admin/saran"
-                element={
-                  user ? (
-                    <div className="max-w-6xl mx-auto py-10 px-4 sm:px-6">
-                      <div className="bg-white rounded-3xl border-2 border-emerald-950 shadow-[8px_8px_0px_#064e3b] p-6 md:p-10">
-                        <AdminSaran />
-                      </div>
-                    </div>
-                  ) : (
-                    <Navigate to="/admin" replace />
-                  )
-                }
-              />
-              <Route path="/admin" element={
-                <Admin 
-                  user={user} email={email} setEmail={setEmail} password={password} setPassword={setPassword} 
-                  errorLogin={errorLogin} tanganiLogin={tanganiLogin} berita={berita} judulBaru={judulBaru} 
-                  setJudulBaru={setJudulBaru} kategoriBaru={kategoriBaru} setKategoriBaru={setKategoriBaru} 
-                  fileGambar={fileGambar} setFileGambar={setFileGambar} urlGambarLama={urlGambarLama} 
-                  isiBaru={isiBaru} setIsiBaru={setIsiBaru} simpanAtauUpdateBerita={simpanAtauUpdateBerita} 
-                  prosesSimpan={prosesSimpan} idEdit={idEdit} batalEdit={batalEdit} mulaiEdit={mulaiEdit} 
-                  hapusBerita={hapusBerita} tanganiLogout={tanganiLogout}
-                />
-              } />
-            </Routes>
-          </Suspense>
+        <div className="flex-grow overflow-x-clip">
+          {/* Transisi antar halaman yang halus saat berpindah menu */}
+          <AnimatePresence mode="wait" initial={false} custom={routeTransition.direction}>
+            <Motion.div
+              key={location.pathname}
+              custom={routeTransition.direction}
+              variants={pageTransitionVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+            >
+              <ScrollTopOnMount />
+              {/* SUSPENSE menangani loading untuk halaman Admin lazy */}
+              <Suspense fallback={<PageLoader />}>
+                <Routes location={location}>
+                  <Route path="/" element={<Home berita={berita} />} />
+                  <Route path="/biodata" element={<Biodata />} />
+                  <Route path="/pengelola" element={<Biodata />} />
+                  <Route path="/biodata/:id" element={<BiodataDetail />} />
+                  <Route path="/galeri" element={<Galeri />} />
+                  <Route path="/berita" element={<BeritaSekolah berita={berita} />} />
+                  <Route path="/berita/:id" element={<BeritaDetail />} />
+                  <Route path="/download" element={<Download />} />
+                  <Route path="/kontak" element={<Kontak />} />
+                  <Route path="/saran" element={<Saran />} />
+                  <Route
+                    path="/admin/saran"
+                    element={
+                      user ? (
+                        <div className="max-w-6xl mx-auto py-10 px-4 sm:px-6">
+                          <div className="bg-white rounded-3xl border-2 border-emerald-950 shadow-[8px_8px_0px_#064e3b] p-6 md:p-10">
+                            <AdminSaran />
+                          </div>
+                        </div>
+                      ) : (
+                        <Navigate to="/admin" replace />
+                      )
+                    }
+                  />
+                  <Route
+                    path="/admin"
+                    element={
+                      <Admin
+                        user={user}
+                        email={email}
+                        setEmail={setEmail}
+                        password={password}
+                        setPassword={setPassword}
+                        errorLogin={errorLogin}
+                        tanganiLogin={tanganiLogin}
+                        tanganiLogout={tanganiLogout}
+                      />
+                    }
+                  />
+                </Routes>
+              </Suspense>
+            </Motion.div>
+          </AnimatePresence>
         </div>
 
         {/* FOOTER GLOBAL (Disembunyikan pada halaman Admin login & dashboard) */}

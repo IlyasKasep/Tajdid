@@ -117,7 +117,7 @@ function Home() {
   return (
     <div className="bg-teal-50 min-h-screen font-sans text-slate-800 overflow-x-hidden">
       {/* ================= 1. HERO SECTION ================= */}
-      <section className="relative pt-10 pb-16 lg:pt-16 lg:pb-24 px-6 bg-gradient-to-b from-teal-50 via-emerald-50/60 to-teal-50 overflow-hidden">
+      <section className="relative pt-6 pb-12 sm:pt-10 sm:pb-16 lg:pt-16 lg:pb-24 px-4 sm:px-6 bg-gradient-to-b from-teal-50 via-emerald-50/60 to-teal-50 overflow-hidden">
         {/* Ornamen Ceria Anak TK Mengambang di Latar (Desktop) */}
         <Motion.div
           aria-hidden="true"
@@ -152,50 +152,61 @@ function Home() {
           🎈
         </Motion.div>
 
-        <div className="max-w-6xl mx-auto grid lg:grid-cols-12 gap-10 lg:gap-8 items-center relative z-10">
+        <div className="max-w-6xl mx-auto grid lg:grid-cols-12 gap-6 lg:gap-8 items-center relative z-10">
           {/* AREA TEKS KIRI */}
           <Motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ ...springPop, duration: 0.6 }}
-            className="lg:col-span-6 text-center lg:text-left space-y-6"
+            className="lg:col-span-6 text-center lg:text-left space-y-3.5 sm:space-y-6"
           >
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-emerald-950 leading-[1.08] tracking-tight">
+            {/* Badge Nama Sekolah */}
+            <div>
+              <span className="inline-flex items-center gap-1.5 bg-amber-300 text-emerald-950 font-black px-3.5 py-1 rounded-full border-2 border-emerald-950 shadow-[2px_2px_0px_#064e3b] text-[11px] sm:text-xs uppercase tracking-wider">
+                <span>⭐</span> RA PERSIS 175 AT-TAJDID
+              </span>
+            </div>
+
+            <h1 className="text-2xl xs:text-3xl sm:text-5xl lg:text-6xl font-black text-emerald-950 leading-[1.15] sm:leading-[1.08] tracking-tight">
               Belajar Adalah <br />
-              <span className="text-emerald-600">BERPETUALANG</span>
-              <Motion.span
-                animate={{ x: [0, 5, 0] }}
-                transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
-                className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 ml-3 align-middle rounded-full border-2 border-emerald-950 bg-amber-300 text-emerald-950 shadow-[2px_2px_0px_#064e3b]"
-              >
-                <ArrowRight size={22} strokeWidth={2.5} />
-              </Motion.span>
+              <span className="text-emerald-600 inline-flex items-center justify-center lg:justify-start gap-1.5 sm:gap-3">
+                <span>BERPETUALANG</span>
+                <Motion.span
+                  animate={{ x: [0, 4, 0] }}
+                  transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+                  className="inline-flex items-center justify-center w-7 h-7 sm:w-11 sm:h-11 rounded-full border-2 border-emerald-950 bg-amber-300 text-emerald-950 shadow-[2px_2px_0px_#064e3b] shrink-0 align-middle"
+                >
+                  <ArrowRight size={14} className="sm:hidden" strokeWidth={2.5} />
+                  <ArrowRight size={22} className="hidden sm:block" strokeWidth={2.5} />
+                </Motion.span>
+              </span>
             </h1>
 
-            <p className="text-sm sm:text-base text-slate-600 max-w-lg mx-auto lg:mx-0 leading-relaxed font-medium">
-              <strong className="text-emerald-900 block mb-1">RA PERSIS 175 AT-TAJDID</strong>
+            <p className="text-xs sm:text-base text-slate-600 max-w-lg mx-auto lg:mx-0 leading-relaxed font-medium px-1 sm:px-0">
               Mewujudkan generasi bertakwa, cerdas, dan mandiri melalui pendidikan anak usia dini yang holistik. Bersama kami, potensi fitrah anak dikembangkan secara optimal demi mencetak pemimpin masa depan yang berakhlak mulia.
             </p>
 
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
+            {/* Tombol Berdampingan di Mobile (Tidak Lagi Menumpuk Besar) */}
+            <div className="flex flex-row items-center justify-center lg:justify-start gap-2.5 sm:gap-4 pt-1 sm:pt-2 w-full max-w-md mx-auto lg:mx-0">
               <Motion.a
-                whileHover={{ scale: 1.04, y: -2 }}
+                whileHover={{ scale: 1.03, y: -2 }}
                 whileTap={{ scale: 0.96 }}
                 href="https://bit.ly/PendaftaranOnlineRAattajdid"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-emerald-950 font-extrabold px-6 py-3.5 rounded-xl border-2 border-emerald-950 shadow-[4px_4px_0px_#064e3b] hover:shadow-[2px_2px_0px_#064e3b] transition-colors text-sm sm:text-base"
+                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 sm:gap-2 bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black px-3.5 py-2.5 sm:px-6 sm:py-3.5 rounded-xl border-2 border-emerald-950 shadow-[2px_2px_0px_#064e3b] sm:shadow-[4px_4px_0px_#064e3b] transition-all text-xs sm:text-base text-center"
               >
-                Daftar Sekarang
-                <span className="w-6 h-6 rounded-full bg-emerald-950 text-white flex items-center justify-center">
-                  <ArrowRight size={14} />
+                <span>Daftar Sekarang</span>
+                <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-emerald-950 text-white flex items-center justify-center shrink-0">
+                  <ArrowRight size={11} className="sm:hidden" />
+                  <ArrowRight size={14} className="hidden sm:block" />
                 </span>
               </Motion.a>
 
-              <Motion.div whileHover={{ scale: 1.04, y: -2 }} whileTap={{ scale: 0.96 }}>
+              <Motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.96 }} className="flex-1 sm:flex-none">
                 <Link
                   to="/galeri"
-                  className="inline-flex items-center gap-2 bg-white hover:bg-emerald-50 text-emerald-950 font-bold px-6 py-3.5 rounded-xl border-2 border-emerald-950 shadow-[4px_4px_0px_#0d9488] hover:shadow-[2px_2px_0px_#0d9488] transition-colors text-sm sm:text-base"
+                  className="w-full inline-flex items-center justify-center gap-1.5 sm:gap-2 bg-white hover:bg-emerald-50 text-emerald-950 font-extrabold px-3.5 py-2.5 sm:px-6 sm:py-3.5 rounded-xl border-2 border-emerald-950 shadow-[2px_2px_0px_#0d9488] sm:shadow-[4px_4px_0px_#0d9488] transition-all text-xs sm:text-base text-center"
                 >
                   Jelajahi Galeri
                 </Link>
@@ -203,14 +214,14 @@ function Home() {
             </div>
           </Motion.div>
 
-          {/* AREA SLIDER KANAN (Arch Layered Frame seperti Referensi) */}
+          {/* AREA SLIDER KANAN (Arch Layered Frame Responsif) */}
           <Motion.div
             initial={{ opacity: 0, scale: 0.92, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ ...springPop, delay: 0.12 }}
-            className="lg:col-span-6 relative flex justify-center lg:justify-end"
+            className="lg:col-span-6 relative flex justify-center lg:justify-end w-full mt-2 sm:mt-0"
           >
-            <div className="relative w-full max-w-[340px] sm:max-w-[410px] pt-2 pr-2 pl-6 pb-4">
+            <div className="relative w-full max-w-[270px] xs:max-w-[300px] sm:max-w-[410px] mx-auto lg:mr-0 pt-2 pb-3 px-2 sm:pl-6 sm:pr-2">
               {/* Layer Arch Dekoratif di Belakang */}
               <Motion.div
                 animate={{ rotate: [-3, -1.5, -3] }}
@@ -219,7 +230,7 @@ function Home() {
               />
 
               {/* Frame Utama Arch berisi Swiper Slider */}
-              <div className="relative z-10 w-full aspect-[4/4.3] rounded-t-[11rem] rounded-b-[2rem] border-2 border-emerald-950 shadow-[8px_8px_0px_#0d9488] overflow-hidden bg-white">
+              <div className="relative z-10 w-full aspect-[4/4.3] rounded-t-[6.5rem] sm:rounded-t-[11rem] rounded-b-[1.5rem] sm:rounded-b-[2rem] border-2 border-emerald-950 shadow-[5px_5px_0px_#0d9488] sm:shadow-[8px_8px_0px_#0d9488] overflow-hidden bg-white">
                 <Swiper
                   modules={[Navigation, Pagination, Autoplay]}
                   navigation={true}
@@ -238,22 +249,23 @@ function Home() {
               </div>
 
               {/* Indikator Slide & Lencana Checkmark */}
-              <div className="relative z-20 -mt-5 flex items-center justify-between px-2">
+              <div className="relative z-20 -mt-4 sm:-mt-5 flex items-center justify-between px-2">
                 <Motion.div
                   key={activeIndex}
                   initial={{ scale: 0.9, opacity: 0.7 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={springPop}
-                  className="bg-teal-200 text-emerald-950 text-xs font-extrabold px-4 py-1.5 rounded-full border-2 border-emerald-950 shadow-[2px_2px_0px_#064e3b]"
+                  className="bg-teal-200 text-emerald-950 text-[10px] sm:text-xs font-extrabold px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full border-2 border-emerald-950 shadow-[2px_2px_0px_#064e3b]"
                 >
                   Kegiatan RA • {activeIndex + 1} / {sliderData.length}
                 </Motion.div>
                 <Motion.div
                   animate={{ rotate: [0, -8, 8, 0] }}
                   transition={{ duration: 3.5, repeat: Infinity, repeatDelay: 2 }}
-                  className="w-11 h-11 rounded-full bg-white border-2 border-emerald-950 shadow-[3px_3px_0px_#064e3b] flex items-center justify-center text-emerald-600"
+                  className="w-8 h-8 sm:w-11 sm:h-11 rounded-full bg-white border-2 border-emerald-950 shadow-[2px_2px_0px_#064e3b] sm:shadow-[3px_3px_0px_#064e3b] flex items-center justify-center text-emerald-600"
                 >
-                  <Check size={20} strokeWidth={3} />
+                  <Check size={16} className="sm:hidden" strokeWidth={3} />
+                  <Check size={20} className="hidden sm:block" strokeWidth={3} />
                 </Motion.div>
               </div>
             </div>
@@ -262,11 +274,11 @@ function Home() {
       </section>
 
       {/* ================= 2. DARK HIGHLIGHT BAR (Slider Berjalan) ================= */}
-      <section className="bg-emerald-950 text-white py-4 border-y-2 border-emerald-950 overflow-hidden">
+      <section className="bg-emerald-950 text-white py-3.5 sm:py-4 border-y-2 border-emerald-950 overflow-hidden">
         <Swiper
           modules={[Autoplay]}
           slidesPerView="auto"
-          spaceBetween={48}
+          spaceBetween={28}
           loop={true}
           speed={4500}
           allowTouchMove={true}
@@ -281,8 +293,8 @@ function Home() {
             const IconComponent = item.Icon;
             return (
               <SwiperSlide key={idx} className="!w-auto">
-                <div className="flex items-center gap-2.5 text-emerald-100 text-xs sm:text-sm font-bold tracking-wide whitespace-nowrap py-1">
-                  <IconComponent size={18} className={item.iconColor} />
+                <div className="flex items-center gap-2 text-emerald-100 text-xs sm:text-sm font-bold tracking-wide whitespace-nowrap py-1">
+                  <IconComponent size={16} className={`${item.iconColor} sm:w-[18px] sm:h-[18px]`} />
                   <span>{item.label}</span>
                 </div>
               </SwiperSlide>
@@ -292,7 +304,7 @@ function Home() {
       </section>
 
       {/* ================= 3. SELAMAT DATANG & 3 KARTU LAYANAN ================= */}
-      <section className="py-20 px-6 bg-white border-b-2 border-emerald-950/10">
+      <section className="py-12 sm:py-20 px-4 sm:px-6 bg-white border-b-2 border-emerald-950/10">
         <div className="max-w-6xl mx-auto">
           {/* Header Intro */}
           <Motion.div
@@ -300,21 +312,21 @@ function Home() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.2 }}
             transition={springPop}
-            className="text-center max-w-3xl mx-auto space-y-5 mb-14"
+            className="text-center max-w-3xl mx-auto space-y-4 sm:space-y-5 mb-10 sm:mb-14"
           >
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-emerald-950 leading-tight">
+            <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black text-emerald-950 leading-tight">
               Selamat Datang di <br className="hidden sm:block" />
               <span className="text-emerald-600">RA Persis 175 At Tajdid</span>
             </h2>
 
             <Motion.p
-              whileHover={{ scale: 1.03 }}
-              className="inline-block bg-teal-100 text-emerald-950 font-extrabold px-5 py-2 rounded-full text-xs sm:text-sm border-2 border-emerald-950 shadow-[3px_3px_0px_#0d9488]"
+              whileHover={{ scale: 1.02 }}
+              className="inline-block max-w-full bg-teal-100 text-emerald-950 font-extrabold px-4 sm:px-5 py-2 rounded-full text-xs sm:text-sm border-2 border-emerald-950 shadow-[2px_2px_0px_#0d9488] sm:shadow-[3px_3px_0px_#0d9488] leading-normal"
             >
               "Tempat Tumbuhnya Generasi Sehat, Cerdas, Bahagia & Berakhlak Mulia"
             </Motion.p>
 
-            <div className="text-slate-600 text-sm sm:text-base leading-relaxed space-y-4 font-medium pt-2">
+            <div className="text-slate-600 text-sm sm:text-base leading-relaxed space-y-3 sm:space-y-4 font-medium pt-1 sm:pt-2">
               <p>
                 Setiap anak adalah amanah sekaligus anugerah dari Allah yang luar biasa. Kami percaya bahwa setiap anak istimewa dengan potensi luar biasa. Kami hadir sebagai ruang belajar yang aman, menyenangkan, dan penuh kasih sayang, di mana anak-anak dapat tumbuh dan berkembang secara optimal, baik secara kognitif, sosial-emosional, maupun spiritual.
               </p>
@@ -325,30 +337,30 @@ function Home() {
           </Motion.div>
 
           {/* 3 Kartu Menu Bergaya Outlined Pastel dengan Spring Stagger */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 max-w-5xl mx-auto">
             {/* KARTU KONTAK */}
             <Motion.div
               initial={{ opacity: 0, y: 28 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.2 }}
               transition={{ ...springPop, delay: 0 }}
-              whileHover={{ y: -6, rotate: -1 }}
+              whileHover={{ y: -4, rotate: -0.5 }}
               className="flex"
             >
               <Link
                 to="/kontak"
-                className="w-full bg-teal-200/80 p-7 rounded-2xl border-2 border-emerald-950 shadow-[5px_5px_0px_#064e3b] hover:shadow-[8px_8px_0px_#064e3b] transition-shadow group flex flex-col justify-between"
+                className="w-full bg-teal-200/80 p-5 sm:p-7 rounded-2xl border-2 border-emerald-950 shadow-[4px_4px_0px_#064e3b] sm:shadow-[5px_5px_0px_#064e3b] hover:shadow-[7px_7px_0px_#064e3b] transition-shadow group flex flex-col justify-between"
               >
                 <div>
-                  <div className="w-12 h-12 rounded-xl bg-white border-2 border-emerald-950 shadow-[2px_2px_0px_#064e3b] flex items-center justify-center text-emerald-700 mb-6 group-hover:animate-bounce-slow">
-                    <Mail size={24} />
+                  <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-white border-2 border-emerald-950 shadow-[2px_2px_0px_#064e3b] flex items-center justify-center text-emerald-700 mb-4 sm:mb-6 group-hover:animate-bounce-slow">
+                    <Mail size={22} className="sm:w-6 sm:h-6" />
                   </div>
-                  <h3 className="font-black text-emerald-950 text-xl mb-2">Kontak Kami</h3>
+                  <h3 className="font-black text-emerald-950 text-lg sm:text-xl mb-1.5 sm:mb-2">Kontak Kami</h3>
                   <p className="text-slate-800 text-sm font-medium leading-relaxed">
                     Hubungi admin sekolah untuk informasi pendaftaran, jadwal kunjungan, maupun lokasi RA.
                   </p>
                 </div>
-                <span className="mt-6 inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-emerald-950">
+                <span className="mt-5 sm:mt-6 inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-emerald-950">
                   Hubungi Sekarang <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                 </span>
               </Link>
@@ -360,23 +372,23 @@ function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.2 }}
               transition={{ ...springPop, delay: 0.1 }}
-              whileHover={{ y: -6, rotate: 1 }}
+              whileHover={{ y: -4, rotate: 0.5 }}
               className="flex"
             >
               <Link
                 to="/galeri"
-                className="w-full bg-rose-100 p-7 rounded-2xl border-2 border-emerald-950 shadow-[5px_5px_0px_#064e3b] hover:shadow-[8px_8px_0px_#064e3b] transition-shadow group flex flex-col justify-between"
+                className="w-full bg-rose-100 p-5 sm:p-7 rounded-2xl border-2 border-emerald-950 shadow-[4px_4px_0px_#064e3b] sm:shadow-[5px_5px_0px_#064e3b] hover:shadow-[7px_7px_0px_#064e3b] transition-shadow group flex flex-col justify-between"
               >
                 <div>
-                  <div className="w-12 h-12 rounded-xl bg-white border-2 border-emerald-950 shadow-[2px_2px_0px_#064e3b] flex items-center justify-center text-rose-600 mb-6 group-hover:animate-bounce-slow">
-                    <Images size={24} />
+                  <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-white border-2 border-emerald-950 shadow-[2px_2px_0px_#064e3b] flex items-center justify-center text-rose-600 mb-4 sm:mb-6 group-hover:animate-bounce-slow">
+                    <Images size={22} className="sm:w-6 sm:h-6" />
                   </div>
-                  <h3 className="font-black text-emerald-950 text-xl mb-2">Galeri Foto</h3>
+                  <h3 className="font-black text-emerald-950 text-lg sm:text-xl mb-1.5 sm:mb-2">Galeri Foto</h3>
                   <p className="text-slate-800 text-sm font-medium leading-relaxed">
                     Keceriaan aktivitas ananda saat bermain, belajar, dan berkegiatan kreatif di sekolah.
                   </p>
                 </div>
-                <span className="mt-6 inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-emerald-950">
+                <span className="mt-5 sm:mt-6 inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-emerald-950">
                   Lihat Album <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                 </span>
               </Link>
@@ -388,23 +400,23 @@ function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.2 }}
               transition={{ ...springPop, delay: 0.2 }}
-              whileHover={{ y: -6, rotate: -1 }}
+              whileHover={{ y: -4, rotate: -0.5 }}
               className="flex"
             >
               <Link
                 to="/download"
-                className="w-full bg-amber-300 p-7 rounded-2xl border-2 border-emerald-950 shadow-[5px_5px_0px_#064e3b] hover:shadow-[8px_8px_0px_#064e3b] transition-shadow group flex flex-col justify-between"
+                className="w-full bg-amber-300 p-5 sm:p-7 rounded-2xl border-2 border-emerald-950 shadow-[4px_4px_0px_#064e3b] sm:shadow-[5px_5px_0px_#064e3b] hover:shadow-[7px_7px_0px_#064e3b] transition-shadow group flex flex-col justify-between"
               >
                 <div>
-                  <div className="w-12 h-12 rounded-xl bg-white border-2 border-emerald-950 shadow-[2px_2px_0px_#064e3b] flex items-center justify-center text-amber-600 mb-6 group-hover:animate-bounce-slow">
-                    <FolderDown size={24} />
+                  <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-white border-2 border-emerald-950 shadow-[2px_2px_0px_#064e3b] flex items-center justify-center text-amber-600 mb-4 sm:mb-6 group-hover:animate-bounce-slow">
+                    <FolderDown size={22} className="sm:w-6 sm:h-6" />
                   </div>
-                  <h3 className="font-black text-emerald-950 text-xl mb-2">Download</h3>
+                  <h3 className="font-black text-emerald-950 text-lg sm:text-xl mb-1.5 sm:mb-2">Download</h3>
                   <p className="text-slate-800 text-sm font-medium leading-relaxed">
                     Unduh berkas, panduan administrasi, hingga formulir keperluan sekolah dengan mudah.
                   </p>
                 </div>
-                <span className="mt-6 inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-emerald-950">
+                <span className="mt-5 sm:mt-6 inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-emerald-950">
                   Buka Pusat Unduhan <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                 </span>
               </Link>
@@ -414,7 +426,7 @@ function Home() {
       </section>
 
       {/* ================= 4. BAND AMBER: MENGAPA MEMILIH KAMI & KAMI MENGENALKAN ================= */}
-      <section className="bg-amber-300 py-20 px-6 border-b-2 border-emerald-950 relative overflow-hidden">
+      <section className="bg-amber-300 py-12 sm:py-20 px-4 sm:px-6 border-b-2 border-emerald-950 relative overflow-hidden">
         {/* Ornamen Bintang & Krayon Ceria */}
         <Motion.div
           aria-hidden="true"
@@ -433,14 +445,14 @@ function Home() {
           🎨
         </Motion.div>
 
-        <div className="max-w-6xl mx-auto grid lg:grid-cols-12 gap-12 items-start relative z-10">
+        <div className="max-w-6xl mx-auto grid lg:grid-cols-12 gap-8 lg:gap-12 items-start relative z-10">
           {/* Kolom Kiri: Foto + Kartu "Kami Mengenalkan" */}
           <Motion.div
             initial={{ opacity: 0, x: -24 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, amount: 0.2 }}
             transition={springPop}
-            className="lg:col-span-5 space-y-6 relative"
+            className="lg:col-span-5 space-y-5 sm:space-y-6 relative w-full"
           >
             <div className="relative">
               {/* Pola garis dekoratif putih di belakang foto */}
@@ -453,8 +465,8 @@ function Home() {
                 ))}
               </div>
 
-              <div className="relative z-10 bg-white p-2.5 rounded-3xl border-2 border-emerald-950 shadow-[7px_7px_0px_#064e3b]">
-                <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-emerald-50">
+              <div className="relative z-10 bg-white p-2 sm:p-2.5 rounded-2xl sm:rounded-3xl border-2 border-emerald-950 shadow-[5px_5px_0px_#064e3b] sm:shadow-[7px_7px_0px_#064e3b]">
+                <div className="aspect-[4/3] rounded-xl sm:rounded-2xl overflow-hidden bg-emerald-50">
                   <img
                     src="/img/potbar.jpeg"
                     alt="Kebersamaan Guru dan Anak RA Persis 175 At Tajdid"
@@ -465,11 +477,11 @@ function Home() {
             </div>
 
             {/* Kartu Poin: Kami Mengenalkan */}
-            <div className="bg-white p-7 rounded-2xl border-2 border-emerald-950 shadow-[6px_6px_0px_#064e3b]">
-              <h3 className="text-xl font-black text-emerald-950 mb-5 flex items-center gap-2.5">
-                <span className="text-2xl inline-block animate-bounce-slow">🌱</span> Kami Mengenalkan:
+            <div className="bg-white p-5 sm:p-7 rounded-2xl border-2 border-emerald-950 shadow-[4px_4px_0px_#064e3b] sm:shadow-[6px_6px_0px_#064e3b]">
+              <h3 className="text-lg sm:text-xl font-black text-emerald-950 mb-4 sm:mb-5 flex items-center gap-2 sm:gap-2.5">
+                <span className="text-xl sm:text-2xl inline-block animate-bounce-slow">🌱</span> Kami Mengenalkan:
               </h3>
-              <ul className="space-y-3.5">
+              <ul className="space-y-3 sm:space-y-3.5">
                 {poinMengenalkan.map((item, idx) => (
                   <Motion.li
                     key={idx}
@@ -477,12 +489,12 @@ function Home() {
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
                     transition={{ ...springPop, delay: idx * 0.08 }}
-                    className="flex items-start gap-3"
+                    className="flex items-start gap-2.5 sm:gap-3"
                   >
-                    <span className="w-6 h-6 rounded-full bg-teal-200 border border-emerald-950 text-emerald-950 flex items-center justify-center text-xs font-black shrink-0 mt-0.5">
+                    <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-teal-200 border border-emerald-950 text-emerald-950 flex items-center justify-center text-xs font-black shrink-0 mt-0.5">
                       ✓
                     </span>
-                    <span className="text-slate-700 font-semibold text-sm sm:text-base leading-relaxed">
+                    <span className="text-slate-700 font-semibold text-xs sm:text-sm md:text-base leading-relaxed">
                       {item}
                     </span>
                   </Motion.li>
@@ -492,19 +504,19 @@ function Home() {
           </Motion.div>
 
           {/* Kolom Kanan: Heading "Mengapa Memilih Kami?" + List Stat-Style */}
-          <div className="lg:col-span-7 space-y-6">
+          <div className="lg:col-span-7 space-y-5 sm:space-y-6 w-full">
             <Motion.div
               initial={{ opacity: 0, y: 18 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.2 }}
               transition={springPop}
             >
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-emerald-950 leading-tight">
+              <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black text-emerald-950 leading-tight">
                 Mengapa Memilih Kami?
               </h2>
             </Motion.div>
 
-            <div className="divide-y-2 divide-emerald-950/15 bg-amber-200/60 rounded-2xl border-2 border-emerald-950 p-6 sm:p-8 shadow-[6px_6px_0px_#064e3b]">
+            <div className="divide-y-2 divide-emerald-950/15 bg-amber-200/60 rounded-2xl border-2 border-emerald-950 p-4 sm:p-7 shadow-[4px_4px_0px_#064e3b] sm:shadow-[6px_6px_0px_#064e3b]">
               {poinMengapaKami.map((poin, i) => (
                 <Motion.div
                   key={i}
@@ -512,12 +524,12 @@ function Home() {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true, amount: 0.2 }}
                   transition={{ ...springPop, delay: i * 0.06 }}
-                  className="py-3.5 first:pt-0 last:pb-0 flex items-start gap-4 sm:gap-6"
+                  className="py-3 sm:py-3.5 first:pt-0 last:pb-0 flex items-start gap-3 sm:gap-5"
                 >
-                  <span className="text-2xl sm:text-3xl font-black text-emerald-950 tabular-nums shrink-0 leading-none pt-0.5">
+                  <span className="text-xl sm:text-3xl font-black text-emerald-950 tabular-nums shrink-0 leading-none pt-0.5">
                     0{i + 1}
                   </span>
-                  <p className="text-slate-900 font-bold text-sm sm:text-base leading-relaxed">
+                  <p className="text-slate-900 font-bold text-xs sm:text-sm md:text-base leading-relaxed">
                     {poin}
                   </p>
                 </Motion.div>
@@ -528,7 +540,7 @@ function Home() {
       </section>
 
       {/* ================= 5. KESERUAN KAMI (Alternating Rows + Grid 8 Foto) ================= */}
-      <section className="py-20 px-6 bg-teal-50">
+      <section className="py-12 sm:py-20 px-4 sm:px-6 bg-teal-50">
         <div className="max-w-6xl mx-auto">
           {/* Header Section */}
           <Motion.div
@@ -536,12 +548,12 @@ function Home() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.2 }}
             transition={springPop}
-            className="text-center max-w-2xl mx-auto mb-16 relative"
+            className="text-center max-w-2xl mx-auto mb-10 sm:mb-16 relative"
           >
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-emerald-950 mb-3">
+            <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black text-emerald-950 mb-2 sm:mb-3">
               Keseruan Kami <span className="inline-block animate-wiggle">📸</span>
             </h2>
-            <p className="text-slate-600 font-medium text-sm sm:text-base">
+            <p className="text-slate-600 font-medium text-xs sm:text-sm md:text-base">
               Momen belajar, bermain, beribadah, dan bertumbuh penuh keceriaan setiap hari di RA Persis 175 At-Tajdid.
             </p>
             <Motion.svg
@@ -561,7 +573,7 @@ function Home() {
           </Motion.div>
 
           {/* 3 Baris Zig-Zag Editorial */}
-          <div className="space-y-14 mb-20">
+          <div className="space-y-10 sm:space-y-14 mb-12 sm:mb-20">
             {sorotanKegiatan.map((item, idx) => (
               <Motion.div
                 key={idx}
@@ -569,30 +581,30 @@ function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.2 }}
                 transition={{ ...springPop, delay: 0.05 }}
-                className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-center"
+                className="grid lg:grid-cols-12 gap-5 sm:gap-8 lg:gap-12 items-center"
               >
                 {/* Kolom Teks */}
                 <div
-                  className={`lg:col-span-6 space-y-4 ${
+                  className={`lg:col-span-6 space-y-3 sm:space-y-4 ${
                     item.reverse ? 'lg:order-2' : 'lg:order-1'
                   }`}
                 >
                   <span
-                    className={`inline-block ${item.tagColor} text-xs font-extrabold uppercase tracking-wider px-3.5 py-1 rounded-full border-2 border-emerald-950`}
+                    className={`inline-block ${item.tagColor} text-[11px] sm:text-xs font-extrabold uppercase tracking-wider px-3 sm:px-3.5 py-1 rounded-full border-2 border-emerald-950`}
                   >
                     {item.tag}
                   </span>
-                  <h3 className="text-2xl sm:text-3xl font-black text-emerald-950 leading-snug">
+                  <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-emerald-950 leading-snug">
                     {item.judul}
                   </h3>
-                  <p className="text-slate-600 text-sm sm:text-base leading-relaxed font-medium">
+                  <p className="text-slate-600 text-xs sm:text-sm md:text-base leading-relaxed font-medium">
                     {item.deskripsi}
                   </p>
-                  <div className="pt-2">
-                    <Motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} className="inline-block">
+                  <div className="pt-1 sm:pt-2">
+                    <Motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }} className="inline-block">
                       <Link
                         to={item.ctaTo}
-                        className="inline-flex items-center gap-2 bg-white hover:bg-emerald-50 text-emerald-950 font-bold text-xs sm:text-sm px-5 py-2.5 rounded-full border-2 border-emerald-950 shadow-[3px_3px_0px_#064e3b] transition-colors"
+                        className="inline-flex items-center gap-2 bg-white hover:bg-emerald-50 text-emerald-950 font-bold text-xs sm:text-sm px-4 sm:px-5 py-2.5 rounded-full border-2 border-emerald-950 shadow-[2px_2px_0px_#064e3b] sm:shadow-[3px_3px_0px_#064e3b] transition-colors"
                       >
                         {item.ctaLabel}
                         <ArrowRight size={15} />
@@ -608,7 +620,7 @@ function Home() {
                   }`}
                 >
                   <Motion.div
-                    whileHover={{ y: -4, rotate: item.reverse ? -1 : 1 }}
+                    whileHover={{ y: -3, rotate: item.reverse ? -1 : 1 }}
                     transition={springPop}
                     className={`rounded-2xl border-2 border-emerald-950 bg-white p-2 ${item.frameShadow}`}
                   >
@@ -625,8 +637,8 @@ function Home() {
             ))}
           </div>
 
-          {/* Grid 8 Foto Utama (Pop-in & Miring Ceria saat Hover) */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6">
+          {/* Grid 8 Foto Utama */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
             {galeriSingkat.map((imgSrc, idx) => (
               <Motion.div
                 key={idx}
@@ -634,8 +646,8 @@ function Home() {
                 whileInView={{ opacity: 1, scale: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.15 }}
                 transition={{ ...springPop, delay: (idx % 4) * 0.06 }}
-                whileHover={{ y: -6, rotate: idx % 2 === 0 ? -2 : 2, scale: 1.03 }}
-                className="aspect-square rounded-2xl overflow-hidden border-2 border-emerald-950 bg-white p-1.5 shadow-[4px_4px_0px_#064e3b] group"
+                whileHover={{ y: -4, rotate: idx % 2 === 0 ? -2 : 2, scale: 1.03 }}
+                className="aspect-square rounded-2xl overflow-hidden border-2 border-emerald-950 bg-white p-1 sm:p-1.5 shadow-[3px_3px_0px_#064e3b] sm:shadow-[4px_4px_0px_#064e3b] group"
               >
                 <div className="w-full h-full rounded-xl overflow-hidden relative">
                   <img
@@ -648,14 +660,14 @@ function Home() {
             ))}
           </div>
 
-          <div className="text-center mt-12">
-            <Motion.div whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.96 }} className="inline-block">
+          <div className="text-center mt-8 sm:mt-12">
+            <Motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.96 }} className="inline-block w-full sm:w-auto">
               <Link
                 to="/galeri"
-                className="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-emerald-950 font-extrabold px-7 py-3.5 rounded-full border-2 border-emerald-950 shadow-[4px_4px_0px_#064e3b] hover:shadow-[2px_2px_0px_#064e3b] transition-colors text-sm sm:text-base"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-amber-400 hover:bg-amber-300 text-emerald-950 font-extrabold px-6 sm:px-7 py-3 sm:py-3.5 rounded-full border-2 border-emerald-950 shadow-[3px_3px_0px_#064e3b] sm:shadow-[4px_4px_0px_#064e3b] hover:shadow-[2px_2px_0px_#064e3b] transition-colors text-xs sm:text-base text-center"
               >
                 Lihat Semua Foto
-                <ArrowRight size={18} />
+                <ArrowRight size={17} />
               </Link>
             </Motion.div>
           </div>
@@ -663,7 +675,7 @@ function Home() {
       </section>
 
       {/* ================= 6. BAND TEAL: FILOSOFI & KOMITMEN ================= */}
-      <section className="bg-teal-600 text-white py-20 px-6 border-y-2 border-emerald-950 relative overflow-hidden">
+      <section className="bg-teal-600 text-white py-12 sm:py-20 px-4 sm:px-6 border-y-2 border-emerald-950 relative overflow-hidden">
         <Motion.div
           aria-hidden="true"
           animate={{ y: [0, -10, 0], rotate: [-5, 5, -5] }}
@@ -687,14 +699,14 @@ function Home() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.2 }}
             transition={springPop}
-            className="text-center mb-12"
+            className="text-center mb-8 sm:mb-12"
           >
-            <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+            <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
               Komitmen & Harapan Kami
             </h2>
           </Motion.div>
 
-          <div className="grid md:grid-cols-12 gap-8 lg:gap-12 items-center">
+          <div className="grid md:grid-cols-12 gap-6 sm:gap-8 lg:gap-12 items-center">
             {/* Foto Berbingkai di Kiri */}
             <Motion.div
               initial={{ opacity: 0, x: -24 }}
@@ -702,10 +714,10 @@ function Home() {
               viewport={{ once: true, amount: 0.2 }}
               transition={springPop}
               whileHover={{ rotate: -1.5, scale: 1.02 }}
-              className="md:col-span-5 flex justify-center"
+              className="md:col-span-5 flex justify-center w-full"
             >
-              <div className="bg-white p-2.5 rounded-3xl border-2 border-emerald-950 shadow-[7px_7px_0px_#fbbf24] max-w-xs w-full">
-                <div className="aspect-[4/4.3] rounded-2xl overflow-hidden bg-teal-50">
+              <div className="bg-white p-2 sm:p-2.5 rounded-2xl sm:rounded-3xl border-2 border-emerald-950 shadow-[5px_5px_0px_#fbbf24] sm:shadow-[7px_7px_0px_#fbbf24] max-w-xs w-full">
+                <div className="aspect-[4/4.3] rounded-xl sm:rounded-2xl overflow-hidden bg-teal-50">
                   <img
                     src="/img/guru.png"
                     alt="Guru dan Pengelola RA Persis 175 At-Tajdid"
@@ -721,17 +733,17 @@ function Home() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, amount: 0.2 }}
               transition={{ ...springPop, delay: 0.1 }}
-              className="md:col-span-7 space-y-5"
+              className="md:col-span-7 space-y-4 sm:space-y-5"
             >
-              <blockquote className="text-lg sm:text-xl font-bold leading-relaxed text-white">
+              <blockquote className="text-base sm:text-xl font-bold leading-relaxed text-white">
                 "Kami tidak hanya mendidik anak untuk menjadi pintar, tetapi juga membimbing mereka menjadi pribadi yang beriman, berilmu, berakhlak, percaya diri, mandiri dan siap menghadapi masa depan."
               </blockquote>
 
-              <p className="text-xl sm:text-2xl font-black text-amber-300">
+              <p className="text-lg sm:text-2xl font-black text-amber-300">
                 💛 Bersama kami, anak belajar dengan bahagia, tumbuh dengan cinta.
               </p>
 
-              <div className="space-y-3 text-teal-50 text-sm sm:text-base leading-relaxed font-medium">
+              <div className="space-y-3 text-teal-50 text-xs sm:text-sm md:text-base leading-relaxed font-medium">
                 <p>
                   Mari bergabung dan menjadi bagian dari keluarga besar RA Persis 175 At Tajdid. Kami berkomitmen mendampingi tumbuh kembang si kecil dengan penuh kasih sayang, kesabaran, dan nilai-nilai kebaikan.
                 </p>
@@ -745,49 +757,49 @@ function Home() {
       </section>
 
       {/* ================= 7. BAND ROSE SOFT: AJAKAN PENDAFTARAN ================= */}
-      <section className="bg-rose-100 py-16 px-6">
+      <section className="bg-rose-100 py-10 sm:py-16 px-4 sm:px-6">
         <Motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.2 }}
           transition={springPop}
-          className="max-w-5xl mx-auto grid md:grid-cols-12 gap-8 items-center"
+          className="max-w-5xl mx-auto grid md:grid-cols-12 gap-6 sm:gap-8 items-center"
         >
-          <div className="md:col-span-7 space-y-4">
-            <h2 className="text-2xl sm:text-4xl font-black text-emerald-950 leading-tight">
+          <div className="md:col-span-7 space-y-3 sm:space-y-4">
+            <h2 className="text-xl sm:text-3xl md:text-4xl font-black text-emerald-950 leading-tight">
               💛 Yuk, Ayah Bunda… temani tumbuh kembang si kecil bersama kami.
             </h2>
-            <p className="inline-block bg-white text-emerald-950 font-extrabold px-5 py-2.5 rounded-full border-2 border-emerald-950 shadow-[3px_3px_0px_#064e3b] text-xs sm:text-sm">
+            <p className="inline-block max-w-full bg-white text-emerald-950 font-extrabold px-4 sm:px-5 py-2 sm:py-2.5 rounded-full border-2 border-emerald-950 shadow-[2px_2px_0px_#064e3b] sm:shadow-[3px_3px_0px_#064e3b] text-xs sm:text-sm leading-normal">
               “Belajar dengan Ceria, Tumbuh dalam Cinta, Berakhlak Mulia” — RA At-Tajdid
             </p>
           </div>
 
-          <div className="md:col-span-5 bg-white p-6 sm:p-7 rounded-2xl border-2 border-emerald-950 shadow-[6px_6px_0px_#064e3b] space-y-4">
-            <p className="text-sm font-bold text-slate-700 leading-relaxed">
+          <div className="md:col-span-5 bg-white p-5 sm:p-7 rounded-2xl border-2 border-emerald-950 shadow-[5px_5px_0px_#064e3b] sm:shadow-[6px_6px_0px_#064e3b] space-y-4">
+            <p className="text-xs sm:text-sm font-bold text-slate-700 leading-relaxed">
               Pendaftaran peserta didik baru terbuka untuk anak usia 4–6 tahun. Daftar online sekarang atau hubungi admin sekolah.
             </p>
             <div className="flex flex-col sm:flex-row md:flex-col gap-3">
               <Motion.a
-                whileHover={{ scale: 1.03, y: -2 }}
+                whileHover={{ scale: 1.02, y: -2 }}
                 whileTap={{ scale: 0.96 }}
                 href="https://bit.ly/PendaftaranOnlineRAattajdid"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full inline-flex items-center justify-center gap-2 bg-rose-500 hover:bg-rose-600 text-white font-black px-6 py-3.5 rounded-xl border-2 border-emerald-950 shadow-[4px_4px_0px_#064e3b] hover:shadow-[2px_2px_0px_#064e3b] transition-colors text-sm sm:text-base"
+                className="w-full inline-flex items-center justify-center gap-2 bg-rose-500 hover:bg-rose-600 text-white font-black px-5 py-3 sm:px-6 sm:py-3.5 rounded-xl border-2 border-emerald-950 shadow-[3px_3px_0px_#064e3b] sm:shadow-[4px_4px_0px_#064e3b] hover:shadow-[2px_2px_0px_#064e3b] transition-colors text-sm sm:text-base"
               >
                 Daftar Sekarang 🚀
-                <ArrowUpRight size={18} />
+                <ArrowUpRight size={17} />
               </Motion.a>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
                 <Link
                   to="/kontak"
-                  className="inline-flex items-center justify-center bg-teal-100 hover:bg-teal-200 text-emerald-950 font-bold py-2.5 px-3 rounded-xl border-2 border-emerald-950 text-xs sm:text-sm transition-colors"
+                  className="inline-flex items-center justify-center bg-teal-100 hover:bg-teal-200 text-emerald-950 font-bold py-2.5 px-2.5 sm:px-3 rounded-xl border-2 border-emerald-950 text-xs sm:text-sm transition-colors text-center"
                 >
                   Kontak Kami
                 </Link>
                 <Link
                   to="/saran"
-                  className="inline-flex items-center justify-center bg-amber-200 hover:bg-amber-300 text-emerald-950 font-bold py-2.5 px-3 rounded-xl border-2 border-emerald-950 text-xs sm:text-sm transition-colors"
+                  className="inline-flex items-center justify-center bg-amber-200 hover:bg-amber-300 text-emerald-950 font-bold py-2.5 px-2.5 sm:px-3 rounded-xl border-2 border-emerald-950 text-xs sm:text-sm transition-colors text-center"
                 >
                   Kotak Saran
                 </Link>
