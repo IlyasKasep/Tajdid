@@ -10,10 +10,7 @@ import {
   BookOpen,
   CalendarCheck,
   Check,
-  FolderDown,
   HeartHandshake,
-  Images,
-  Mail,
   MapPin,
 } from 'lucide-react';
 
@@ -31,8 +28,8 @@ const sliderData = [
 
 const highlightItems = [
   { label: 'Ijin Operasional Sejak 2010', Icon: CalendarCheck, iconColor: 'text-amber-300' },
-  { label: 'Kurikulum Merdeka', Icon: BookOpen, iconColor: 'text-teal-300' },
-  { label: 'Pendidikan Berbasis Cinta', Icon: HeartHandshake, iconColor: 'text-rose-300' },
+  { label: 'Pembelajaran Mendalam', Icon: BookOpen, iconColor: 'text-teal-300' },
+  { label: 'Kurikulum Berbasis Cinta', Icon: HeartHandshake, iconColor: 'text-rose-300' },
   { label: 'Usia 4–6 Tahun', Icon: Award, iconColor: 'text-amber-300' },
   { label: 'Pasirjambu, Kab. Bandung', Icon: MapPin, iconColor: 'text-teal-300' },
 ];
@@ -58,7 +55,7 @@ const poinMengapaKami = [
 
 const sorotanKegiatan = [
   {
-    tag: 'Kurikulum Merdeka',
+    tag: 'Pembelajaran Mendalam',
     tagColor: 'bg-teal-200 text-emerald-950',
     frameShadow: 'shadow-[8px_8px_0px_#0d9488]',
     judul: 'Belajar Melalui Bermain & Eksplorasi Aktif',
@@ -66,8 +63,6 @@ const sorotanKegiatan = [
       'Setiap kegiatan dirancang untuk menumbuhkan rasa ingin tahu, kreativitas, serta perkembangan kognitif dan sosial-emosional anak secara menyenangkan.',
     gambar: '/img/diskusi.jpeg',
     alt: 'Kegiatan diskusi dan belajar bersama di RA At-Tajdid',
-    ctaLabel: 'Lihat Galeri Kegiatan',
-    ctaTo: '/galeri',
     reverse: false,
   },
   {
@@ -79,8 +74,6 @@ const sorotanKegiatan = [
       'Penanaman ketauhidan dan kebiasaan baik sehari-hari seperti doa, adab, dan praktik ibadah sederhana dilakukan penuh kasih sayang dan keteladanan.',
     gambar: '/img/wudhu.jpeg',
     alt: 'Pembiasaan praktik ibadah anak di RA At-Tajdid',
-    ctaLabel: 'Lihat Kabar Sekolah',
-    ctaTo: '/berita',
     reverse: true,
   },
   {
@@ -92,8 +85,6 @@ const sorotanKegiatan = [
       'Didampingi oleh guru yang sabar, profesional, dan menghargai keunikan setiap anak sesuai tahap tumbuh kembangnya.',
     gambar: '/img/ayunan.jpeg',
     alt: 'Suasana bermain ceria anak di RA At-Tajdid',
-    ctaLabel: 'Kenali Pengelola',
-    ctaTo: '/biodata',
     reverse: false,
   },
 ];
@@ -185,33 +176,6 @@ function Home() {
             <p className="text-xs sm:text-base text-slate-600 max-w-lg mx-auto lg:mx-0 leading-relaxed font-medium px-1 sm:px-0">
               Mewujudkan generasi bertakwa, cerdas, dan mandiri melalui pendidikan anak usia dini yang holistik. Bersama kami, potensi fitrah anak dikembangkan secara optimal demi mencetak pemimpin masa depan yang berakhlak mulia.
             </p>
-
-            {/* Tombol Berdampingan di Mobile (Tidak Lagi Menumpuk Besar) */}
-            <div className="flex flex-row items-center justify-center lg:justify-start gap-2.5 sm:gap-4 pt-1 sm:pt-2 w-full max-w-md mx-auto lg:mx-0">
-              <Motion.a
-                whileHover={{ scale: 1.03, y: -2 }}
-                whileTap={{ scale: 0.96 }}
-                href="https://bit.ly/PendaftaranOnlineRAattajdid"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 sm:gap-2 bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black px-3.5 py-2.5 sm:px-6 sm:py-3.5 rounded-xl border-2 border-emerald-950 shadow-[2px_2px_0px_#064e3b] sm:shadow-[4px_4px_0px_#064e3b] transition-all text-xs sm:text-base text-center"
-              >
-                <span>Daftar Sekarang</span>
-                <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-emerald-950 text-white flex items-center justify-center shrink-0">
-                  <ArrowRight size={11} className="sm:hidden" />
-                  <ArrowRight size={14} className="hidden sm:block" />
-                </span>
-              </Motion.a>
-
-              <Motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.96 }} className="flex-1 sm:flex-none">
-                <Link
-                  to="/galeri"
-                  className="w-full inline-flex items-center justify-center gap-1.5 sm:gap-2 bg-white hover:bg-emerald-50 text-emerald-950 font-extrabold px-3.5 py-2.5 sm:px-6 sm:py-3.5 rounded-xl border-2 border-emerald-950 shadow-[2px_2px_0px_#0d9488] sm:shadow-[4px_4px_0px_#0d9488] transition-all text-xs sm:text-base text-center"
-                >
-                  Jelajahi Galeri
-                </Link>
-              </Motion.div>
-            </div>
           </Motion.div>
 
           {/* AREA SLIDER KANAN (Arch Layered Frame Responsif) */}
@@ -331,97 +295,10 @@ function Home() {
                 Setiap anak adalah amanah sekaligus anugerah dari Allah yang luar biasa. Kami percaya bahwa setiap anak istimewa dengan potensi luar biasa. Kami hadir sebagai ruang belajar yang aman, menyenangkan, dan penuh kasih sayang, di mana anak-anak dapat tumbuh dan berkembang secara optimal, baik secara kognitif, sosial-emosional, maupun spiritual.
               </p>
               <p>
-                Dengan pendekatan <strong className="text-emerald-700">Kurikulum Merdeka</strong> yang dipadukan dengan nilai-nilai keIslaman dan pendidikan berbasis cinta, kami mengajak anak belajar melalui bermain, bereksplorasi dan berinteraksi secara aktif. Setiap kegiatan dirancang untuk menumbuhkan ketauhidan, rasa ingin tahu, kemandirian, serta karakter positif sejak dini.
+                Dengan pendekatan <strong className="text-emerald-700">pembelajaran mendalam</strong> yang dipadukan dengan nilai-nilai keIslaman dan <strong className="text-emerald-700">kurikulum berbasis cinta</strong>, kami mengajak anak belajar melalui bermain, bereksplorasi dan berinteraksi secara aktif. Setiap kegiatan dirancang untuk menumbuhkan ketauhidan, rasa ingin tahu, kemandirian, serta karakter positif sejak dini.
               </p>
             </div>
           </Motion.div>
-
-          {/* 3 Kartu Menu Bergaya Outlined Pastel dengan Spring Stagger */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 max-w-5xl mx-auto">
-            {/* KARTU KONTAK */}
-            <Motion.div
-              initial={{ opacity: 0, y: 28 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ ...springPop, delay: 0 }}
-              whileHover={{ y: -4, rotate: -0.5 }}
-              className="flex"
-            >
-              <Link
-                to="/kontak"
-                className="w-full bg-teal-200/80 p-5 sm:p-7 rounded-2xl border-2 border-emerald-950 shadow-[4px_4px_0px_#064e3b] sm:shadow-[5px_5px_0px_#064e3b] hover:shadow-[7px_7px_0px_#064e3b] transition-shadow group flex flex-col justify-between"
-              >
-                <div>
-                  <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-white border-2 border-emerald-950 shadow-[2px_2px_0px_#064e3b] flex items-center justify-center text-emerald-700 mb-4 sm:mb-6 group-hover:animate-bounce-slow">
-                    <Mail size={22} className="sm:w-6 sm:h-6" />
-                  </div>
-                  <h3 className="font-black text-emerald-950 text-lg sm:text-xl mb-1.5 sm:mb-2">Kontak Kami</h3>
-                  <p className="text-slate-800 text-sm font-medium leading-relaxed">
-                    Hubungi admin sekolah untuk informasi pendaftaran, jadwal kunjungan, maupun lokasi RA.
-                  </p>
-                </div>
-                <span className="mt-5 sm:mt-6 inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-emerald-950">
-                  Hubungi Sekarang <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                </span>
-              </Link>
-            </Motion.div>
-
-            {/* KARTU GALERI */}
-            <Motion.div
-              initial={{ opacity: 0, y: 28 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ ...springPop, delay: 0.1 }}
-              whileHover={{ y: -4, rotate: 0.5 }}
-              className="flex"
-            >
-              <Link
-                to="/galeri"
-                className="w-full bg-rose-100 p-5 sm:p-7 rounded-2xl border-2 border-emerald-950 shadow-[4px_4px_0px_#064e3b] sm:shadow-[5px_5px_0px_#064e3b] hover:shadow-[7px_7px_0px_#064e3b] transition-shadow group flex flex-col justify-between"
-              >
-                <div>
-                  <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-white border-2 border-emerald-950 shadow-[2px_2px_0px_#064e3b] flex items-center justify-center text-rose-600 mb-4 sm:mb-6 group-hover:animate-bounce-slow">
-                    <Images size={22} className="sm:w-6 sm:h-6" />
-                  </div>
-                  <h3 className="font-black text-emerald-950 text-lg sm:text-xl mb-1.5 sm:mb-2">Galeri Foto</h3>
-                  <p className="text-slate-800 text-sm font-medium leading-relaxed">
-                    Keceriaan aktivitas ananda saat bermain, belajar, dan berkegiatan kreatif di sekolah.
-                  </p>
-                </div>
-                <span className="mt-5 sm:mt-6 inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-emerald-950">
-                  Lihat Album <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                </span>
-              </Link>
-            </Motion.div>
-
-            {/* KARTU DOWNLOAD */}
-            <Motion.div
-              initial={{ opacity: 0, y: 28 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ ...springPop, delay: 0.2 }}
-              whileHover={{ y: -4, rotate: -0.5 }}
-              className="flex"
-            >
-              <Link
-                to="/download"
-                className="w-full bg-amber-300 p-5 sm:p-7 rounded-2xl border-2 border-emerald-950 shadow-[4px_4px_0px_#064e3b] sm:shadow-[5px_5px_0px_#064e3b] hover:shadow-[7px_7px_0px_#064e3b] transition-shadow group flex flex-col justify-between"
-              >
-                <div>
-                  <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-white border-2 border-emerald-950 shadow-[2px_2px_0px_#064e3b] flex items-center justify-center text-amber-600 mb-4 sm:mb-6 group-hover:animate-bounce-slow">
-                    <FolderDown size={22} className="sm:w-6 sm:h-6" />
-                  </div>
-                  <h3 className="font-black text-emerald-950 text-lg sm:text-xl mb-1.5 sm:mb-2">Download</h3>
-                  <p className="text-slate-800 text-sm font-medium leading-relaxed">
-                    Unduh berkas, panduan administrasi, hingga formulir keperluan sekolah dengan mudah.
-                  </p>
-                </div>
-                <span className="mt-5 sm:mt-6 inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-emerald-950">
-                  Buka Pusat Unduhan <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                </span>
-              </Link>
-            </Motion.div>
-          </div>
         </div>
       </section>
 
@@ -600,17 +477,6 @@ function Home() {
                   <p className="text-slate-600 text-xs sm:text-sm md:text-base leading-relaxed font-medium">
                     {item.deskripsi}
                   </p>
-                  <div className="pt-1 sm:pt-2">
-                    <Motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }} className="inline-block">
-                      <Link
-                        to={item.ctaTo}
-                        className="inline-flex items-center gap-2 bg-white hover:bg-emerald-50 text-emerald-950 font-bold text-xs sm:text-sm px-4 sm:px-5 py-2.5 rounded-full border-2 border-emerald-950 shadow-[2px_2px_0px_#064e3b] sm:shadow-[3px_3px_0px_#064e3b] transition-colors"
-                      >
-                        {item.ctaLabel}
-                        <ArrowRight size={15} />
-                      </Link>
-                    </Motion.div>
-                  </div>
                 </div>
 
                 {/* Kolom Foto */}
@@ -778,28 +644,39 @@ function Home() {
             <p className="text-xs sm:text-sm font-bold text-slate-700 leading-relaxed">
               Pendaftaran peserta didik baru terbuka untuk anak usia 4–6 tahun. Daftar online sekarang atau hubungi admin sekolah.
             </p>
-            <div className="flex flex-col sm:flex-row md:flex-col gap-3">
-              <Motion.a
-                whileHover={{ scale: 1.02, y: -2 }}
-                whileTap={{ scale: 0.96 }}
-                href="https://bit.ly/PendaftaranOnlineRAattajdid"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full inline-flex items-center justify-center gap-2 bg-rose-500 hover:bg-rose-600 text-white font-black px-5 py-3 sm:px-6 sm:py-3.5 rounded-xl border-2 border-emerald-950 shadow-[3px_3px_0px_#064e3b] sm:shadow-[4px_4px_0px_#064e3b] hover:shadow-[2px_2px_0px_#064e3b] transition-colors text-sm sm:text-base"
-              >
-                Daftar Sekarang 🚀
-                <ArrowUpRight size={17} />
-              </Motion.a>
-              <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+            <div className="flex flex-col gap-3">
+              {/* Tombol Aksi Utama (Dipindahkan dari Hero ke CTA Bawah) */}
+              <div className="flex flex-col sm:flex-row gap-2.5">
+                <Motion.a
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.96 }}
+                  href="https://bit.ly/PendaftaranOnlineRAattajdid"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 inline-flex items-center justify-center gap-2 bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black px-4 py-3 rounded-xl border-2 border-emerald-950 shadow-[3px_3px_0px_#064e3b] transition-all text-xs sm:text-sm text-center"
+                >
+                  <span>Daftar Sekarang</span>
+                  <ArrowUpRight size={16} />
+                </Motion.a>
+
+                <Link
+                  to="/galeri"
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 bg-white hover:bg-emerald-50 text-emerald-950 font-extrabold px-4 py-3 rounded-xl border-2 border-emerald-950 shadow-[3px_3px_0px_#064e3b] transition-all text-xs sm:text-sm text-center"
+                >
+                  Jelajahi Galeri
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5">
                 <Link
                   to="/kontak"
-                  className="inline-flex items-center justify-center bg-teal-100 hover:bg-teal-200 text-emerald-950 font-bold py-2.5 px-2.5 sm:px-3 rounded-xl border-2 border-emerald-950 text-xs sm:text-sm transition-colors text-center"
+                  className="inline-flex items-center justify-center bg-teal-100 hover:bg-teal-200 text-emerald-950 font-bold py-2.5 px-3 rounded-xl border-2 border-emerald-950 text-xs transition-colors text-center shadow-[2px_2px_0px_#064e3b]"
                 >
                   Kontak Kami
                 </Link>
                 <Link
                   to="/saran"
-                  className="inline-flex items-center justify-center bg-amber-200 hover:bg-amber-300 text-emerald-950 font-bold py-2.5 px-2.5 sm:px-3 rounded-xl border-2 border-emerald-950 text-xs sm:text-sm transition-colors text-center"
+                  className="inline-flex items-center justify-center bg-amber-200 hover:bg-amber-300 text-emerald-950 font-bold py-2.5 px-3 rounded-xl border-2 border-emerald-950 text-xs transition-colors text-center shadow-[2px_2px_0px_#064e3b]"
                 >
                   Kotak Saran
                 </Link>
