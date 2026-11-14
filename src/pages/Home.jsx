@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion as Motion } from 'framer-motion';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -9,7 +8,6 @@ import {
   Award,
   BookOpen,
   CalendarCheck,
-  Check,
   HeartHandshake,
   MapPin,
 } from 'lucide-react';
@@ -103,8 +101,6 @@ const galeriSingkat = [
 const springPop = { type: 'spring', stiffness: 220, damping: 18 };
 
 function Home() {
-  const [activeIndex, setActiveIndex] = useState(0);
-
   return (
     <div className="bg-teal-50 min-h-screen font-sans text-slate-800 overflow-x-hidden">
       {/* ================= 1. HERO SECTION ================= */}
@@ -201,7 +197,6 @@ function Home() {
                   pagination={{ clickable: true }}
                   autoplay={{ delay: 5000, disableOnInteraction: false }}
                   loop={true}
-                  onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
                   className="w-full h-full hero-swiper"
                 >
                   {sliderData.map((item, index) => (
@@ -210,27 +205,6 @@ function Home() {
                     </SwiperSlide>
                   ))}
                 </Swiper>
-              </div>
-
-              {/* Indikator Slide & Lencana Checkmark */}
-              <div className="relative z-20 -mt-4 sm:-mt-5 flex items-center justify-between px-2">
-                <Motion.div
-                  key={activeIndex}
-                  initial={{ scale: 0.9, opacity: 0.7 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={springPop}
-                  className="bg-teal-200 text-emerald-950 text-[10px] sm:text-xs font-extrabold px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full border-2 border-emerald-950 shadow-[2px_2px_0px_#064e3b]"
-                >
-                  Kegiatan RA • {activeIndex + 1} / {sliderData.length}
-                </Motion.div>
-                <Motion.div
-                  animate={{ rotate: [0, -8, 8, 0] }}
-                  transition={{ duration: 3.5, repeat: Infinity, repeatDelay: 2 }}
-                  className="w-8 h-8 sm:w-11 sm:h-11 rounded-full bg-white border-2 border-emerald-950 shadow-[2px_2px_0px_#064e3b] sm:shadow-[3px_3px_0px_#064e3b] flex items-center justify-center text-emerald-600"
-                >
-                  <Check size={16} className="sm:hidden" strokeWidth={3} />
-                  <Check size={20} className="hidden sm:block" strokeWidth={3} />
-                </Motion.div>
               </div>
             </div>
           </Motion.div>
