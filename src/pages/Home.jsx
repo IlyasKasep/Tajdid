@@ -499,18 +499,6 @@ function Home() {
               </Motion.div>
             ))}
           </div>
-
-          <div className="text-center mt-8 sm:mt-12">
-            <Motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.96 }} className="inline-block w-full sm:w-auto">
-              <Link
-                to="/galeri"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-amber-400 hover:bg-amber-300 text-emerald-950 font-extrabold px-6 sm:px-7 py-3 sm:py-3.5 rounded-full border-2 border-emerald-950 shadow-[3px_3px_0px_#064e3b] sm:shadow-[4px_4px_0px_#064e3b] hover:shadow-[2px_2px_0px_#064e3b] transition-colors text-xs sm:text-base text-center"
-              >
-                Lihat Semua Foto
-                <ArrowRight size={17} />
-              </Link>
-            </Motion.div>
-          </div>
         </div>
       </section>
 
