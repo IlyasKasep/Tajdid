@@ -6,11 +6,11 @@ export const uploadVideoToCloudinary = async (file, onProgress) => {
   const cloudName =
     import.meta.env.VITE_CLOUDINARY_CLOUD_NAME ||
     localStorage.getItem('cloudinary_cloud_name') ||
-    '';
+    'rv0vhjkd';
   const uploadPreset =
     import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET ||
     localStorage.getItem('cloudinary_upload_preset') ||
-    '';
+    'at_tajdid_unsigned';
 
   if (!cloudName || !uploadPreset) {
     throw new Error(

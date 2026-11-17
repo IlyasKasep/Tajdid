@@ -61,8 +61,8 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
   const [videoProgress, setVideoProgress] = useState(0);
   const [showCloudinarySettings, setShowCloudinarySettings] = useState(false);
   const [cloudinaryConfig, setCloudinaryConfig] = useState({
-    cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || localStorage.getItem('cloudinary_cloud_name') || '',
-    uploadPreset: import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || localStorage.getItem('cloudinary_upload_preset') || '',
+    cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || localStorage.getItem('cloudinary_cloud_name') || 'rv0vhjkd',
+    uploadPreset: import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || localStorage.getItem('cloudinary_upload_preset') || 'at_tajdid_unsigned',
   });
 
   // ==========================================
