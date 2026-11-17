@@ -54,7 +54,7 @@ function Download() {
                   key={item.id}
                   href={item.link}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="bg-white p-5 sm:p-6 rounded-2xl border-2 border-emerald-950 shadow-[4px_4px_0px_#064e3b] sm:shadow-[5px_5px_0px_#064e3b] hover:-translate-y-1 hover:shadow-[7px_7px_0px_#064e3b] transition-all group flex flex-col items-center text-center"
                 >
                   <div className="w-14 h-14 sm:w-16 sm:h-16 bg-sky-100 border-2 border-emerald-950 shadow-[2px_2px_0px_#064e3b] rounded-2xl flex items-center justify-center text-2xl sm:text-3xl mb-3 sm:mb-4 group-hover:scale-105 transition-transform">

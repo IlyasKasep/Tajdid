@@ -55,6 +55,7 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
   const [albumList, setAlbumList] = useState([]);
   const [activeAdminAlbum, setActiveAdminAlbum] = useState(null);
   const [albumPhotosAdmin, setAlbumPhotosAdmin] = useState([]);
+  const [adminMediaFilter, setAdminMediaFilter] = useState('semua'); // 'semua' | 'foto' | 'video'
   const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [videoProgress, setVideoProgress] = useState(0);
@@ -141,6 +142,7 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
 
   const handleBukaFolder = (album) => {
     setActiveAdminAlbum(album);
+    setAdminMediaFilter('semua');
     fetchAlbumPhotos(album.id);
   };
 
@@ -1484,101 +1486,198 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
                       </div>
                     </div>
 
-                    {/* GRID FOTO & VIDEO DI DALAM FOLDER */}
-                    <div>
-                      <h4 className="font-black text-emerald-950 text-sm uppercase tracking-wider mb-4 flex items-center justify-between">
-                        <span>🖼️ Koleksi Foto & Video ({albumPhotosAdmin.length})</span>
-                        <span className="text-xs font-semibold text-slate-500 normal-case">
-                          Klik ⭐ untuk jadikan sampul folder
-                        </span>
-                      </h4>
+                    {/* GRID FOTO & VIDEO DI DALAM FOLDER (DIPISAH BERDASARKAN TIPE FOTO DAN VIDEO) */}
+                    {(() => {
+                      const adminFotos = albumPhotosAdmin.filter(
+                        (item) => !(item.tipe === 'video' || item.foto?.includes('/video/upload/') || item.foto?.endsWith('.mp4'))
+                      );
+                      const adminVideos = albumPhotosAdmin.filter(
+                        (item) => item.tipe === 'video' || item.foto?.includes('/video/upload/') || item.foto?.endsWith('.mp4')
+                      );
 
-                      {albumPhotosAdmin.length === 0 ? (
-                        <div className="bg-white border-2 border-dashed border-emerald-950/40 rounded-2xl p-8 text-center">
-                          <p className="text-3xl mb-1">📸</p>
-                          <p className="text-xs font-bold text-slate-600">
-                            Folder ini masih kosong. Silakan gunakan tombol upload di atas untuk menambahkan foto atau video.
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
-                          {albumPhotosAdmin.map((item) => {
-                            const isVideo = item.tipe === 'video' || item.foto.includes('/video/upload/') || item.foto.endsWith('.mp4');
-                            const isCover = activeAdminAlbum.cover_foto === item.foto || (isVideo && activeAdminAlbum.cover_foto === item.thumbnail);
-                            const displayImage = isVideo ? (item.thumbnail || item.foto.replace(/\.[^/.]+$/, '.jpg')) : item.foto;
+                      const renderMediaCard = (item) => {
+                        const isVideo = item.tipe === 'video' || item.foto.includes('/video/upload/') || item.foto.endsWith('.mp4');
+                        const isCover = activeAdminAlbum.cover_foto === item.foto || (isVideo && activeAdminAlbum.cover_foto === item.thumbnail);
+                        const displayImage = isVideo ? (item.thumbnail || item.foto.replace(/\.[^/.]+$/, '.jpg')) : item.foto;
 
-                            return (
-                              <div
-                                key={item.id}
-                                className={`rounded-xl overflow-hidden border-2 border-emerald-950 bg-white shadow-[3px_3px_0px_#064e3b] flex flex-col group relative ${
-                                  isCover ? 'ring-2 ring-amber-400' : ''
-                                }`}
+                        return (
+                          <div
+                            key={item.id}
+                            className={`rounded-xl overflow-hidden border-2 border-emerald-950 bg-white shadow-[3px_3px_0px_#064e3b] flex flex-col group relative ${
+                              isCover ? 'ring-2 ring-amber-400' : ''
+                            }`}
+                          >
+                            <div className="aspect-square overflow-hidden relative bg-slate-900">
+                              {isVideo ? (
+                                <>
+                                  <img
+                                    src={displayImage}
+                                    alt=""
+                                    className="w-full h-full object-cover group-hover:scale-105 transition opacity-80"
+                                    onError={(e) => {
+                                      e.target.style.display = 'none';
+                                    }}
+                                  />
+                                  <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-amber-300 border-2 border-emerald-950 flex items-center justify-center text-emerald-950 shadow-md transform group-hover:scale-110 transition">
+                                      <Play size={18} fill="#064e3b" className="ml-0.5" />
+                                    </div>
+                                  </div>
+                                  <div className="absolute bottom-1.5 left-1.5 bg-rose-500 text-white font-black text-[9px] px-2 py-0.5 rounded border border-emerald-950 shadow-sm flex items-center gap-1">
+                                    <Film size={10} /> VIDEO
+                                  </div>
+                                </>
+                              ) : (
+                                <img
+                                  src={item.foto}
+                                  alt=""
+                                  className="w-full h-full object-cover group-hover:scale-105 transition"
+                                />
+                              )}
+
+                              {isCover && (
+                                <div className="absolute top-1.5 left-1.5 bg-amber-300 border border-emerald-950 text-emerald-950 text-[10px] font-black px-2 py-0.5 rounded-md shadow-sm flex items-center gap-1">
+                                  <Star size={10} className="fill-emerald-950" /> Cover
+                                </div>
+                              )}
+                            </div>
+                            <div className="p-2 bg-white flex items-center justify-between gap-1 border-t-2 border-emerald-950">
+                              {!isCover ? (
+                                <button
+                                  type="button"
+                                  onClick={() => handleSetCover(isVideo ? (item.thumbnail || item.foto) : item.foto)}
+                                  className="text-[10px] font-black text-emerald-900 bg-amber-200 hover:bg-amber-300 px-2 py-1 rounded-lg border border-emerald-950 transition cursor-pointer flex items-center gap-1"
+                                  title="Jadikan Sampul Album"
+                                >
+                                  <Star size={11} /> Cover
+                                </button>
+                              ) : (
+                                <span className="text-[10px] font-black text-emerald-700 px-1">
+                                  Sampul Aktif
+                                </span>
+                              )}
+
+                              <button
+                                type="button"
+                                onClick={() => handleHapusFoto(item.id)}
+                                className="text-white bg-rose-500 hover:bg-rose-600 p-1.5 rounded-lg border border-emerald-950 transition cursor-pointer"
+                                title="Hapus Media Ini"
                               >
-                                <div className="aspect-square overflow-hidden relative bg-slate-900">
-                                  {isVideo ? (
-                                    <>
-                                      <img
-                                        src={displayImage}
-                                        alt=""
-                                        className="w-full h-full object-cover group-hover:scale-105 transition opacity-80"
-                                        onError={(e) => {
-                                          e.target.style.display = 'none';
-                                        }}
-                                      />
-                                      <div className="absolute inset-0 flex items-center justify-center">
-                                        <div className="w-10 h-10 rounded-full bg-amber-300 border-2 border-emerald-950 flex items-center justify-center text-emerald-950 shadow-md transform group-hover:scale-110 transition">
-                                          <Play size={18} fill="#064e3b" className="ml-0.5" />
-                                        </div>
-                                      </div>
-                                      <div className="absolute bottom-1.5 left-1.5 bg-rose-500 text-white font-black text-[9px] px-2 py-0.5 rounded border border-emerald-950 shadow-sm flex items-center gap-1">
-                                        <Film size={10} /> VIDEO
-                                      </div>
-                                    </>
-                                  ) : (
-                                    <img
-                                      src={item.foto}
-                                      alt=""
-                                      className="w-full h-full object-cover group-hover:scale-105 transition"
-                                    />
-                                  )}
+                                <Trash2 size={12} />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      };
 
-                                  {isCover && (
-                                    <div className="absolute top-1.5 left-1.5 bg-amber-300 border border-emerald-950 text-emerald-950 text-[10px] font-black px-2 py-0.5 rounded-md shadow-sm flex items-center gap-1">
-                                      <Star size={10} className="fill-emerald-950" /> Cover
+                      return (
+                        <div>
+                          {/* TAB FILTER MEDIA */}
+                          {albumPhotosAdmin.length > 0 && (
+                            <div className="flex flex-wrap items-center justify-between gap-3 mb-6 pb-3 border-b-2 border-emerald-950/15">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => setAdminMediaFilter('semua')}
+                                  className={`px-3 py-1.5 rounded-xl text-xs font-black border-2 border-emerald-950 transition cursor-pointer ${
+                                    adminMediaFilter === 'semua'
+                                      ? 'bg-emerald-900 text-white shadow-[2px_2px_0px_#fbbf24]'
+                                      : 'bg-white text-emerald-950 hover:bg-teal-100 shadow-[2px_2px_0px_#064e3b]'
+                                  }`}
+                                >
+                                  🖼️ Semua ({albumPhotosAdmin.length})
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setAdminMediaFilter('foto')}
+                                  className={`px-3 py-1.5 rounded-xl text-xs font-black border-2 border-emerald-950 transition cursor-pointer flex items-center gap-1.5 ${
+                                    adminMediaFilter === 'foto'
+                                      ? 'bg-emerald-900 text-white shadow-[2px_2px_0px_#fbbf24]'
+                                      : 'bg-white text-emerald-950 hover:bg-teal-100 shadow-[2px_2px_0px_#064e3b]'
+                                  }`}
+                                >
+                                  <Images size={13} /> Foto ({adminFotos.length})
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setAdminMediaFilter('video')}
+                                  className={`px-3 py-1.5 rounded-xl text-xs font-black border-2 border-emerald-950 transition cursor-pointer flex items-center gap-1.5 ${
+                                    adminMediaFilter === 'video'
+                                      ? 'bg-rose-600 text-white shadow-[2px_2px_0px_#064e3b]'
+                                      : 'bg-white text-emerald-950 hover:bg-rose-50 shadow-[2px_2px_0px_#064e3b]'
+                                  }`}
+                                >
+                                  <Film size={13} /> Video ({adminVideos.length})
+                                </button>
+                              </div>
+
+                              <span className="text-[11px] font-bold text-slate-500">
+                                Klik ⭐ untuk jadikan sampul folder
+                              </span>
+                            </div>
+                          )}
+
+                          {albumPhotosAdmin.length === 0 ? (
+                            <div className="bg-white border-2 border-dashed border-emerald-950/40 rounded-2xl p-8 text-center">
+                              <p className="text-3xl mb-1">📸</p>
+                              <p className="text-xs font-bold text-slate-600">
+                                Folder ini masih kosong. Silakan gunakan tombol upload di atas untuk menambahkan foto atau video.
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="space-y-8">
+                              {/* SECTION FOTO */}
+                              {(adminMediaFilter === 'semua' || adminMediaFilter === 'foto') && (
+                                <div>
+                                  <div className="flex items-center gap-2 mb-3">
+                                    <span className="p-1 rounded-md bg-teal-200 border border-emerald-950 text-emerald-950">
+                                      <Images size={14} />
+                                    </span>
+                                    <h5 className="font-black text-emerald-950 text-xs sm:text-sm uppercase tracking-wide">
+                                      Koleksi Foto ({adminFotos.length})
+                                    </h5>
+                                  </div>
+
+                                  {adminFotos.length === 0 ? (
+                                    <div className="bg-white/80 rounded-xl border-2 border-dashed border-emerald-950/30 p-4 text-center text-xs font-bold text-slate-500">
+                                      Belum ada foto dalam folder ini.
+                                    </div>
+                                  ) : (
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
+                                      {adminFotos.map((item) => renderMediaCard(item))}
                                     </div>
                                   )}
                                 </div>
-                                <div className="p-2 bg-white flex items-center justify-between gap-1 border-t-2 border-emerald-950">
-                                  {!isCover ? (
-                                    <button
-                                      type="button"
-                                      onClick={() => handleSetCover(isVideo ? (item.thumbnail || item.foto) : item.foto)}
-                                      className="text-[10px] font-black text-emerald-900 bg-amber-200 hover:bg-amber-300 px-2 py-1 rounded-lg border border-emerald-950 transition cursor-pointer flex items-center gap-1"
-                                      title="Jadikan Sampul Album"
-                                    >
-                                      <Star size={11} /> Cover
-                                    </button>
-                                  ) : (
-                                    <span className="text-[10px] font-black text-emerald-700 px-1">
-                                      Sampul Aktif
-                                    </span>
-                                  )}
+                              )}
 
-                                  <button
-                                    type="button"
-                                    onClick={() => handleHapusFoto(item.id)}
-                                    className="text-white bg-rose-500 hover:bg-rose-600 p-1.5 rounded-lg border border-emerald-950 transition cursor-pointer"
-                                    title="Hapus Media Ini"
-                                  >
-                                    <Trash2 size={12} />
-                                  </button>
+                              {/* SECTION VIDEO */}
+                              {(adminMediaFilter === 'semua' || adminMediaFilter === 'video') && (
+                                <div>
+                                  <div className="flex items-center gap-2 mb-3">
+                                    <span className="p-1 rounded-md bg-rose-200 border border-emerald-950 text-rose-950">
+                                      <Film size={14} />
+                                    </span>
+                                    <h5 className="font-black text-emerald-950 text-xs sm:text-sm uppercase tracking-wide">
+                                      Koleksi Video ({adminVideos.length})
+                                    </h5>
+                                  </div>
+
+                                  {adminVideos.length === 0 ? (
+                                    <div className="bg-white/80 rounded-xl border-2 border-dashed border-emerald-950/30 p-4 text-center text-xs font-bold text-slate-500">
+                                      Belum ada video dalam folder ini.
+                                    </div>
+                                  ) : (
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
+                                      {adminVideos.map((item) => renderMediaCard(item))}
+                                    </div>
+                                  )}
                                 </div>
-                              </div>
-                            );
-                          })}
+                              )}
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
+                      );
+                    })()}
                   </div>
                 )}
               </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   ArrowLeft,
   Calendar,
@@ -19,6 +19,7 @@ function Galeri() {
   const [albums, setAlbums] = useState([]);
   const [activeAlbum, setActiveAlbum] = useState(null);
   const [albumPhotos, setAlbumPhotos] = useState([]);
+  const [filterMedia, setFilterMedia] = useState('semua'); // 'semua' | 'foto' | 'video'
   const [loading, setLoading] = useState(true);
   const [loadingPhotos, setLoadingPhotos] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(null);
@@ -54,6 +55,7 @@ function Galeri() {
   // Buka folder kegiatan & muat seluruh foto di dalamnya
   const bukaAlbum = async (album) => {
     setActiveAlbum(album);
+    setFilterMedia('semua');
     setLoadingPhotos(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -77,9 +79,26 @@ function Galeri() {
   const kembaliKeDaftarAlbum = () => {
     setActiveAlbum(null);
     setAlbumPhotos([]);
+    setFilterMedia('semua');
     setLightboxIndex(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  const listFoto = useMemo(
+    () =>
+      albumPhotos.filter(
+        (item) => !(item.tipe === 'video' || item.foto?.includes('/video/upload/') || item.foto?.endsWith('.mp4'))
+      ),
+    [albumPhotos]
+  );
+
+  const listVideo = useMemo(
+    () =>
+      albumPhotos.filter(
+        (item) => item.tipe === 'video' || item.foto?.includes('/video/upload/') || item.foto?.endsWith('.mp4')
+      ),
+    [albumPhotos]
+  );
 
   // Navigasi Lightbox (Keyboard & Buttons)
   const nextPhoto = useCallback(() => {
@@ -269,11 +288,53 @@ function Galeri() {
                   <p className="text-xl sm:text-2xl font-black text-emerald-950">
                     {albumPhotos.length} Media
                   </p>
+                  <p className="text-[10px] font-bold text-emerald-800 mt-0.5">
+                    {listFoto.length} Foto • {listVideo.length} Video
+                  </p>
                 </div>
               </div>
             </div>
 
-            {/* Grid Foto & Video di dalam Folder */}
+            {/* TAB FILTER MEDIA: SEMUA / FOTO / VIDEO */}
+            {!loadingPhotos && albumPhotos.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2 mb-6 sm:mb-8">
+                <button
+                  type="button"
+                  onClick={() => setFilterMedia('semua')}
+                  className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black border-2 border-emerald-950 transition cursor-pointer ${
+                    filterMedia === 'semua'
+                      ? 'bg-emerald-900 text-white shadow-[2px_2px_0px_#fbbf24]'
+                      : 'bg-white text-emerald-950 hover:bg-teal-100 shadow-[2px_2px_0px_#064e3b]'
+                  }`}
+                >
+                  🖼️ Semua Media ({albumPhotos.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFilterMedia('foto')}
+                  className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black border-2 border-emerald-950 transition cursor-pointer flex items-center gap-1.5 ${
+                    filterMedia === 'foto'
+                      ? 'bg-emerald-900 text-white shadow-[2px_2px_0px_#fbbf24]'
+                      : 'bg-white text-emerald-950 hover:bg-teal-100 shadow-[2px_2px_0px_#064e3b]'
+                  }`}
+                >
+                  <Images size={14} /> Foto Kegiatan ({listFoto.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFilterMedia('video')}
+                  className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black border-2 border-emerald-950 transition cursor-pointer flex items-center gap-1.5 ${
+                    filterMedia === 'video'
+                      ? 'bg-rose-600 text-white shadow-[2px_2px_0px_#064e3b]'
+                      : 'bg-white text-emerald-950 hover:bg-rose-50 shadow-[2px_2px_0px_#064e3b]'
+                  }`}
+                >
+                  <Film size={14} /> Video Kegiatan ({listVideo.length})
+                </button>
+              </div>
+            )}
+
+            {/* Konten Foto & Video di dalam Folder */}
             {loadingPhotos ? (
               <div className="flex flex-col items-center justify-center py-16 text-emerald-800">
                 <div className="w-10 h-10 border-4 border-emerald-200 border-t-emerald-700 rounded-full animate-spin mb-3" />
@@ -288,57 +349,123 @@ function Galeri() {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-                {albumPhotos.map((item, idx) => {
-                  const isVideo = item.tipe === 'video' || item.foto.includes('/video/upload/') || item.foto.endsWith('.mp4');
-                  const displayImage = isVideo ? (item.thumbnail || item.foto.replace(/\.[^/.]+$/, '.jpg')) : item.foto;
-
-                  return (
-                    <div
-                      key={item.id}
-                      onClick={() => setLightboxIndex(idx)}
-                      className="bg-white rounded-2xl border-2 border-emerald-950 shadow-[3px_3px_0px_#064e3b] sm:shadow-[4px_4px_0px_#064e3b] hover:-translate-y-1 hover:shadow-[6px_6px_0px_#064e3b] transition-all overflow-hidden group cursor-pointer flex flex-col justify-between"
-                    >
-                      <div className="aspect-square overflow-hidden relative bg-slate-900">
-                        <img
-                          src={displayImage}
-                          alt={item.caption || activeAlbum.judul}
-                          referrerPolicy="no-referrer"
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90"
-                          loading="lazy"
-                          onError={(e) => {
-                            if (isVideo) e.target.style.display = 'none';
-                          }}
-                        />
-
-                        {isVideo ? (
-                          <>
-                            <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition">
-                              <span className="w-12 h-12 rounded-full bg-amber-400 text-emerald-950 flex items-center justify-center border-2 border-emerald-950 shadow-[2px_2px_0px_#064e3b] transform group-hover:scale-110 transition">
-                                <Play size={20} fill="#064e3b" className="ml-0.5" />
-                              </span>
-                            </div>
-                            <div className="absolute bottom-2 left-2 bg-rose-500 text-white font-black text-[10px] px-2.5 py-0.5 rounded-md border border-emerald-950 shadow-sm flex items-center gap-1">
-                              <Film size={11} /> VIDEO
-                            </div>
-                          </>
-                        ) : (
-                          <div className="absolute inset-0 bg-emerald-950/45 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
-                            <span className="inline-flex items-center gap-1.5 bg-amber-300 text-emerald-950 font-black text-xs px-3 py-1.5 rounded-full border-2 border-emerald-950 shadow-[2px_2px_0px_#064e3b]">
-                              <ZoomIn size={14} /> Perbesar
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
-                      {item.caption && (
-                        <div className="p-3 border-t-2 border-emerald-950 text-center">
-                          <p className="text-xs font-bold text-emerald-950 line-clamp-1">{item.caption}</p>
-                        </div>
-                      )}
+              <div className="space-y-10">
+                {/* ========================================= */}
+                {/* BAGIAN 1: KOLEKSI FOTO */}
+                {/* ========================================= */}
+                {(filterMedia === 'semua' || filterMedia === 'foto') && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-4 pb-2 border-b-2 border-emerald-950/15">
+                      <span className="p-1.5 rounded-lg bg-teal-200 border border-emerald-950 text-emerald-950">
+                        <Images size={16} />
+                      </span>
+                      <h3 className="font-black text-emerald-950 text-base sm:text-lg uppercase tracking-wide">
+                        Foto Kegiatan ({listFoto.length})
+                      </h3>
                     </div>
-                  );
-                })}
+
+                    {listFoto.length === 0 ? (
+                      <div className="bg-white/80 rounded-2xl border-2 border-dashed border-emerald-950/30 p-6 text-center text-xs font-bold text-slate-500">
+                        Belum ada foto yang diunggah ke folder ini.
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
+                        {listFoto.map((item) => {
+                          const originalIdx = albumPhotos.findIndex((p) => p.id === item.id);
+                          return (
+                            <div
+                              key={item.id}
+                              onClick={() => setLightboxIndex(originalIdx >= 0 ? originalIdx : 0)}
+                              className="bg-white rounded-2xl border-2 border-emerald-950 shadow-[3px_3px_0px_#064e3b] sm:shadow-[4px_4px_0px_#064e3b] hover:-translate-y-1 hover:shadow-[6px_6px_0px_#064e3b] transition-all overflow-hidden group cursor-pointer flex flex-col justify-between"
+                            >
+                              <div className="aspect-square overflow-hidden relative bg-slate-900">
+                                <img
+                                  src={item.foto}
+                                  alt={item.caption || activeAlbum.judul}
+                                  referrerPolicy="no-referrer"
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                  loading="lazy"
+                                />
+                                <div className="absolute inset-0 bg-emerald-950/45 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
+                                  <span className="inline-flex items-center gap-1.5 bg-amber-300 text-emerald-950 font-black text-xs px-3 py-1.5 rounded-full border-2 border-emerald-950 shadow-[2px_2px_0px_#064e3b]">
+                                    <ZoomIn size={14} /> Perbesar Foto
+                                  </span>
+                                </div>
+                              </div>
+                              {item.caption && (
+                                <div className="p-3 border-t-2 border-emerald-950 text-center">
+                                  <p className="text-xs font-bold text-emerald-950 line-clamp-1">{item.caption}</p>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ========================================= */}
+                {/* BAGIAN 2: VIDEO DOKUMENTASI */}
+                {/* ========================================= */}
+                {(filterMedia === 'semua' || filterMedia === 'video') && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-4 pb-2 border-b-2 border-emerald-950/15">
+                      <span className="p-1.5 rounded-lg bg-rose-200 border border-emerald-950 text-rose-950">
+                        <Film size={16} />
+                      </span>
+                      <h3 className="font-black text-emerald-950 text-base sm:text-lg uppercase tracking-wide">
+                        Video Kegiatan ({listVideo.length})
+                      </h3>
+                    </div>
+
+                    {listVideo.length === 0 ? (
+                      <div className="bg-white/80 rounded-2xl border-2 border-dashed border-emerald-950/30 p-6 text-center text-xs font-bold text-slate-500">
+                        Belum ada video dokumentasi yang diunggah ke folder ini.
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
+                        {listVideo.map((item) => {
+                          const originalIdx = albumPhotos.findIndex((p) => p.id === item.id);
+                          const displayImage = item.thumbnail || item.foto.replace(/\.[^/.]+$/, '.jpg');
+                          return (
+                            <div
+                              key={item.id}
+                              onClick={() => setLightboxIndex(originalIdx >= 0 ? originalIdx : 0)}
+                              className="bg-white rounded-2xl border-2 border-emerald-950 shadow-[3px_3px_0px_#064e3b] sm:shadow-[4px_4px_0px_#064e3b] hover:-translate-y-1 hover:shadow-[6px_6px_0px_#064e3b] transition-all overflow-hidden group cursor-pointer flex flex-col justify-between"
+                            >
+                              <div className="aspect-square overflow-hidden relative bg-slate-900">
+                                <img
+                                  src={displayImage}
+                                  alt={item.caption || activeAlbum.judul}
+                                  referrerPolicy="no-referrer"
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90"
+                                  loading="lazy"
+                                  onError={(e) => {
+                                    e.target.style.display = 'none';
+                                  }}
+                                />
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition">
+                                  <span className="w-12 h-12 rounded-full bg-amber-400 text-emerald-950 flex items-center justify-center border-2 border-emerald-950 shadow-[2px_2px_0px_#064e3b] transform group-hover:scale-110 transition">
+                                    <Play size={20} fill="#064e3b" className="ml-0.5" />
+                                  </span>
+                                </div>
+                                <div className="absolute bottom-2 left-2 bg-rose-500 text-white font-black text-[10px] px-2.5 py-0.5 rounded-md border border-emerald-950 shadow-sm flex items-center gap-1">
+                                  <Film size={11} /> PUTAR VIDEO
+                                </div>
+                              </div>
+                              {item.caption && (
+                                <div className="p-3 border-t-2 border-emerald-950 text-center">
+                                  <p className="text-xs font-bold text-emerald-950 line-clamp-1">{item.caption}</p>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
