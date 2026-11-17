@@ -56,14 +56,8 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
   const [activeAdminAlbum, setActiveAdminAlbum] = useState(null);
   const [albumPhotosAdmin, setAlbumPhotosAdmin] = useState([]);
   const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
-  const [manualFotoUrl, setManualFotoUrl] = useState('');
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [videoProgress, setVideoProgress] = useState(0);
-  const [showCloudinarySettings, setShowCloudinarySettings] = useState(false);
-  const [cloudinaryConfig, setCloudinaryConfig] = useState({
-    cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || localStorage.getItem('cloudinary_cloud_name') || 'rv0vhjkd',
-    uploadPreset: import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || localStorage.getItem('cloudinary_upload_preset') || 'at_tajdid_unsigned',
-  });
 
   // ==========================================
   // STATE FORM INPUT
@@ -267,12 +261,6 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
     const file = e.target.files?.[0];
     if (!file || !activeAdminAlbum) return;
 
-    if (!cloudinaryConfig.cloudName || !cloudinaryConfig.uploadPreset) {
-      setShowCloudinarySettings(true);
-      e.target.value = '';
-      return;
-    }
-
     setUploadingVideo(true);
     setVideoProgress(0);
 
@@ -310,41 +298,6 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
       setUploadingVideo(false);
       setVideoProgress(0);
       e.target.value = '';
-    }
-  };
-
-  const handleSaveCloudinaryConfig = (e) => {
-    e.preventDefault();
-    localStorage.setItem('cloudinary_cloud_name', cloudinaryConfig.cloudName.trim());
-    localStorage.setItem('cloudinary_upload_preset', cloudinaryConfig.uploadPreset.trim());
-    setShowCloudinarySettings(false);
-    alert('✓ Konfigurasi Cloudinary berhasil disimpan!');
-  };
-
-  const handleTambahFotoManual = async (url) => {
-    if (!url || !activeAdminAlbum) return;
-    try {
-      const { error } = await supabase.from('galeri_foto').insert([
-        {
-          album_id: activeAdminAlbum.id,
-          foto: url.trim(),
-          caption: '',
-        },
-      ]);
-      if (error) throw error;
-      if (!activeAdminAlbum.cover_foto) {
-        await supabase
-          .from('galeri_album')
-          .update({ cover_foto: url.trim() })
-          .eq('id', activeAdminAlbum.id);
-      }
-      alert('Foto berhasil ditambahkan ke folder!');
-      setManualFotoUrl('');
-      fetchAlbumPhotos(activeAdminAlbum.id);
-      fetchAlbums();
-    } catch (err) {
-      console.error('Gagal menambah foto:', err);
-      alert('Gagal menambah foto: ' + (err.message || 'Terjadi kesalahan'));
     }
   };
 
@@ -924,7 +877,7 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
                     <label className="block text-[11px] sm:text-xs font-black uppercase text-emerald-950">
                       Foto Sampul Berita (Opsional)
                     </label>
-                    <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center">
+                    <div>
                       <label className="inline-flex items-center justify-center gap-2 bg-white hover:bg-emerald-50 text-emerald-950 px-4 py-2.5 rounded-xl border-2 border-emerald-950 font-extrabold text-xs shadow-[2px_2px_0px_#064e3b] cursor-pointer transition shrink-0">
                         <Upload size={15} />
                         <span>{uploadingImage ? 'Mengunggah...' : 'Pilih Foto dari Perangkat'}</span>
@@ -942,29 +895,21 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
                           }}
                         />
                       </label>
-                      <span className="text-xs font-bold text-slate-500 text-center sm:text-left">atau link:</span>
-                      <input
-                        type="url"
-                        value={formBerita.gambar}
-                        onChange={(e) => setFormBerita({ ...formBerita, gambar: e.target.value })}
-                        placeholder="https://... (URL Foto)"
-                        className={`flex-1 ${inputClass}`}
-                      />
                     </div>
                     {formBerita.gambar && (
-                      <div className="flex items-center gap-3 p-2 bg-white rounded-xl border-2 border-emerald-950/20 shadow-sm">
+                      <div className="flex items-center gap-3 p-2 bg-white rounded-xl border-2 border-emerald-950/20 shadow-sm max-w-md">
                         <img
                           src={formBerita.gambar}
                           alt="Preview"
                           className="w-12 h-12 object-cover rounded-lg border border-emerald-950 shrink-0"
                         />
                         <span className="text-xs font-bold text-emerald-900 truncate flex-1">
-                          {formBerita.gambar}
+                          Foto terpasang
                         </span>
                         <button
                           type="button"
                           onClick={() => setFormBerita((prev) => ({ ...prev, gambar: '' }))}
-                          className="text-rose-600 hover:text-rose-800 text-xs font-black px-2 py-1"
+                          className="text-rose-600 hover:text-rose-800 text-xs font-black px-2 py-1 cursor-pointer"
                         >
                           Hapus
                         </button>
@@ -1107,9 +1052,9 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
                   </div>
                   <div className="space-y-2">
                     <label className="block text-[11px] sm:text-xs font-black uppercase text-emerald-950">
-                      Foto Pengurus / Guru
+                      Foto Pengurus / Guru (Opsional)
                     </label>
-                    <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center">
+                    <div>
                       <label className="inline-flex items-center justify-center gap-2 bg-white hover:bg-emerald-50 text-emerald-950 px-4 py-2.5 rounded-xl border-2 border-emerald-950 font-extrabold text-xs shadow-[2px_2px_0px_#064e3b] cursor-pointer transition shrink-0">
                         <Upload size={15} />
                         <span>{uploadingImage ? 'Mengunggah...' : 'Pilih Foto dari Perangkat'}</span>
@@ -1127,30 +1072,21 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
                           }}
                         />
                       </label>
-                      <span className="text-xs font-bold text-slate-500 text-center sm:text-left">atau link:</span>
-                      <input
-                        type="url"
-                        value={formPengurus.foto}
-                        onChange={(e) => setFormPengurus({ ...formPengurus, foto: e.target.value })}
-                        placeholder="https://... (URL Foto)"
-                        className={`flex-1 ${inputClass}`}
-                        required
-                      />
                     </div>
                     {formPengurus.foto && (
-                      <div className="flex items-center gap-3 p-2 bg-white rounded-xl border-2 border-emerald-950/20 shadow-sm">
+                      <div className="flex items-center gap-3 p-2 bg-white rounded-xl border-2 border-emerald-950/20 shadow-sm max-w-md">
                         <img
                           src={formPengurus.foto}
                           alt="Preview"
                           className="w-12 h-12 rounded-full object-cover border border-emerald-950 shrink-0"
                         />
                         <span className="text-xs font-bold text-emerald-900 truncate flex-1">
-                          {formPengurus.foto}
+                          Foto terpasang
                         </span>
                         <button
                           type="button"
                           onClick={() => setFormPengurus((prev) => ({ ...prev, foto: '' }))}
-                          className="text-rose-600 hover:text-rose-800 text-xs font-black px-2 py-1"
+                          className="text-rose-600 hover:text-rose-800 text-xs font-black px-2 py-1 cursor-pointer"
                         >
                           Hapus
                         </button>
@@ -1548,84 +1484,6 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
                       </div>
                     </div>
 
-                    {/* MODAL SETUP CLOUDINARY */}
-                    {showCloudinarySettings && (
-                      <div className="fixed inset-0 z-50 bg-emerald-950/70 backdrop-blur-sm flex items-center justify-center p-4">
-                        <div className="bg-white rounded-3xl border-4 border-emerald-950 shadow-[8px_8px_0px_#064e3b] p-6 max-w-md w-full relative">
-                          <button
-                            type="button"
-                            onClick={() => setShowCloudinarySettings(false)}
-                            className="absolute top-4 right-4 text-slate-400 hover:text-slate-700"
-                          >
-                            <X size={20} />
-                          </button>
-
-                          <div className="flex items-center gap-2.5 mb-4">
-                            <div className="w-10 h-10 rounded-xl bg-amber-300 border-2 border-emerald-950 flex items-center justify-center text-emerald-950 font-black">
-                              <Film size={20} />
-                            </div>
-                            <div>
-                              <h3 className="font-black text-emerald-950 text-sm">Pengaturan Cloudinary Video</h3>
-                              <p className="text-[11px] text-slate-500 font-medium">Hanya perlu diisi 1x saja</p>
-                            </div>
-                          </div>
-
-                          <form onSubmit={handleSaveCloudinaryConfig} className="space-y-3.5 text-left">
-                            <div>
-                              <label className="block text-xs font-bold text-slate-700 mb-1">
-                                Cloud Name <span className="text-rose-500">*</span>
-                              </label>
-                              <input
-                                type="text"
-                                required
-                                value={cloudinaryConfig.cloudName}
-                                onChange={(e) => setCloudinaryConfig({ ...cloudinaryConfig, cloudName: e.target.value })}
-                                placeholder="contoh: dxyz12345"
-                                className={`text-xs ${inputClass}`}
-                              />
-                            </div>
-
-                            <div>
-                              <label className="block text-xs font-bold text-slate-700 mb-1">
-                                Upload Preset (Unsigned) <span className="text-rose-500">*</span>
-                              </label>
-                              <input
-                                type="text"
-                                required
-                                value={cloudinaryConfig.uploadPreset}
-                                onChange={(e) => setCloudinaryConfig({ ...cloudinaryConfig, uploadPreset: e.target.value })}
-                                placeholder="contoh: attajdid_videos"
-                                className={`text-xs ${inputClass}`}
-                              />
-                            </div>
-
-                            <div className="p-3 bg-amber-50 rounded-xl border border-amber-300 text-[11px] text-slate-700 space-y-1">
-                              <p className="font-black text-emerald-950">Cara mendapatkan Cloud Name & Preset:</p>
-                              <p>1. Daftar gratis di <strong>cloudinary.com</strong></p>
-                              <p>2. Salin <strong>Cloud Name</strong> di dashboard depan.</p>
-                              <p>3. Buka menu <em>Settings ➔ Upload</em>, klik <em>Add Upload Preset</em>, ubah mode jadi <strong>Unsigned</strong>, lalu salin namanya ke sini.</p>
-                            </div>
-
-                            <div className="flex gap-2 pt-2">
-                              <button
-                                type="button"
-                                onClick={() => setShowCloudinarySettings(false)}
-                                className="flex-1 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-600 hover:bg-slate-100"
-                              >
-                                Batal
-                              </button>
-                              <button
-                                type="submit"
-                                className="flex-1 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl border-2 border-emerald-950 font-black text-xs shadow-[2px_2px_0px_#064e3b]"
-                              >
-                                Simpan Pengaturan
-                              </button>
-                            </div>
-                          </form>
-                        </div>
-                      </div>
-                    )}
-
                     {/* GRID FOTO & VIDEO DI DALAM FOLDER */}
                     <div>
                       <h4 className="font-black text-emerald-950 text-sm uppercase tracking-wider mb-4 flex items-center justify-between">
@@ -1766,12 +1624,12 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
                   </div>
                   <div className="space-y-2">
                     <label className="block text-[11px] sm:text-xs font-black uppercase text-emerald-950">
-                      File Dokumen / Link Unduhan
+                      Pilih Berkas Dokumen (PDF / Dokumen)
                     </label>
-                    <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center">
+                    <div>
                       <label className="inline-flex items-center justify-center gap-2 bg-white hover:bg-emerald-50 text-emerald-950 px-4 py-2.5 rounded-xl border-2 border-emerald-950 font-extrabold text-xs shadow-[2px_2px_0px_#064e3b] cursor-pointer transition shrink-0">
                         <Upload size={15} />
-                        <span>{uploadingImage ? 'Mengunggah...' : 'Pilih Berkas dari Perangkat'}</span>
+                        <span>{uploadingImage ? 'Mengunggah berkas...' : 'Pilih Berkas dari Perangkat'}</span>
                         <input
                           type="file"
                           className="hidden"
@@ -1793,25 +1651,16 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
                           }}
                         />
                       </label>
-                      <span className="text-xs font-bold text-slate-500 text-center sm:text-left">atau link:</span>
-                      <input
-                        type="url"
-                        value={formUnduhan.link}
-                        onChange={(e) => setFormUnduhan({ ...formUnduhan, link: e.target.value })}
-                        placeholder="https://... (Google Drive / Direct URL)"
-                        className={`flex-1 ${inputClass}`}
-                        required
-                      />
                     </div>
                     {formUnduhan.link && (
-                      <div className="flex items-center gap-3 p-2 bg-white rounded-xl border-2 border-emerald-950/20 shadow-sm">
+                      <div className="flex items-center gap-3 p-2 bg-white rounded-xl border-2 border-emerald-950/20 shadow-sm max-w-md">
                         <span className="text-xs font-bold text-emerald-900 truncate flex-1">
-                          {formUnduhan.link}
+                          ✓ Berkas: {formUnduhan.nama} ({formUnduhan.format})
                         </span>
                         <button
                           type="button"
-                          onClick={() => setFormUnduhan((prev) => ({ ...prev, link: '' }))}
-                          className="text-rose-600 hover:text-rose-800 text-xs font-black px-2 py-1"
+                          onClick={() => setFormUnduhan((prev) => ({ ...prev, link: '', nama: '' }))}
+                          className="text-rose-600 hover:text-rose-800 text-xs font-black px-2 py-1 cursor-pointer"
                         >
                           Hapus
                         </button>
