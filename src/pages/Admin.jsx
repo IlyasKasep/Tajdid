@@ -1517,10 +1517,10 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
                         </div>
                       )}
 
-                      {/* Tombol Aksi Upload Foto & Video */}
-                      <div className="flex flex-wrap items-center justify-center gap-3">
+                      {/* Tombol Aksi Upload Foto & Video (Clean & Simple UX) */}
+                      <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
                         {/* Tombol Upload Foto */}
-                        <label className="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-emerald-950 px-5 py-2.5 rounded-xl border-2 border-emerald-950 font-black text-xs sm:text-sm shadow-[3px_3px_0px_#064e3b] cursor-pointer transition">
+                        <label className="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-emerald-950 px-6 py-3 rounded-xl border-2 border-emerald-950 font-black text-xs sm:text-sm shadow-[3px_3px_0px_#064e3b] hover:shadow-[1px_1px_0px_#064e3b] hover:translate-x-[2px] hover:translate-y-[2px] cursor-pointer transition">
                           <Plus size={16} />
                           <span>Pilih Banyak Foto</span>
                           <input
@@ -1534,7 +1534,7 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
                         </label>
 
                         {/* Tombol Upload Video */}
-                        <label className="inline-flex items-center gap-2 bg-rose-500 hover:bg-rose-400 text-white px-5 py-2.5 rounded-xl border-2 border-emerald-950 font-black text-xs sm:text-sm shadow-[3px_3px_0px_#064e3b] cursor-pointer transition">
+                        <label className="inline-flex items-center gap-2 bg-rose-500 hover:bg-rose-400 text-white px-6 py-3 rounded-xl border-2 border-emerald-950 font-black text-xs sm:text-sm shadow-[3px_3px_0px_#064e3b] hover:shadow-[1px_1px_0px_#064e3b] hover:translate-x-[2px] hover:translate-y-[2px] cursor-pointer transition">
                           <Video size={16} />
                           <span>Upload Video (Auto-Kompres)</span>
                           <input
@@ -1545,40 +1545,6 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
                             onChange={handleUploadVideo}
                           />
                         </label>
-
-                        {/* Tombol Pengaturan Cloudinary */}
-                        <button
-                          type="button"
-                          onClick={() => setShowCloudinarySettings(true)}
-                          className="inline-flex items-center gap-1.5 bg-white hover:bg-slate-100 text-slate-700 px-3.5 py-2.5 rounded-xl border-2 border-emerald-950 font-bold text-xs shadow-[2px_2px_0px_#064e3b] transition cursor-pointer"
-                          title="Pengaturan Kunci Cloudinary"
-                        >
-                          <Settings size={14} />
-                          <span className="hidden sm:inline">Setup Cloudinary</span>
-                        </button>
-                      </div>
-
-                      {/* Opsi Tambah Foto/Video via Link URL jika ada */}
-                      <div className="pt-3 border-t border-emerald-950/15 max-w-lg mx-auto">
-                        <p className="text-[11px] font-bold text-slate-500 mb-1.5">
-                          Atau masukkan link foto/video eksternal langsung:
-                        </p>
-                        <div className="flex gap-2">
-                          <input
-                            type="url"
-                            value={manualFotoUrl}
-                            onChange={(e) => setManualFotoUrl(e.target.value)}
-                            placeholder="https://... (URL Foto atau Video)"
-                            className={`text-xs ${inputClass}`}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleTambahFotoManual(manualFotoUrl)}
-                            className="bg-white hover:bg-emerald-50 text-emerald-950 font-black px-4 py-2 rounded-xl border-2 border-emerald-950 text-xs shrink-0 cursor-pointer"
-                          >
-                            Simpan Link
-                          </button>
-                        </div>
                       </div>
                     </div>
 
