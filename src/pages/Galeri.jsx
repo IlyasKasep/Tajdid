@@ -4,9 +4,12 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight,
+  Film,
   Folder,
   FolderOpen,
   Images,
+  Play,
+  Video,
   X,
   ZoomIn,
 } from 'lucide-react';
@@ -176,11 +179,11 @@ function Galeri() {
                           </span>
                         </div>
 
-                        {/* Badge Jumlah Foto */}
+                        {/* Badge Jumlah Foto & Video */}
                         <div className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 bg-white/95 backdrop-blur-sm border-2 border-emerald-950 px-2.5 py-1 rounded-full shadow-[2px_2px_0px_#064e3b] flex items-center gap-1.5">
                           <Images size={12} className="text-emerald-800" />
                           <span className="text-[10px] sm:text-[11px] font-black text-emerald-950">
-                            {totalFoto} Foto
+                            {totalFoto} Media
                           </span>
                         </div>
 
@@ -264,56 +267,78 @@ function Galeri() {
                 <div className="bg-teal-100 border-2 border-emerald-950 px-4 py-3 rounded-2xl shadow-[3px_3px_0px_#064e3b] shrink-0 text-center sm:text-right">
                   <p className="text-[10px] font-black uppercase text-emerald-800 tracking-wider">Total Koleksi</p>
                   <p className="text-xl sm:text-2xl font-black text-emerald-950">
-                    {albumPhotos.length} Foto
+                    {albumPhotos.length} Media
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Grid Foto di dalam Folder */}
+            {/* Grid Foto & Video di dalam Folder */}
             {loadingPhotos ? (
               <div className="flex flex-col items-center justify-center py-16 text-emerald-800">
                 <div className="w-10 h-10 border-4 border-emerald-200 border-t-emerald-700 rounded-full animate-spin mb-3" />
-                <p className="font-bold text-sm">Memuat foto kegiatan...</p>
+                <p className="font-bold text-sm">Memuat koleksi kegiatan...</p>
               </div>
             ) : albumPhotos.length === 0 ? (
               <div className="text-center py-12 sm:py-16 bg-white rounded-2xl sm:rounded-3xl border-2 border-emerald-950 shadow-[4px_4px_0px_#064e3b] p-6">
                 <p className="text-4xl mb-2">📸</p>
-                <h4 className="font-black text-emerald-950 text-base mb-1">Belum ada foto di album ini</h4>
+                <h4 className="font-black text-emerald-950 text-base mb-1">Belum ada foto atau video di album ini</h4>
                 <p className="text-slate-600 text-xs sm:text-sm font-medium">
-                  Pihak sekolah belum mengunggah foto ke dalam folder kegiatan ini.
+                  Pihak sekolah belum mengunggah dokumentasi ke dalam folder kegiatan ini.
                 </p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-                {albumPhotos.map((item, idx) => (
-                  <div
-                    key={item.id}
-                    onClick={() => setLightboxIndex(idx)}
-                    className="bg-white rounded-2xl border-2 border-emerald-950 shadow-[3px_3px_0px_#064e3b] sm:shadow-[4px_4px_0px_#064e3b] hover:-translate-y-1 hover:shadow-[6px_6px_0px_#064e3b] transition-all overflow-hidden group cursor-pointer"
-                  >
-                    <div className="aspect-square overflow-hidden relative bg-slate-100">
-                      <img
-                        src={item.foto}
-                        alt={item.caption || activeAlbum.judul}
-                        referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        loading="lazy"
-                      />
-                      <div className="absolute inset-0 bg-emerald-950/45 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
-                        <span className="inline-flex items-center gap-1.5 bg-amber-300 text-emerald-950 font-black text-xs px-3 py-1.5 rounded-full border-2 border-emerald-950 shadow-[2px_2px_0px_#064e3b]">
-                          <ZoomIn size={14} /> Perbesar
-                        </span>
-                      </div>
-                    </div>
+                {albumPhotos.map((item, idx) => {
+                  const isVideo = item.tipe === 'video' || item.foto.includes('/video/upload/') || item.foto.endsWith('.mp4');
+                  const displayImage = isVideo ? (item.thumbnail || item.foto.replace(/\.[^/.]+$/, '.jpg')) : item.foto;
 
-                    {item.caption && (
-                      <div className="p-3 border-t-2 border-emerald-950 text-center">
-                        <p className="text-xs font-bold text-emerald-950 line-clamp-1">{item.caption}</p>
+                  return (
+                    <div
+                      key={item.id}
+                      onClick={() => setLightboxIndex(idx)}
+                      className="bg-white rounded-2xl border-2 border-emerald-950 shadow-[3px_3px_0px_#064e3b] sm:shadow-[4px_4px_0px_#064e3b] hover:-translate-y-1 hover:shadow-[6px_6px_0px_#064e3b] transition-all overflow-hidden group cursor-pointer flex flex-col justify-between"
+                    >
+                      <div className="aspect-square overflow-hidden relative bg-slate-900">
+                        <img
+                          src={displayImage}
+                          alt={item.caption || activeAlbum.judul}
+                          referrerPolicy="no-referrer"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90"
+                          loading="lazy"
+                          onError={(e) => {
+                            if (isVideo) e.target.style.display = 'none';
+                          }}
+                        />
+
+                        {isVideo ? (
+                          <>
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition">
+                              <span className="w-12 h-12 rounded-full bg-amber-400 text-emerald-950 flex items-center justify-center border-2 border-emerald-950 shadow-[2px_2px_0px_#064e3b] transform group-hover:scale-110 transition">
+                                <Play size={20} fill="#064e3b" className="ml-0.5" />
+                              </span>
+                            </div>
+                            <div className="absolute bottom-2 left-2 bg-rose-500 text-white font-black text-[10px] px-2.5 py-0.5 rounded-md border border-emerald-950 shadow-sm flex items-center gap-1">
+                              <Film size={11} /> VIDEO
+                            </div>
+                          </>
+                        ) : (
+                          <div className="absolute inset-0 bg-emerald-950/45 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
+                            <span className="inline-flex items-center gap-1.5 bg-amber-300 text-emerald-950 font-black text-xs px-3 py-1.5 rounded-full border-2 border-emerald-950 shadow-[2px_2px_0px_#064e3b]">
+                              <ZoomIn size={14} /> Perbesar
+                            </span>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                ))}
+
+                      {item.caption && (
+                        <div className="p-3 border-t-2 border-emerald-950 text-center">
+                          <p className="text-xs font-bold text-emerald-950 line-clamp-1">{item.caption}</p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -321,7 +346,7 @@ function Galeri() {
       </div>
 
       {/* ========================================================= */}
-      {/* MODAL LIGHTBOX / FULL SCREEN PHOTO VIEWER */}
+      {/* MODAL LIGHTBOX / FULL SCREEN MEDIA VIEWER */}
       {/* ========================================================= */}
       {lightboxIndex !== null && albumPhotos[lightboxIndex] && (
         <div
@@ -345,7 +370,7 @@ function Galeri() {
           {albumPhotos.length > 1 && (
             <button
               type="button"
-              aria-label="Foto sebelumnya"
+              aria-label="Media sebelumnya"
               onClick={(e) => {
                 e.stopPropagation();
                 prevPhoto();
@@ -356,21 +381,33 @@ function Galeri() {
             </button>
           )}
 
-          {/* Area Foto Utama */}
+          {/* Area Media Utama (Foto atau Video) */}
           <div
             className="relative max-w-4xl max-h-[85vh] flex flex-col items-center"
             onClick={(e) => e.stopPropagation()}
           >
-            <img
-              src={albumPhotos[lightboxIndex].foto}
-              alt={albumPhotos[lightboxIndex].caption || 'Foto Dokumentasi'}
-              className="max-w-full max-h-[75vh] rounded-xl sm:rounded-2xl border-2 sm:border-4 border-white shadow-2xl object-contain animate-zoom-in"
-            />
+            {albumPhotos[lightboxIndex].tipe === 'video' ||
+            albumPhotos[lightboxIndex].foto.includes('/video/upload/') ||
+            albumPhotos[lightboxIndex].foto.endsWith('.mp4') ? (
+              <video
+                src={albumPhotos[lightboxIndex].foto}
+                controls
+                autoPlay
+                playsInline
+                className="max-w-full max-h-[75vh] rounded-xl sm:rounded-2xl border-2 sm:border-4 border-white shadow-2xl object-contain bg-black animate-zoom-in"
+              />
+            ) : (
+              <img
+                src={albumPhotos[lightboxIndex].foto}
+                alt={albumPhotos[lightboxIndex].caption || 'Foto Dokumentasi'}
+                className="max-w-full max-h-[75vh] rounded-xl sm:rounded-2xl border-2 sm:border-4 border-white shadow-2xl object-contain animate-zoom-in"
+              />
+            )}
 
-            {/* Keterangan & Indikator Nomor Foto */}
+            {/* Keterangan & Indikator Nomor Media */}
             <div className="mt-3 sm:mt-4 text-center">
               <span className="inline-block bg-white/95 text-emerald-950 px-3.5 py-1 rounded-full font-black text-xs border border-emerald-950 shadow-md">
-                Foto {lightboxIndex + 1} dari {albumPhotos.length}
+                Media {lightboxIndex + 1} dari {albumPhotos.length}
               </span>
               {albumPhotos[lightboxIndex].caption && (
                 <p className="text-white font-bold text-xs sm:text-sm mt-1.5 drop-shadow">

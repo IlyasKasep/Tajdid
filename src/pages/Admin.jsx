@@ -6,6 +6,7 @@ import {
   Check,
   Edit3,
   ExternalLink,
+  Film,
   Folder,
   FolderDown,
   FolderOpen,
@@ -20,17 +21,21 @@ import {
   MessageSquareHeart,
   PanelLeftClose,
   PanelLeftOpen,
+  Play,
   Plus,
+  Settings,
   Star,
   Trash2,
   Upload,
   Users,
+  Video,
   X,
 } from 'lucide-react';
 import { supabase } from '../supabase';
 import logoSekolah from '../assets/Logo_Persis.png';
 import AdminLoginBackground from '../components/AdminLoginBackground';
 import AdminSaran from './AdminSaran';
+import { uploadVideoToCloudinary } from '../utils/cloudinary';
 
 function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanganiLogin, tanganiLogout }) {
   const [activeTab, setActiveTab] = useState('berita');
@@ -52,6 +57,13 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
   const [albumPhotosAdmin, setAlbumPhotosAdmin] = useState([]);
   const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
   const [manualFotoUrl, setManualFotoUrl] = useState('');
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [videoProgress, setVideoProgress] = useState(0);
+  const [showCloudinarySettings, setShowCloudinarySettings] = useState(false);
+  const [cloudinaryConfig, setCloudinaryConfig] = useState({
+    cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || localStorage.getItem('cloudinary_cloud_name') || '',
+    uploadPreset: import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || localStorage.getItem('cloudinary_upload_preset') || '',
+  });
 
   // ==========================================
   // STATE FORM INPUT
@@ -249,6 +261,64 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
       setUploadProgress({ current: 0, total: 0 });
       e.target.value = '';
     }
+  };
+
+  const handleUploadVideo = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !activeAdminAlbum) return;
+
+    if (!cloudinaryConfig.cloudName || !cloudinaryConfig.uploadPreset) {
+      setShowCloudinarySettings(true);
+      e.target.value = '';
+      return;
+    }
+
+    setUploadingVideo(true);
+    setVideoProgress(0);
+
+    try {
+      const res = await uploadVideoToCloudinary(file, (percent) => {
+        setVideoProgress(percent);
+      });
+
+      const { error } = await supabase.from('galeri_foto').insert([
+        {
+          album_id: activeAdminAlbum.id,
+          foto: res.videoUrl,
+          thumbnail: res.thumbnailUrl,
+          tipe: 'video',
+          caption: file.name.replace(/\.[^/.]+$/, ''),
+        },
+      ]);
+
+      if (error) throw error;
+
+      if (!activeAdminAlbum.cover_foto && res.thumbnailUrl) {
+        await supabase
+          .from('galeri_album')
+          .update({ cover_foto: res.thumbnailUrl })
+          .eq('id', activeAdminAlbum.id);
+      }
+
+      alert(`✓ Video "${file.name}" berhasil diunggah & dikompres otomatis oleh Cloudinary!`);
+      fetchAlbumPhotos(activeAdminAlbum.id);
+      fetchAlbums();
+    } catch (err) {
+      console.error('Gagal upload video:', err);
+      alert('Gagal mengunggah video: ' + (err.message || 'Terjadi kesalahan'));
+    } finally {
+      setUploadingVideo(false);
+      setVideoProgress(0);
+      e.target.value = '';
+    }
+  };
+
+  const handleSaveCloudinaryConfig = (e) => {
+    e.preventDefault();
+    localStorage.setItem('cloudinary_cloud_name', cloudinaryConfig.cloudName.trim());
+    localStorage.setItem('cloudinary_upload_preset', cloudinaryConfig.uploadPreset.trim());
+    setShowCloudinarySettings(false);
+    alert('✓ Konfigurasi Cloudinary berhasil disimpan!');
   };
 
   const handleTambahFotoManual = async (url) => {
@@ -1390,25 +1460,26 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
                         )}
                       </div>
                       <div className="bg-white border-2 border-emerald-950 px-3.5 py-2 rounded-xl text-center shrink-0">
-                        <p className="text-[10px] font-black uppercase text-emerald-800">Total Foto</p>
+                        <p className="text-[10px] font-black uppercase text-emerald-800">Total Media</p>
                         <p className="text-xl font-black text-emerald-950">{albumPhotosAdmin.length}</p>
                       </div>
                     </div>
 
-                    {/* AREA UPLOAD FOTO MULTI-UPLOAD */}
+                    {/* AREA UPLOAD FOTO & VIDEO */}
                     <div className="bg-amber-50 border-2 border-dashed border-emerald-950 rounded-2xl p-5 sm:p-7 mb-8 text-center space-y-4">
                       <div className="max-w-md mx-auto space-y-2">
                         <div className="w-12 h-12 mx-auto rounded-full bg-amber-300 border-2 border-emerald-950 flex items-center justify-center text-emerald-950 shadow-[2px_2px_0px_#064e3b]">
                           <Upload size={22} />
                         </div>
                         <h4 className="font-black text-emerald-950 text-base">
-                          Upload Foto ke Folder Ini
+                          Upload Foto atau Video ke Folder Ini
                         </h4>
                         <p className="text-xs text-slate-600 font-medium">
-                          Anda bisa memilih <strong>banyak foto sekaligus</strong> (10, 20, atau lebih) dari laptop / HP. Foto akan langsung tersimpan ke folder ini.
+                          Anda bisa memilih <strong>banyak foto sekaligus</strong> atau <strong>upload video</strong>. Video otomatis dikompres via Cloudinary agar ringan dan tidak membebani server.
                         </p>
                       </div>
 
+                      {/* Progress Upload Foto */}
                       {uploadingImage && (
                         <div className="bg-white border-2 border-emerald-950 p-4 rounded-xl max-w-sm mx-auto shadow-[3px_3px_0px_#064e3b] animate-pulse">
                           <p className="text-xs font-black text-emerald-950">
@@ -1425,32 +1496,79 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
                         </div>
                       )}
 
-                      <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                        <label className="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-emerald-950 px-6 py-3 rounded-xl border-2 border-emerald-950 font-black text-xs sm:text-sm shadow-[3px_3px_0px_#064e3b] cursor-pointer transition">
+                      {/* Progress Upload Video */}
+                      {uploadingVideo && (
+                        <div className="bg-white border-2 border-emerald-950 p-4 rounded-xl max-w-sm mx-auto shadow-[3px_3px_0px_#064e3b]">
+                          <div className="flex items-center justify-between text-xs font-black text-emerald-950 mb-1.5">
+                            <span className="flex items-center gap-1.5">
+                              <Film size={14} className="text-rose-600 animate-spin" /> Mengompres & Upload Video...
+                            </span>
+                            <span>{videoProgress}%</span>
+                          </div>
+                          <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden border border-emerald-950">
+                            <div
+                              className="bg-rose-500 h-3 rounded-full transition-all duration-200"
+                              style={{ width: `${videoProgress}%` }}
+                            />
+                          </div>
+                          <p className="text-[10px] text-slate-500 font-bold mt-1.5 text-center">
+                            Cloudinary sedang mengompres video secara otomatis di background...
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Tombol Aksi Upload Foto & Video */}
+                      <div className="flex flex-wrap items-center justify-center gap-3">
+                        {/* Tombol Upload Foto */}
+                        <label className="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-emerald-950 px-5 py-2.5 rounded-xl border-2 border-emerald-950 font-black text-xs sm:text-sm shadow-[3px_3px_0px_#064e3b] cursor-pointer transition">
                           <Plus size={16} />
-                          <span>Pilih Banyak Foto dari Perangkat</span>
+                          <span>Pilih Banyak Foto</span>
                           <input
                             type="file"
                             multiple
                             accept="image/*"
                             className="hidden"
-                            disabled={uploadingImage}
+                            disabled={uploadingImage || uploadingVideo}
                             onChange={handleMultiUpload}
                           />
                         </label>
+
+                        {/* Tombol Upload Video */}
+                        <label className="inline-flex items-center gap-2 bg-rose-500 hover:bg-rose-400 text-white px-5 py-2.5 rounded-xl border-2 border-emerald-950 font-black text-xs sm:text-sm shadow-[3px_3px_0px_#064e3b] cursor-pointer transition">
+                          <Video size={16} />
+                          <span>Upload Video (Auto-Kompres)</span>
+                          <input
+                            type="file"
+                            accept="video/*"
+                            className="hidden"
+                            disabled={uploadingImage || uploadingVideo}
+                            onChange={handleUploadVideo}
+                          />
+                        </label>
+
+                        {/* Tombol Pengaturan Cloudinary */}
+                        <button
+                          type="button"
+                          onClick={() => setShowCloudinarySettings(true)}
+                          className="inline-flex items-center gap-1.5 bg-white hover:bg-slate-100 text-slate-700 px-3.5 py-2.5 rounded-xl border-2 border-emerald-950 font-bold text-xs shadow-[2px_2px_0px_#064e3b] transition cursor-pointer"
+                          title="Pengaturan Kunci Cloudinary"
+                        >
+                          <Settings size={14} />
+                          <span className="hidden sm:inline">Setup Cloudinary</span>
+                        </button>
                       </div>
 
-                      {/* Opsi Tambah Foto via Link URL jika ada */}
+                      {/* Opsi Tambah Foto/Video via Link URL jika ada */}
                       <div className="pt-3 border-t border-emerald-950/15 max-w-lg mx-auto">
                         <p className="text-[11px] font-bold text-slate-500 mb-1.5">
-                          Atau masukkan link foto eksternal:
+                          Atau masukkan link foto/video eksternal langsung:
                         </p>
                         <div className="flex gap-2">
                           <input
                             type="url"
                             value={manualFotoUrl}
                             onChange={(e) => setManualFotoUrl(e.target.value)}
-                            placeholder="https://... (URL Foto)"
+                            placeholder="https://... (URL Foto atau Video)"
                             className={`text-xs ${inputClass}`}
                           />
                           <button
@@ -1464,12 +1582,90 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
                       </div>
                     </div>
 
-                    {/* GRID FOTO DI DALAM FOLDER */}
+                    {/* MODAL SETUP CLOUDINARY */}
+                    {showCloudinarySettings && (
+                      <div className="fixed inset-0 z-50 bg-emerald-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+                        <div className="bg-white rounded-3xl border-4 border-emerald-950 shadow-[8px_8px_0px_#064e3b] p-6 max-w-md w-full relative">
+                          <button
+                            type="button"
+                            onClick={() => setShowCloudinarySettings(false)}
+                            className="absolute top-4 right-4 text-slate-400 hover:text-slate-700"
+                          >
+                            <X size={20} />
+                          </button>
+
+                          <div className="flex items-center gap-2.5 mb-4">
+                            <div className="w-10 h-10 rounded-xl bg-amber-300 border-2 border-emerald-950 flex items-center justify-center text-emerald-950 font-black">
+                              <Film size={20} />
+                            </div>
+                            <div>
+                              <h3 className="font-black text-emerald-950 text-sm">Pengaturan Cloudinary Video</h3>
+                              <p className="text-[11px] text-slate-500 font-medium">Hanya perlu diisi 1x saja</p>
+                            </div>
+                          </div>
+
+                          <form onSubmit={handleSaveCloudinaryConfig} className="space-y-3.5 text-left">
+                            <div>
+                              <label className="block text-xs font-bold text-slate-700 mb-1">
+                                Cloud Name <span className="text-rose-500">*</span>
+                              </label>
+                              <input
+                                type="text"
+                                required
+                                value={cloudinaryConfig.cloudName}
+                                onChange={(e) => setCloudinaryConfig({ ...cloudinaryConfig, cloudName: e.target.value })}
+                                placeholder="contoh: dxyz12345"
+                                className={`text-xs ${inputClass}`}
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-xs font-bold text-slate-700 mb-1">
+                                Upload Preset (Unsigned) <span className="text-rose-500">*</span>
+                              </label>
+                              <input
+                                type="text"
+                                required
+                                value={cloudinaryConfig.uploadPreset}
+                                onChange={(e) => setCloudinaryConfig({ ...cloudinaryConfig, uploadPreset: e.target.value })}
+                                placeholder="contoh: attajdid_videos"
+                                className={`text-xs ${inputClass}`}
+                              />
+                            </div>
+
+                            <div className="p-3 bg-amber-50 rounded-xl border border-amber-300 text-[11px] text-slate-700 space-y-1">
+                              <p className="font-black text-emerald-950">Cara mendapatkan Cloud Name & Preset:</p>
+                              <p>1. Daftar gratis di <strong>cloudinary.com</strong></p>
+                              <p>2. Salin <strong>Cloud Name</strong> di dashboard depan.</p>
+                              <p>3. Buka menu <em>Settings ➔ Upload</em>, klik <em>Add Upload Preset</em>, ubah mode jadi <strong>Unsigned</strong>, lalu salin namanya ke sini.</p>
+                            </div>
+
+                            <div className="flex gap-2 pt-2">
+                              <button
+                                type="button"
+                                onClick={() => setShowCloudinarySettings(false)}
+                                className="flex-1 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-600 hover:bg-slate-100"
+                              >
+                                Batal
+                              </button>
+                              <button
+                                type="submit"
+                                className="flex-1 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl border-2 border-emerald-950 font-black text-xs shadow-[2px_2px_0px_#064e3b]"
+                              >
+                                Simpan Pengaturan
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* GRID FOTO & VIDEO DI DALAM FOLDER */}
                     <div>
                       <h4 className="font-black text-emerald-950 text-sm uppercase tracking-wider mb-4 flex items-center justify-between">
-                        <span>🖼️ Koleksi Foto di Folder ({albumPhotosAdmin.length})</span>
+                        <span>🖼️ Koleksi Foto & Video ({albumPhotosAdmin.length})</span>
                         <span className="text-xs font-semibold text-slate-500 normal-case">
-                          Klik ⭐ untuk jadikan foto sebagai cover folder
+                          Klik ⭐ untuk jadikan sampul folder
                         </span>
                       </h4>
 
@@ -1477,27 +1673,51 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
                         <div className="bg-white border-2 border-dashed border-emerald-950/40 rounded-2xl p-8 text-center">
                           <p className="text-3xl mb-1">📸</p>
                           <p className="text-xs font-bold text-slate-600">
-                            Folder ini masih kosong. Silakan gunakan tombol upload di atas untuk menambahkan foto.
+                            Folder ini masih kosong. Silakan gunakan tombol upload di atas untuk menambahkan foto atau video.
                           </p>
                         </div>
                       ) : (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
-                          {albumPhotosAdmin.map((photo) => {
-                            const isCover = activeAdminAlbum.cover_foto === photo.foto;
+                          {albumPhotosAdmin.map((item) => {
+                            const isVideo = item.tipe === 'video' || item.foto.includes('/video/upload/') || item.foto.endsWith('.mp4');
+                            const isCover = activeAdminAlbum.cover_foto === item.foto || (isVideo && activeAdminAlbum.cover_foto === item.thumbnail);
+                            const displayImage = isVideo ? (item.thumbnail || item.foto.replace(/\.[^/.]+$/, '.jpg')) : item.foto;
 
                             return (
                               <div
-                                key={photo.id}
+                                key={item.id}
                                 className={`rounded-xl overflow-hidden border-2 border-emerald-950 bg-white shadow-[3px_3px_0px_#064e3b] flex flex-col group relative ${
                                   isCover ? 'ring-2 ring-amber-400' : ''
                                 }`}
                               >
-                                <div className="aspect-square overflow-hidden relative bg-slate-100">
-                                  <img
-                                    src={photo.foto}
-                                    alt=""
-                                    className="w-full h-full object-cover group-hover:scale-105 transition"
-                                  />
+                                <div className="aspect-square overflow-hidden relative bg-slate-900">
+                                  {isVideo ? (
+                                    <>
+                                      <img
+                                        src={displayImage}
+                                        alt=""
+                                        className="w-full h-full object-cover group-hover:scale-105 transition opacity-80"
+                                        onError={(e) => {
+                                          e.target.style.display = 'none';
+                                        }}
+                                      />
+                                      <div className="absolute inset-0 flex items-center justify-center">
+                                        <div className="w-10 h-10 rounded-full bg-amber-300 border-2 border-emerald-950 flex items-center justify-center text-emerald-950 shadow-md transform group-hover:scale-110 transition">
+                                          <Play size={18} fill="#064e3b" className="ml-0.5" />
+                                        </div>
+                                      </div>
+                                      <div className="absolute bottom-1.5 left-1.5 bg-rose-500 text-white font-black text-[9px] px-2 py-0.5 rounded border border-emerald-950 shadow-sm flex items-center gap-1">
+                                        <Film size={10} /> VIDEO
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <img
+                                      src={item.foto}
+                                      alt=""
+                                      className="w-full h-full object-cover group-hover:scale-105 transition"
+                                    />
+                                  )}
+
                                   {isCover && (
                                     <div className="absolute top-1.5 left-1.5 bg-amber-300 border border-emerald-950 text-emerald-950 text-[10px] font-black px-2 py-0.5 rounded-md shadow-sm flex items-center gap-1">
                                       <Star size={10} className="fill-emerald-950" /> Cover
@@ -1508,9 +1728,9 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
                                   {!isCover ? (
                                     <button
                                       type="button"
-                                      onClick={() => handleSetCover(photo.foto)}
+                                      onClick={() => handleSetCover(isVideo ? (item.thumbnail || item.foto) : item.foto)}
                                       className="text-[10px] font-black text-emerald-900 bg-amber-200 hover:bg-amber-300 px-2 py-1 rounded-lg border border-emerald-950 transition cursor-pointer flex items-center gap-1"
-                                      title="Jadikan Foto Sampul Album"
+                                      title="Jadikan Sampul Album"
                                     >
                                       <Star size={11} /> Cover
                                     </button>
@@ -1522,9 +1742,9 @@ function Admin({ user, email, setEmail, password, setPassword, errorLogin, tanga
 
                                   <button
                                     type="button"
-                                    onClick={() => handleHapusFoto(photo.id)}
+                                    onClick={() => handleHapusFoto(item.id)}
                                     className="text-white bg-rose-500 hover:bg-rose-600 p-1.5 rounded-lg border border-emerald-950 transition cursor-pointer"
-                                    title="Hapus Foto"
+                                    title="Hapus Media Ini"
                                   >
                                     <Trash2 size={12} />
                                   </button>
